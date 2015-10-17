@@ -1,0 +1,50 @@
+{% load staticfiles %}
+{% load main_extras %}
+
+<div class="navbar navbar-default navbar-fixed-top">
+        <div class="container">
+          <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+              <span class="sr-only">Toggle navigation</span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+            <a class="inline-block" href="{% url 'home' %}">
+                <img class="logo" src="{% static "assets/images/favicon-96x96.png" %}">
+                <div class="brand">{{ PROJECT_NAME }}</div>
+            </a>
+          </div>
+          <div id="navbar" class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+                {% menu_item 'Квесты' 'coordination:quests' %}
+                {% menu_item 'Контакты' %}
+                {% menu_item 'Новости' %}
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+                {% url 'auth_login' as url_login %}
+                {% if user.is_authenticated %}
+                    <li class="navbar-text">
+                        {% if user.first_name %}
+                            {{ user.first_name }}
+                        {% else %}
+                            {{ user.username }}
+                        {% endif %}
+                    </li>
+                    <li><a href="{% url 'auth_logout' %}">Выход</a></li>
+                {% elif request.path != url_login %}
+                    <form class='navbar-form navbar-right form-signin-inline' method='POST' action='{% url "auth_login" %}?next={{request.path}}'>
+                        {% csrf_token %}
+                        <div class='form-group'>
+                            <input type='text' class='form-control' name='username' placeholder='Логин' required/>
+                        </div>
+                        <div class='form-group'>
+                            <input type='password' class='form-control' name='password' placeholder='Пароль' required/>
+                        </div>
+                        <button type='submit' class='btn btn-primary'>Войти</button>
+                    </form>
+                {% endif %}
+            </ul>
+          </div>
+        </div>
+    </div>

@@ -1,0 +1,115 @@
+html {
+    position: relative;
+    min-height: 100%;
+}
+
+body {
+    margin-bottom: 170px;
+}
+
+.text-base {
+    color: #333333;
+}
+
+.page-header h1, h2, h3, h4, h5, h6 {
+    text-align: center;
+}
+
+#footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 170px;
+    background-color: #d0d2f2;
+    text-align: center;
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+
+body > .container {
+    padding: 60px 15px 0;
+}
+
+a.inline-block {
+    background-color: transparent;
+    text-decoration:none;
+}
+
+.brand {
+    display: inline-block;
+    color: #777;
+    font-size: 24px;
+    line-height: 20px;
+    padding: 15px 5px;
+}
+
+.brand:focus, .brand:hover {
+    color: #5e5e5e;
+    background-color: transparent;
+    text-decoration:none;
+}
+
+.logo {
+    margin-top: -10px;
+    margin-left: 5px;
+    width: 32px;
+    height: 32px;
+}
+#footer .logo {
+    display: inline-block;
+    margin: 0 auto 5px;
+    width: 80px;
+    height: 80px;
+}
+
+.footer-text {
+    display: block;
+    font-size: 18px;
+    font-style: normal;
+}
+
+.email-link {
+    margin-top: 15px;
+    font-size: 16px;
+    font-style: normal;
+}
+
+td, th {
+    text-align: center;
+}
+
+table.table-cm {
+    width: auto;
+    margin-left:auto;
+    margin-right:auto;
+}
+
+.centered {
+    float: none;
+    margin: 3px auto;
+}
+
+.form-signin-inline {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.form-signin {
+  max-width: 330px;
+  padding: 15px;
+  margin: 0 auto;
+}
+
+.form-signin .form-control {
+  position: relative;
+  height: auto;
+  -webkit-box-sizing: border-box;
+     -moz-box-sizing: border-box;
+          box-sizing: border-box;
+  padding: 10px;
+  font-size: 16px;
+}
+
+.form-signin .form-control:focus {
+  z-index: 2;
+}

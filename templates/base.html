@@ -1,0 +1,77 @@
+{% load staticfiles %}
+
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    {% block metas %}
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="apple-touch-icon" sizes="57x57" href="{% static "assets/images/apple-touch-icon-57x57.png" %}">
+        <link rel="apple-touch-icon" sizes="60x60" href="{% static "assets/images/apple-touch-icon-60x60.png" %}">
+        <link rel="apple-touch-icon" sizes="72x72" href="{% static "assets/images/apple-touch-icon-72x72.png" %}">
+        <link rel="apple-touch-icon" sizes="76x76" href="{% static "assets/images/apple-touch-icon-76x76.png" %}">
+        <link rel="apple-touch-icon" sizes="114x114" href="{% static "assets/images/apple-touch-icon-114x114.png" %}">
+        <link rel="apple-touch-icon" sizes="120x120" href="{% static "assets/images/apple-touch-icon-120x120.png" %}">
+        <link rel="apple-touch-icon" sizes="144x144" href="{% static "assets/images/apple-touch-icon-144x144.png" %}">
+        <link rel="apple-touch-icon" sizes="152x152" href="{% static "assets/images/apple-touch-icon-152x152.png" %}">
+        <link rel="apple-touch-icon" sizes="180x180" href="{% static "assets/images/apple-touch-icon-180x180.png" %}">
+        <meta name="apple-mobile-web-app-title" content="{{ PROJECT_NAME }}">
+
+        <link rel="shortcut icon" href="{% static "assets/images/favicon.ico" %}">
+        <link rel="icon" type="image/png" sizes="16x16" href="{% static "assets/images/favicon-16x16.png" %}">
+        <link rel="icon" type="image/png" sizes="32x32" href="{% static "assets/images/favicon-32x32.png" %}">
+        <link rel="icon" type="image/png" sizes="96x96" href="{% static "assets/images/favicon-96x96.png" %}">
+        <link rel="icon" type="image/png" sizes="160x160" href="{% static "assets/images/favicon-160x160.png" %}">
+        <link rel="icon" type="image/png" sizes="192x192" href="{% static "assets/images/favicon-192x192.png" %}">
+
+        <meta name="msapplication-TileColor" content="#2b5797">
+        <meta name="msapplication-TileImage" content="{% static "assets/images/mstile-144x144.png" %}">
+        <meta name="msapplication-config" content="{% static "assets/images/browserconfig.xml" %}">
+        <meta name="application-name" content="{{ PROJECT_NAME }}">
+    {% endblock metas%}
+
+    <title>{% block title %}{% endblock %} | {{ PROJECT_NAME }}</title>
+
+    {% block styles %}
+        <link rel="stylesheet" href="{% static "assets/css/bootstrap.min.css" %}">
+        <link rel="stylesheet" href="{% static "assets/css/bootstrap-theme.min.css" %}">
+        <link rel="stylesheet" type="text/css" href="{% static "assets/css/styles.css" %}">
+    {% endblock styles %}
+
+    {% block head-extra %}
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+          <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+          <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+    {% endblock head-extra %}
+</head>
+
+<body>
+    {% include 'navbar.html' %}
+
+    {% block jumbotron %}{% endblock %}
+
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+
+    <div id="footer">
+        <div class="container">
+            <img class="logo" src="{% static "assets/images/favicon-96x96.png" %}">
+            <div class="footer-text">
+                {% now "Y" as current_year %}
+                {{ FULL_PROJECT_NAME }} {{ PROJECT_VERSION }} &copy; {{ current_year }}
+            </div>
+            <a class="label label-info email-link" href="#">Написать разработчику</a>
+        </div>
+    </div>
+
+    {% block scripts %}
+        <script src="{% static "assets/js/jquery.min.js" %}"></script>
+        <script src="{% static "assets/js/bootstrap.min.js" %}"></script>
+    {% endblock scripts%}
+</body>
+
+</html>

@@ -1,0 +1,17 @@
+<div class="list-group">
+    {% for quest in quests %}
+        {% if quest.is_published or user == quest.organizer %}
+            <a href="#"
+            class="list-group-item {% if not quest.ended %}list-group-item-info{% endif %}">
+                <h4 class="list-group-item-heading">
+                    {{ quest.title|title }}
+                    <span class="pull-right label {% if quest.ended %}label-default{% else %}label-info{% endif %}">
+                        <i class="glyphicon glyphicon-time"></i>
+                        {{ quest.start|date:"d E Y в H:i" }}
+                    </span>
+                </h4>
+                <p class="list-group-item-text text-base">{{ quest.description|default:"Подробности позже."|linebreaksbr|truncatechars:100 }}</p>
+            </a>
+        {% endif %}
+    {% endfor %}
+</div>
