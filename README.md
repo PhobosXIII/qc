@@ -1,2 +1,2 @@
-# qc
+# QC
 QuestCoordination
