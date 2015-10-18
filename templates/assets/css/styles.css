@@ -84,14 +84,9 @@ table.table-cm {
     margin-right:auto;
 }
 
-.centered {
-    float: none;
-    margin: 3px auto;
-}
-
-.form-signin-inline {
-  margin-left: auto;
-  margin-right: auto;
+.errorlist.nonfield {
+    padding-left:0;
+    list-style:none;
 }
 
 .form-signin {
@@ -112,4 +107,8 @@ table.table-cm {
 
 .form-signin .form-control:focus {
   z-index: 2;
+}
+
+ul.navbar-right {
+    margin: 0 auto;
 }

@@ -16,11 +16,15 @@ Including another URLconf
 from django.conf.urls import include, url
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
+from django.contrib.auth.decorators import user_passes_test
+from django.core.urlresolvers import reverse_lazy
 from main import views as main_views
+
+login_forbidden = user_passes_test(lambda u: u.is_anonymous(), reverse_lazy('home'))
 
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
-    url(r'^login/$', auth_views.login, name='auth_login'),
+    url(r'^login/$', login_forbidden(auth_views.login), name='auth_login'),
     url(r'^logout/$', auth_views.logout, {'next_page': 'auth_login'}, name='auth_logout'),
     url(r'^password_change/$', auth_views.password_change, name='auth_password_change'),
     url(r'^password_change/done/$', auth_views.password_change_done, name='auth_password_change_done'),

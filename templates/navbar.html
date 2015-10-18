@@ -24,25 +24,10 @@
             <ul class="nav navbar-nav navbar-right">
                 {% url 'auth_login' as url_login %}
                 {% if user.is_authenticated %}
-                    <li class="navbar-text">
-                        {% if user.first_name %}
-                            {{ user.first_name }}
-                        {% else %}
-                            {{ user.username }}
-                        {% endif %}
-                    </li>
-                    <li><a href="{% url 'auth_logout' %}">Выход</a></li>
+                    <li class="navbar-text">{{ user|nice_name }}</li>
+                    <li><p class="navbar-btn"><a href="{% url 'auth_logout' %}" class="btn btn-danger">Выход</a><p></li>
                 {% elif request.path != url_login %}
-                    <form class='navbar-form navbar-right form-signin-inline' method='POST' action='{% url "auth_login" %}?next={{request.path}}'>
-                        {% csrf_token %}
-                        <div class='form-group'>
-                            <input type='text' class='form-control' name='username' placeholder='Логин' required/>
-                        </div>
-                        <div class='form-group'>
-                            <input type='password' class='form-control' name='password' placeholder='Пароль' required/>
-                        </div>
-                        <button type='submit' class='btn btn-primary'>Войти</button>
-                    </form>
+                    <li><p class="navbar-btn"><a href="{% url 'auth_login' %}" class="btn btn-default">Вход</a><p></li>
                 {% endif %}
             </ul>
           </div>

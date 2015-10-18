@@ -5,7 +5,7 @@ register = template.Library()
 
 
 @register.inclusion_tag('tags/menu_item.html', takes_context=True)
-def menu_item(context, link_text, named_url = None):
+def menu_item(context, link_text, named_url=None):
     active = False
     item_url = '#'
     request = context['request']
@@ -15,3 +15,8 @@ def menu_item(context, link_text, named_url = None):
             if request.path == item_url:
                 active = True
     return {'item_url': item_url, 'link_text': link_text, 'active': active}
+
+
+@register.filter
+def nice_name(user):
+    return user.first_name or user.username
