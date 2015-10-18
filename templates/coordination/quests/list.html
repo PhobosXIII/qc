@@ -6,7 +6,7 @@
                 <h4 class="list-group-item-heading">
                     {{ quest.title|title }}
                     <span class="pull-right label {% if quest.ended %}label-default{% else %}label-info{% endif %}">
-                        <i class="glyphicon glyphicon-time"></i>
+                        <span class="fa fa-clock-o fa-lg"></span>
                         {{ quest.start|date:"d E Y в H:i" }}
                     </span>
                 </h4>

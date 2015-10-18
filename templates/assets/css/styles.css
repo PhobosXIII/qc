@@ -112,3 +112,7 @@ table.table-cm {
 ul.navbar-right {
     margin: 0 auto;
 }
+
+.input-group {
+    margin-bottom: 5px;
+}

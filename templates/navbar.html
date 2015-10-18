@@ -24,10 +24,12 @@
             <ul class="nav navbar-nav navbar-right">
                 {% url 'auth_login' as url_login %}
                 {% if user.is_authenticated %}
-                    <li class="navbar-text">{{ user|nice_name }}</li>
-                    <li><p class="navbar-btn"><a href="{% url 'auth_logout' %}" class="btn btn-danger">Выход</a><p></li>
+                    <li class="navbar-text"><span class="fa fa-user"></span> {{ user|nice_name }}</li>
+                    <li><p class="navbar-btn"><a href="{% url 'auth_logout' %}" class="btn btn-danger">
+                        <span class="fa fa-sign-out"></span> Выход</a></p></li>
                 {% elif request.path != url_login %}
-                    <li><p class="navbar-btn"><a href="{% url 'auth_login' %}" class="btn btn-default">Вход</a><p></li>
+                    <li><p class="navbar-btn"><a href="{% url 'auth_login' %}?next={{ request.path }}" class="btn btn-default">
+                        <span class="fa fa-sign-in"></span> Вход</a></p></li>
                 {% endif %}
             </ul>
           </div>

@@ -36,6 +36,7 @@
     {% block styles %}
         <link rel="stylesheet" href="{% static "assets/css/bootstrap.min.css" %}">
         <link rel="stylesheet" href="{% static "assets/css/bootstrap-theme.min.css" %}">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
         <link rel="stylesheet" type="text/css" href="{% static "assets/css/styles.css" %}">
     {% endblock styles %}
 
@@ -62,9 +63,9 @@
             <img class="logo" src="{% static "assets/images/favicon-96x96.png" %}">
             <div class="footer-text">
                 {% now "Y" as current_year %}
-                {{ FULL_PROJECT_NAME }} {{ PROJECT_VERSION }} &copy; {{ current_year }}
+                {{ FULL_PROJECT_NAME }} {{ PROJECT_VERSION }} <span class="fa fa-copyright"></span> {{ current_year }}
             </div>
-            <a class="label label-info email-link" href="#">Написать разработчику</a>
+            <a class="label label-info email-link" href="#"><span class="fa fa-envelope"></span> Написать разработчику</a>
         </div>
     </div>
 

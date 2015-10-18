@@ -7,7 +7,8 @@
       <div class="container">
         <h1>Привет, квестер!</h1>
         <p>Создай квест. Играй в квест. Координация в помощь.</p>
-        <p><a class="btn btn-success btn-lg" href="#" role="button">Стать организатором &raquo;</a></p>
+        <p><a class="btn btn-success btn-lg" href="#" role="button"><span class="fa fa-hand-spock-o"></span>
+            Стать организатором <span class="fa fa-angle-double-right"></span></a></p>
       </div>
     </div>
 {% endblock jumbotron %}
@@ -15,15 +16,15 @@
 {% block content %}
     <div class="row">
         <div class="col-md-6">
-          <h2>Ближайшие игры</h2>
+          <h2><span class="fa fa-calendar-check-o"></span> Ближайшие игры</h2>
           {% include 'coordination/quests/list.html' with quests=coming_quests %}
-          <p><a class="btn btn-default" href="{% url 'coordination:quests' %}" role="button">Больше игр &raquo;</a></p>
+          <p><a class="btn btn-default" href="{% url 'coordination:quests' %}" role="button">Больше игр <span class="fa fa-angle-double-right"></span></a></p>
         </div>
         <div class="col-md-6">
-          <h2>Новости проекта</h2>
+          <h2><span class="fa fa-newspaper-o"></span> Новости проекта</h2>
           <p>Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh,
               ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui. </p>
-          <p><a class="btn btn-default" href="#" role="button">Другие новости &raquo;</a></p>
+          <p><a class="btn btn-default" href="#" role="button">Другие новости <span class="fa fa-angle-double-right"></span></a></p>
        </div>
     </div>
 {% endblock content %}
