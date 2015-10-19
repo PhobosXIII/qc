@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% load main_extras %}
+{% load coordination_extras %}
+
+
+{% block title %}{{ quest.title|title }} - Об игре{% endblock %}
+
+{% block content %}
+    <div class="page-header">
+            <h1>{{ quest.title|title }}</h1>
+    </div>
+
+    {% include 'coordination/quests/nav.html' %}
+
+    {% if user|is_organizer:quest %}
+        <div class="row">
+            <div class="col-sm-5 col-md-4 pull-right text-right">
+                <div class="col-xs-6">
+                    <a href="#edit" class="btn btn-primary">
+                        <span class="fa fa-edit"></span> Редактировать
+                    </a>
+                </div>
+
+                <div class="col-xs-6">
+                    <a href="#delete" class="btn btn-danger">
+                        <span class="fa fa-remove"></span> Удалить
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <br>
+
+        <div class="row">
+            <div class="center-block text-center">
+                {% if quest.is_published %}
+                    <a href="#publish" class="btn btn-danger">Снять квест с публикации</a>
+                {% else %}
+                    <a href="#publish" class="btn btn-success">Опубликовать квест</a>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+
+    <h3>
+        <span class="label {% if quest.ended %}label-default{% else %}label-info{% endif %}">
+            <span class="fa fa-clock-o fa-lg"></span>
+            {{ quest.start|date:"d E Y в H:i"|default:"Скоро" }}
+        </span>
+    </h3>
+
+    <h3>Организатор: <span class="label label-primary">{{ quest.organizer|nice_name }}</span></h3>
+
+    <div class="well">
+        {{ quest.description|default:"Подробности позже."|linebreaks }}
+    </div>
+{% endblock content %}

@@ -6,7 +6,10 @@ from coordination.models import Quest
 
 
 def user_str(self):
-    return '%s' % self.first_name
+    if self.first_name:
+        return '%s' % self.first_name
+    else:
+        return '%s' % self.username
 
 
 User.__str__ = user_str

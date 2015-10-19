@@ -1,0 +1,11 @@
+{% load main_extras %}
+
+<ul class="nav nav-pills">
+    {% menu_item 'Об игре' 'coordination:quest_detail' quest.id %}
+    {% menu_item 'Табличка' %}
+    {% if user.is_authenticated %}
+       {% menu_item 'Координация' %}
+       {% menu_item 'Управление' %}
+       {% menu_item 'История ключей' %}
+    {% endif %}
+</ul>

@@ -5,12 +5,12 @@ register = template.Library()
 
 
 @register.inclusion_tag('tags/menu_item.html', takes_context=True)
-def menu_item(context, link_text, named_url=None):
+def menu_item(context, link_text, named_url=None, *args):
     active = False
     item_url = '#'
     request = context['request']
     if named_url:
-        item_url = reverse(named_url)
+        item_url = reverse(named_url, args=args)
         if item_url:
             if request.path == item_url:
                 active = True

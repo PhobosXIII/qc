@@ -112,3 +112,9 @@ table.table-cm {
 ul.navbar-right {
     margin: 0 auto;
 }
+
+@media (min-width: 768px) {
+    .pull-right-sm {
+        float: right;
+    }
+}

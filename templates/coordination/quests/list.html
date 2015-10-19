@@ -1,15 +1,28 @@
+{% load coordination_extras %}
+
 <div class="list-group">
     {% for quest in quests %}
-        {% if quest.is_published or user == quest.organizer %}
-            <a href="#"
+        {% if quest.is_published or user|is_organizer:quest %}
+            <a href="{% url 'coordination:quest_detail' quest.id %}"
             class="list-group-item {% if not quest.ended %}list-group-item-info{% endif %}">
-                <h4 class="list-group-item-heading">
-                    {{ quest.title|title }}
-                    <span class="pull-right label {% if quest.ended %}label-default{% else %}label-info{% endif %}">
-                        <span class="fa fa-clock-o fa-lg"></span>
-                        {{ quest.start|date:"d E Y в H:i" }}
-                    </span>
-                </h4>
+                <div class="row">
+                    <div class="list-group-item-heading">
+                        <div class="col-xs-12 col-sm-11">
+                             <h4>
+                                 {% if user|is_organizer_only:quest %}<span class="fa fa-user-secret"></span>{% endif %}
+                                 {{ quest.title|title }}
+                             </h4>
+                        </div>
+                        <div class="col-sm-1">
+                            <h4>
+                                <span class="pull-right-sm label {% if quest.ended %}label-default{% else %}label-info{% endif %}">
+                                    <span class="fa fa-clock-o fa-lg"></span>
+                                    {{ quest.start|date:"d E Y в H:i"|default:"Скоро" }}
+                                </span>
+                            </h4>
+                        </div>
+                    </div>
+                </div>
                 <p class="list-group-item-text text-base">{{ quest.description|default:"Подробности позже."|linebreaksbr|truncatechars:100 }}</p>
             </a>
         {% endif %}
