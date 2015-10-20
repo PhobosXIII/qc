@@ -43,7 +43,7 @@
     {% endif %}
 
     <h3>
-        <span class="label {% if quest.ended %}label-default{% else %}label-info{% endif %}">
+        <span class="label {{ quest.ended|yesno:'label-default, label-info' }}">
             <span class="fa fa-clock-o fa-lg"></span>
             {{ quest.start|date:"d E Y в H:i"|default:"Скоро" }}
         </span>

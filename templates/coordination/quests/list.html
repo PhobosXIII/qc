@@ -15,7 +15,7 @@
                         </div>
                         <div class="col-sm-1">
                             <h4>
-                                <span class="pull-right-sm label {% if quest.ended %}label-default{% else %}label-info{% endif %}">
+                                <span class="pull-right-sm label {{ quest.ended|yesno:'label-default, label-info' }}">
                                     <span class="fa fa-clock-o fa-lg"></span>
                                     {{ quest.start|date:"d E Y в H:i"|default:"Скоро" }}
                                 </span>
