@@ -23,7 +23,7 @@
     <div class="row">
         <div class="col-lg-6">
           <h2><span class="fa fa-calendar-check-o"></span> Ближайшие игры</h2>
-          {% include 'coordination/quests/list.html' with quests=coming_quests %}
+          {% include 'coordination/quests/_list.html' with quests=coming_quests %}
           <p><a class="btn btn-default" href="{% url 'coordination:quests' %}">
               Больше игр <span class="fa fa-angle-double-right"></span></a></p>
         </div>

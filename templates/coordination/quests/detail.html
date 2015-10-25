@@ -26,7 +26,7 @@
             <h1>{{ quest.title|title }}</h1>
     </div>
 
-    {% include 'coordination/quests/nav.html' %}
+    {% include 'coordination/quests/_nav.html' %}
 
     {% if user|is_organizer:quest or user.is_superuser %}
         <div class="row">
