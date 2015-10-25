@@ -2,14 +2,21 @@
 
 <div class="list-group">
     {% for quest in quests %}
-        {% if quest.is_published or user|is_organizer:quest %}
+        {% if quest.is_published or user|is_organizer:quest or user.is_superuser %}
             <a href="{% url 'coordination:quest_detail' quest.id %}"
             class="list-group-item {% if not quest.ended %}list-group-item-info{% endif %}">
                 <div class="row">
                     <div class="list-group-item-heading">
-                        <div class="col-xs-12 col-sm-11">
+                        <div class="col-sm-1">
+                            {% if not quest.is_published %}
+                                <h4>
+                                    <span class="pull-left-sm label label-warning">Не опубликован</span>
+                                </h4>
+                            {% endif %}
+                        </div>
+                        <div class="col-xs-12 col-sm-10">
                              <h4>
-                                 {% if user|is_organizer_only:quest %}<span class="fa fa-user-secret"></span>{% endif %}
+                                 {% if user|is_organizer:quest %}<span class="fa fa-user-secret"></span>{% endif %}
                                  {{ quest.title|title }}
                              </h4>
                         </div>
@@ -23,7 +30,9 @@
                         </div>
                     </div>
                 </div>
-                <p class="list-group-item-text text-base">{{ quest.description|default:"Подробности позже."|linebreaksbr|truncatechars:100 }}</p>
+                <p class="list-group-item-text text-base">
+                    {{ quest.description|default:"Подробности позже."|linebreaksbr|truncatechars:100 }}
+                </p>
             </a>
         {% endif %}
     {% endfor %}

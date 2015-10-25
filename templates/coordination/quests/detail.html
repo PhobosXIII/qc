@@ -6,25 +6,42 @@
 {% block title %}{{ quest.title|title }} - Об игре{% endblock %}
 
 {% block content %}
+    <div class="modal fade" id="confirm" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h4 class="modal-title" id="myModalLabel">Вы уверены?</h4>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Отмена</button>
+                    <a class="btn btn-danger btn-ok">Подтвердить</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="page-header">
             <h1>{{ quest.title|title }}</h1>
     </div>
 
     {% include 'coordination/quests/nav.html' %}
 
-    {% if user|is_organizer:quest %}
+    {% if user|is_organizer:quest or user.is_superuser %}
         <div class="row">
             <div class="col-sm-5 col-md-4 pull-right text-right">
                 <div class="col-xs-6">
-                    <a href="#edit" class="btn btn-primary">
-                        <span class="fa fa-edit"></span> Редактировать
+                    <a href="{% url 'coordination:quest_edit' quest.id %}" class="btn btn-primary">
+                        <span class="fa fa-edit fa-lg"></span> Редактировать
                     </a>
                 </div>
 
                 <div class="col-xs-6">
-                    <a href="#delete" class="btn btn-danger">
-                        <span class="fa fa-remove"></span> Удалить
-                    </a>
+                    <button data-href="{% url 'coordination:quest_delete' quest.id %}" data-toggle="modal"
+                            data-target="#confirm" class="btn btn-danger">
+                        <span class="fa fa-trash fa-lg"></span> Удалить
+                    </button>
                 </div>
             </div>
         </div>
@@ -33,10 +50,15 @@
 
         <div class="row">
             <div class="center-block text-center">
+                {% url 'coordination:quest_publish' quest.id as publish_url %}
                 {% if quest.is_published %}
-                    <a href="#publish" class="btn btn-danger">Снять квест с публикации</a>
+                     <button data-href="{{ publish_url }}" data-toggle="modal" data-target="#confirm" class="btn btn-danger">
+                         <span class="fa fa-eye-slash fa-lg"></span> Снять квест с публикации
+                     </button>
                 {% else %}
-                    <a href="#publish" class="btn btn-success">Опубликовать квест</a>
+                    <button data-href="{{ publish_url }}" data-toggle="modal" data-target="#confirm" class="btn btn-success">
+                        <span class="fa fa-eye fa-lg"></span> Опубликовать квест
+                    </button>
                 {% endif %}
             </div>
         </div>
@@ -55,3 +77,12 @@
         {{ quest.description|default:"Подробности позже."|linebreaks }}
     </div>
 {% endblock content %}
+
+{% block scripts %}
+    {{ block.super }}
+    <script>
+        $('#confirm').on('show.bs.modal', function(e) {
+            $(this).find('.btn-ok').attr('href', $(e.relatedTarget).data('href'));
+        });
+    </script>
+{% endblock %}

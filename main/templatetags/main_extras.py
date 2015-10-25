@@ -1,5 +1,6 @@
 from django import template
 from django.core.urlresolvers import reverse
+from django.utils.encoding import force_text
 
 register = template.Library()
 
@@ -11,12 +12,20 @@ def menu_item(context, link_text, named_url=None, *args):
     request = context['request']
     if named_url:
         item_url = reverse(named_url, args=args)
-        if item_url:
-            if request.path == item_url:
-                active = True
+        if item_url and request.path == item_url:
+            active = True
     return {'item_url': item_url, 'link_text': link_text, 'active': active}
 
 
 @register.filter
 def nice_name(user):
     return user.first_name or user.username
+
+
+@register.filter
+def in_group(user, groups):
+    if user.is_authenticated():
+        group_list = force_text(groups).split(',')
+        return bool(user.groups.filter(name__in=group_list).values('name'))
+    else:
+        return False

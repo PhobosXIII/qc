@@ -117,4 +117,12 @@ ul.navbar-right {
     .pull-right-sm {
         float: right;
     }
+    .pull-left-sm {
+        float: left;
+    }
+}
+
+.btn-responsive {
+    white-space: normal !important;
+    word-wrap: break-word;
 }

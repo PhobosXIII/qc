@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load main_extras %}
 
 {% block content %}
     <div class="page-header">
@@ -7,15 +8,15 @@
 
     <div class="row">
         <div class="col-xs-6 col-xs-offset-3 text-center">
-            {% if user.is_authenticated %}
-                <a href="#" class="btn btn-primary">
+            {% if user|in_group:'organizers' %}
+                <a href="{% url 'coordination:quest_new' %}" class="btn btn-success">
                     <span class="fa fa-plus"></span>
                     Создать квест
                 </a>
             {% else %}
-                <a href="{% url 'auth_login' %}?next={{request.path}}" class="btn btn-warning">
+                <a href="{% url 'auth_login' %}?next={{request.path}}" class="btn btn-warning btn-responsive">
                     <span class="fa fa-info"></span>
-                    Войдите в систему, чтобы создать квест!
+                    Войдите в систему как организатор, чтобы создать квест!
                 </a>
             {% endif %}
         </div>
