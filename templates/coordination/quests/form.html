@@ -1,5 +1,11 @@
 {% extends 'base.html' %}
 {% load crispy_forms_tags %}
+{% load staticfiles %}
+
+{% block styles %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static "assets/css/bootstrap-datetimepicker.min.css" %}">
+{% endblock styles %}
 
 {% block content %}
     <div class="page-header">
@@ -18,3 +24,9 @@
         " class="btn btn-lg btn-default pull-right"><span class="fa fa-close"></span> Отмена</a>
     </form>
 {% endblock content %}
+
+{% block scripts %}
+    {{ block.super }}
+    <script src="{% static "assets/js/moment-with-locales.min.js" %}"></script>
+    <script src="{% static "assets/js/bootstrap-datetimepicker.min.js" %}"></script>
+{% endblock scripts %}

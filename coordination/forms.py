@@ -1,6 +1,8 @@
+from datetime import datetime
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Field
-from django.forms import ModelForm, TextInput
+from django.forms import ModelForm, CharField
+from django.forms.widgets import TextInput
 from coordination.models import Quest
 
 
