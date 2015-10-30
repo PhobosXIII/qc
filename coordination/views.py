@@ -53,7 +53,7 @@ def edit_quest(request, quest_id):
 @login_required
 def delete_quest(request, quest_id):
     quest = get_object_or_404(Quest, pk=quest_id)
-    request = is_quest_organizer(request, quest)
+    is_quest_organizer(request, quest)
     quest.delete()
     return redirect('coordination:quests')
 
@@ -61,6 +61,6 @@ def delete_quest(request, quest_id):
 @login_required
 def publish_quest(request, quest_id):
     quest = get_object_or_404(Quest, pk=quest_id)
-    request = is_quest_organizer(request, quest)
+    is_quest_organizer(request, quest)
     quest.publish()
     return redirect('coordination:quest_detail', quest_id=quest_id)

@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import models
+from django.utils import timezone
 
 
 class Quest(models.Model):
@@ -22,3 +23,8 @@ class Quest(models.Model):
     def publish(self):
         self.is_published = not self.is_published
         self.save()
+
+    @staticmethod
+    def coming_quests():
+        now = timezone.now()
+        return Quest.objects.filter(is_published=True, start__gte=now)
