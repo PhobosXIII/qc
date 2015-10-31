@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.models import User
 from django.db import models
 from django.forms import SelectMultiple
-from coordination.models import Quest
+from coordination.models import Quest, Mission
 
 
 def user_str(self):
@@ -22,4 +22,12 @@ class QuestAdmin(admin.ModelAdmin):
     ordering = ['-start']
 
 
+class MissionAdmin(admin.ModelAdmin):
+    fields = ('quest', ('name', 'order_number'), 'name_in_table', 'text', 'picture', 'key')
+    list_display = ('__str__', 'quest', )
+    list_filter = ('quest', )
+    ordering = ('quest', 'order_number')
+
+
 admin.site.register(Quest, QuestAdmin)
+admin.site.register(Mission, MissionAdmin)

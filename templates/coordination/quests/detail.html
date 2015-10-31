@@ -6,21 +6,7 @@
 {% block title %}{{ quest.title|title }} - Об игре{% endblock %}
 
 {% block content %}
-    <div class="modal fade" id="confirm" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-
-                <div class="modal-header">
-                    <h4 class="modal-title" id="myModalLabel">Вы уверены?</h4>
-                </div>
-
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Отмена</button>
-                    <a class="btn btn-danger btn-ok">Подтвердить</a>
-                </div>
-            </div>
-        </div>
-    </div>
+    {% include 'coordination/_confirm_dialog.html' %}
 
     <div class="page-header">
             <h1>{{ quest.title|title }}</h1>
@@ -52,7 +38,7 @@
             <div class="center-block text-center">
                 {% url 'coordination:quest_publish' quest.id as publish_url %}
                 {% if quest.is_published %}
-                     <button data-href="{{ publish_url }}" data-toggle="modal" data-target="#confirm" class="btn btn-danger">
+                     <button data-href="{{ publish_url }}" data-toggle="modal" data-target="#confirm" class="btn btn-warning">
                          <span class="fa fa-eye-slash fa-lg"></span> Снять квест с публикации
                      </button>
                 {% else %}
@@ -73,16 +59,31 @@
 
     <h3>Организатор: <span class="label label-primary">{{ quest.organizer|nice_name }}</span></h3>
 
-    <div class="well">
+    <div class="well text-base">
         {{ quest.description|default:"Подробности позже."|linebreaks }}
     </div>
-{% endblock content %}
 
-{% block scripts %}
-    {{ block.super }}
-    <script>
-        $('#confirm').on('show.bs.modal', function(e) {
-            $(this).find('.btn-ok').attr('href', $(e.relatedTarget).data('href'));
-        });
-    </script>
-{% endblock %}
+    {% if user|is_organizer:quest or user.is_superuser %}
+        <h3>Задания</h3>
+        <div class="row">
+            <div class="col-xs-6 col-xs-offset-3 text-center">
+                <a href="{% url 'coordination:mission_new' quest.id %}" class="btn btn-success">
+                    <span class="fa fa-plus fa-lg"></span> Добавить задание
+                </a>
+            </div>
+        </div>
+        <br>
+        <div class="row">
+            <div class="col-xs-10 col-xs-offset-1 col-sm-8 col-sm-offset-2 col-md-6 col-md-offset-3">
+                {% include 'coordination/missions/_list.html' %}
+            </div>
+        </div>
+    {% elif quest.ended %}
+        <h3>Задания</h3>
+        <div class="row">
+            <div class="col-xs-10 col-xs-offset-1 col-sm-8 col-sm-offset-2 col-md-6 col-md-offset-3">
+                {% include 'coordination/missions/_list.html' %}
+            </div>
+        </div>
+    {% endif %}
+{% endblock content %}

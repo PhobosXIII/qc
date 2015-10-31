@@ -10,13 +10,11 @@
         <div class="col-xs-6 col-xs-offset-3 text-center">
             {% if user|in_group:'organizers' %}
                 <a href="{% url 'coordination:quest_new' %}" class="btn btn-success">
-                    <span class="fa fa-plus"></span>
-                    Создать квест
+                    <span class="fa fa-plus fa-lg"></span> Создать квест
                 </a>
             {% else %}
                 <a href="{% url 'auth_login' %}?next={{request.path}}" class="btn btn-warning btn-responsive">
-                    <span class="fa fa-info"></span>
-                    Войдите в систему как организатор, чтобы создать квест!
+                    <span class="fa fa-info"></span> Войдите в систему как организатор, чтобы создать квест!
                 </a>
             {% endif %}
         </div>

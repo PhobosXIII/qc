@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.utils import timezone
 
@@ -28,3 +29,36 @@ class Quest(models.Model):
     def coming_quests():
         now = timezone.now()
         return Quest.objects.filter(is_published=True, start__gte=now)
+
+    def missions(self):
+        return Mission.objects.filter(quest=self)
+
+    def next_mission_number(self):
+        return len(self.missions())
+
+
+class Mission(models.Model):
+    quest = models.ForeignKey(Quest, verbose_name='квест')
+    name = models.CharField('название', max_length=100, blank=True)
+    name_in_table = models.CharField('название в табличке', max_length=100, blank=True)
+    text = models.TextField('текст задания', blank=True)
+    picture = models.URLField('картинка', blank=True)
+    key = models.CharField('ключ', max_length=50, blank=True)
+    order_number = models.PositiveSmallIntegerField('номер задания', validators=[MinValueValidator(0), MaxValueValidator(99)])
+
+    class Meta:
+        verbose_name = 'задание'
+        verbose_name_plural = 'задания'
+        ordering = ['order_number']
+
+    @property
+    def is_start(self):
+        return self.order_number == 0
+
+    def __str__(self):
+        if self.is_start:
+            return 'Старт'
+        else:
+            return 'Задание {0}{1}{2}'.format(self.order_number,
+                                              ". " + self.name if self.name else "",
+                                              " (" + self.name_in_table + ")" if self.name_in_table else "")

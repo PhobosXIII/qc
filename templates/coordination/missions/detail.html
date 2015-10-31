@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% load coordination_extras %}
+
+{% block title %}{{ quest.title|title }}. {{ mission }}{% endblock %}
+
+{% block content %}
+    {% include 'coordination/_confirm_dialog.html' %}
+
+    <div class="page-header">
+        <h1><a href="{% url 'coordination:quest_detail' quest.id %}">{{ quest.title|title }}</a>. {{ mission }}</h1>
+    </div>
+
+    {% if user|is_organizer:quest or user.is_superuser %}
+        <div class="row">
+            <div class="col-sm-5 col-md-4 pull-right text-right">
+                <div class="col-xs-6">
+                    <a href="{% url 'coordination:mission_edit' mission.id %}" class="btn btn-primary">
+                        <span class="fa fa-edit fa-lg"></span> Редактировать
+                    </a>
+                </div>
+
+                {% if not mission.is_start %}
+                    <div class="col-xs-6">
+                        <button data-href="{% url 'coordination:mission_delete' mission.id %}" data-toggle="modal"
+                                data-target="#confirm" class="btn btn-danger">
+                            <span class="fa fa-trash fa-lg"></span> Удалить
+                        </button>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+
+    {% if mission.text %}
+        <br>
+        <div class="well well-sm text-base">
+            {{ mission.text|linebreaks }}
+        </div>
+    {% endif %}
+
+    <br>
+
+    <div class="well well-sm">
+        <p class="text-base">Ключ: {{ mission.key|default:"Не указан" }}</p>
+    </div>
+{% endblock content %}

@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <div class="page-header">
+        <h1>{% block title %}{{ form.instance.pk|yesno:'Редактирование задания, Новое задание' }}{% endblock %}</h1>
+    </div>
+
+    <form class="col-md-6 col-md-offset-3" action="" method="post">
+        {% crispy form %}
+        <button type="submit" class="btn btn-lg btn-success pull-left"><span class="fa fa-check"></span> Готово</button>
+        <a href="
+        {% if form.instance.pk %}
+            {% url 'coordination:mission_detail' form.instance.pk %}
+        {% else %}
+            {% url 'coordination:quest_detail' quest.id%}
+        {% endif %}
+        " class="btn btn-lg btn-default pull-right"><span class="fa fa-close"></span> Отмена</a>
+    </form>
+{% endblock content %}

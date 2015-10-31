@@ -1,0 +1,8 @@
+<div class="list-group">
+    {% for mission in missions %}
+        <a href="{% url 'coordination:mission_detail' mission.id %}"
+           class="list-group-item text-base text-left">
+            {{ mission }}
+        </a>
+    {% endfor %}
+</div>

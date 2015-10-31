@@ -4,7 +4,7 @@
     {% for quest in quests %}
         {% if quest.is_published or user|is_organizer:quest or user.is_superuser %}
             <a href="{% url 'coordination:quest_detail' quest.id %}"
-            class="list-group-item {% if not quest.ended %}list-group-item-info{% endif %}">
+               class="list-group-item {% if not quest.ended %}list-group-item-info{% endif %}">
                 <div class="row">
                     <div class="list-group-item-heading">
                         <div class="col-sm-1">
