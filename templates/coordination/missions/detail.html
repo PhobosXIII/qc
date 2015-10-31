@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load coordination_extras %}
+{% load crispy_forms_tags %}
 
 {% block title %}{{ quest.title|title }}. {{ mission }}{% endblock %}
 
@@ -43,4 +44,16 @@
     <div class="well well-sm">
         <p class="text-base">Ключ: {{ mission.key|default:"Не указан" }}</p>
     </div>
+
+    {% if hint_form %}
+        <h3>Подсказки</h3>
+        {% include 'coordination/hints/_list.html' %}
+        {% if user|is_organizer:quest or user.is_superuser%}
+            <h4>Добавить подсказку</h4>
+            <form class="col-md-6 col-md-offset-3" action="" method="post">
+                {% crispy hint_form %}
+                <button type="submit" class="btn btn-lg btn-success"><span class="fa fa-check"></span> Готово</button>
+            </form>
+        {% endif %}
+    {% endif %}
 {% endblock content %}

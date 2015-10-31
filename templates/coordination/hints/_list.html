@@ -1,0 +1,36 @@
+{% load coordination_extras %}
+
+<div class="row">
+    {% for hint in hints %}
+        <div class="col-md-4">
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <h4 class="panel-title">
+                        {{ hint }}
+                        <span class="pull-right"><span class="fa fa-clock-o fa-lg"></span> {{ hint.delay }}</span>
+                    </h4>
+                </div>
+                <div class="panel-body">
+                    <p class="text-base">{{ hint.text }}</p>
+                </div>
+                {% if user|is_organizer:quest or user.is_superuser %}
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="col-md-6 pull-left">
+                                <a href="{% url 'coordination:hint_edit' hint.id %}" class="btn btn-sm btn-primary btn-block">
+                                    <span class="fa fa-edit fa-lg"></span> Редактировать</a>
+                            </div>
+
+                            <div class="col-md-6 pull-right">
+                                <button data-href="{% url 'coordination:hint_delete' hint.id %}" data-toggle="modal"
+                                        data-target="#confirm" class="btn btn-sm btn-danger">
+                                    <span class="fa fa-trash fa-lg"></span> Удалить
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    {% endfor %}
+</div>

@@ -1,7 +1,7 @@
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Field, HTML, Div, Hidden, Row
 from django.forms import ModelForm
-from coordination.models import Quest, Mission
+from coordination.models import Quest, Mission, Hint
 
 
 class QuestForm(ModelForm):
@@ -52,3 +52,24 @@ class MissionForm(ModelForm):
                 'text',
                 'picture',
             )
+
+
+class HintForm(ModelForm):
+    class Meta:
+        model = Hint
+        fields = ['text', 'delay', 'order_number']
+
+    def __init__(self, *args, **kwargs):
+        next_number = kwargs.pop('next_number', None)
+        super(HintForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.form_tag = False
+        self.helper.html5_required = True
+        self.helper.layout = Layout(
+            Row(
+                Div(Field('order_number', value=next_number),
+                    css_class='col-xs-6 col-sm-3 col-md-4'),
+                Div('delay', css_class='col-xs-6 col-sm-3 col-md-4')
+            ),
+            'text',
+        )

@@ -23,7 +23,15 @@ mission_patterns = [
     ])),
 ]
 
+hint_patterns = [
+    url(r'^hints/(?P<hint_id>[0-9]+)/', include([
+        url(r'^edit/$', views.edit_hint, name='hint_edit'),
+        url(r'^delete/$', views.delete_hint, name='hint_delete'),
+    ])),
+]
+
 urlpatterns = [
     url(r'^', include(quest_patterns)),
     url(r'^', include(mission_patterns)),
+    url(r'^', include(hint_patterns)),
 ]

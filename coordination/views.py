@@ -1,7 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404, redirect
-from coordination.forms import QuestForm, MissionForm
-from coordination.models import Quest, Mission
+from coordination.forms import QuestForm, MissionForm, HintForm
+from coordination.models import Quest, Mission, Hint
 from coordination.utils import is_quest_organizer, is_organizer
 
 
@@ -72,9 +72,22 @@ def publish_quest(request, quest_id):
 def detail_mission(request, mission_id):
     mission = get_object_or_404(Mission, pk=mission_id)
     quest = mission.quest
-    if not quest.ended:
+    if not quest.is_published or not quest.ended:
         request = is_quest_organizer(request, quest)
-    context = {'quest': quest, 'mission': mission}
+    hints = None
+    hint_form = None
+    if not mission.is_start:
+        hints = mission.hints()
+        if request.method == 'POST':
+            hint_form = HintForm(request.POST)
+            if hint_form.is_valid():
+                hint = hint_form.save(commit=False)
+                hint.mission = mission
+                hint.save()
+                return redirect('coordination:mission_detail', mission_id=mission.pk)
+        else:
+            hint_form = HintForm(next_number=mission.next_hint_number())
+    context = {'quest': quest, 'mission': mission, 'hints': hints, 'hint_form': hint_form}
     return render(request, 'coordination/missions/detail.html', context)
 
 
@@ -104,8 +117,6 @@ def edit_mission(request, mission_id):
         if form.is_valid():
             form.save()
             return redirect('coordination:mission_detail', mission_id=mission_id)
-        else:
-            print('ooppss!')
     else:
         form = MissionForm(instance=mission)
     context = {'form': form}
@@ -119,3 +130,29 @@ def delete_mission(request, mission_id):
     is_quest_organizer(request, quest)
     mission.delete()
     return redirect('coordination:quest_detail', quest_id=quest.pk)
+
+
+# Hints
+@login_required()
+def edit_hint(request, hint_id):
+    hint = get_object_or_404(Hint, pk=hint_id)
+    request = is_quest_organizer(request, hint.mission.quest)
+    if request.method == "POST":
+        form = HintForm(request.POST, instance=hint)
+        if form.is_valid():
+            form.save()
+            return redirect('coordination:mission_detail', mission_id=hint.mission.id)
+    else:
+        form = HintForm(instance=hint)
+    context = {'form': form}
+    return render(request, 'coordination/hints/form.html', context)
+
+
+@login_required
+def delete_hint(request, hint_id):
+    hint = get_object_or_404(Hint, pk=hint_id)
+    mission = hint.mission
+    is_quest_organizer(request, mission.quest)
+    hint.delete()
+    return redirect('coordination:mission_detail', mission_id=mission.id)
+

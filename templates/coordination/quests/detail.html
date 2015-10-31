@@ -78,7 +78,7 @@
                 {% include 'coordination/missions/_list.html' %}
             </div>
         </div>
-    {% elif quest.ended %}
+    {% elif quest.ended and missions %}
         <h3>Задания</h3>
         <div class="row">
             <div class="col-xs-10 col-xs-offset-1 col-sm-8 col-sm-offset-2 col-md-6 col-md-offset-3">

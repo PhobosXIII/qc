@@ -62,3 +62,24 @@ class Mission(models.Model):
             return 'Задание {0}{1}{2}'.format(self.order_number,
                                               ". " + self.name if self.name else "",
                                               " (" + self.name_in_table + ")" if self.name_in_table else "")
+
+    def hints(self):
+        return Hint.objects.filter(mission=self)
+
+    def next_hint_number(self):
+        return len(self.hints()) + 1
+
+
+class Hint(models.Model):
+    mission = models.ForeignKey(Mission, verbose_name='задание')
+    text = models.CharField('подсказка', max_length=255)
+    delay = models.PositiveSmallIntegerField('время отправления', validators=[MinValueValidator(1), MaxValueValidator(90)])
+    order_number = models.PositiveSmallIntegerField('номер подсказки', validators=[MinValueValidator(1), MaxValueValidator(99)])
+
+    class Meta:
+        verbose_name = 'подсказка'
+        verbose_name_plural = 'подсказки'
+        ordering = ['order_number']
+
+    def __str__(self):
+        return 'Подсказка {0}'.format(self.order_number)
