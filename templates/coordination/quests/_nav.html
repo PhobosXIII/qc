@@ -1,11 +1,21 @@
 {% load main_extras %}
+{% load coordination_extras %}
 
 <ul class="nav nav-pills">
     {% menu_item 'Об игре' 'coordination:quest_detail' quest.id %}
-    {% menu_item 'Табличка' %}
-    {% if user.is_authenticated %}
+
+    {% if quest.ended %}
+        {% menu_item 'Итоги' %}
+    {% endif %}
+
+    {% if user|is_player:quest %}
        {% menu_item 'Координация' %}
+    {% endif %}
+
+    {% if user|is_organizer:quest or user.is_superuser %}
+       {% menu_item 'Игроки' %}
        {% menu_item 'Управление' %}
+       {% menu_item 'Таблички' %}
        {% menu_item 'История ключей' %}
     {% endif %}
 </ul>
