@@ -8,8 +8,8 @@
 
     <form class="col-md-6 col-md-offset-3" action="" method="post">
         {% crispy form %}
-        <button type="submit" class="btn btn-lg btn-success pull-left"><span class="fa fa-check"></span> Готово</button>
-        <a href="{% url 'coordination:mission_detail' form.instance.mission_id %}" class="btn btn-lg btn-default pull-right">
+        <button type="submit" class="btn btn-lg btn-success"><span class="fa fa-check"></span> Готово</button>
+        <a href="{% url 'coordination:mission_detail' form.instance.mission_id %}" class="btn btn-lg btn-default">
             <span class="fa fa-close"></span> Отмена</a>
     </form>
 {% endblock content %}

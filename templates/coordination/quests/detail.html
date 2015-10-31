@@ -15,39 +15,29 @@
     {% include 'coordination/quests/_nav.html' %}
 
     {% if user|is_organizer:quest or user.is_superuser %}
-        <div class="row">
-            <div class="col-sm-5 col-md-4 pull-right text-right">
-                <div class="col-xs-6">
-                    <a href="{% url 'coordination:quest_edit' quest.id %}" class="btn btn-primary">
-                        <span class="fa fa-edit fa-lg"></span> Редактировать
-                    </a>
-                </div>
+        <p class="text-right">
+            <a href="{% url 'coordination:quest_edit' quest.id %}" class="btn btn-primary">
+                <span class="fa fa-edit fa-lg"></span> Редактировать
+            </a>
 
-                <div class="col-xs-6">
-                    <button data-href="{% url 'coordination:quest_delete' quest.id %}" data-toggle="modal"
-                            data-target="#confirm" class="btn btn-danger">
-                        <span class="fa fa-trash fa-lg"></span> Удалить
-                    </button>
-                </div>
-            </div>
-        </div>
+            <button data-href="{% url 'coordination:quest_delete' quest.id %}" data-toggle="modal"
+                    data-target="#confirm" class="btn btn-danger">
+                <span class="fa fa-trash fa-lg"></span> Удалить
+            </button>
+        </p>
 
-        <br>
-
-        <div class="row">
-            <div class="center-block text-center">
-                {% url 'coordination:quest_publish' quest.id as publish_url %}
-                {% if quest.is_published %}
-                     <button data-href="{{ publish_url }}" data-toggle="modal" data-target="#confirm" class="btn btn-warning">
-                         <span class="fa fa-eye-slash fa-lg"></span> Снять квест с публикации
-                     </button>
-                {% else %}
-                    <button data-href="{{ publish_url }}" data-toggle="modal" data-target="#confirm" class="btn btn-success">
-                        <span class="fa fa-eye fa-lg"></span> Опубликовать квест
-                    </button>
-                {% endif %}
-            </div>
-        </div>
+        <p class="text-right">
+            {% url 'coordination:quest_publish' quest.id as publish_url %}
+            {% if quest.is_published %}
+                 <button data-href="{{ publish_url }}" data-toggle="modal" data-target="#confirm" class="btn btn-warning">
+                     <span class="fa fa-eye-slash fa-lg"></span> Снять квест с публикации
+                 </button>
+            {% else %}
+                <button data-href="{{ publish_url }}" data-toggle="modal" data-target="#confirm" class="btn btn-success">
+                    <span class="fa fa-eye fa-lg"></span> Опубликовать квест
+                </button>
+            {% endif %}
+        </p>
     {% endif %}
 
     <h3>
@@ -65,14 +55,12 @@
 
     {% if user|is_organizer:quest or user.is_superuser %}
         <h3>Задания</h3>
-        <div class="row">
-            <div class="col-xs-6 col-xs-offset-3 text-center">
-                <a href="{% url 'coordination:mission_new' quest.id %}" class="btn btn-success">
-                    <span class="fa fa-plus fa-lg"></span> Добавить задание
-                </a>
-            </div>
-        </div>
-        <br>
+        <p class=" text-center">
+            <a href="{% url 'coordination:mission_new' quest.id %}" class="btn btn-success">
+                <span class="fa fa-plus fa-lg"></span> Добавить задание
+            </a>
+        </p>
+
         <div class="row">
             <div class="col-xs-10 col-xs-offset-1 col-sm-8 col-sm-offset-2 col-md-6 col-md-offset-3">
                 {% include 'coordination/missions/_list.html' %}

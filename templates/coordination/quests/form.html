@@ -14,14 +14,14 @@
 
     <form class="col-md-6 col-md-offset-3" action="" method="post">
         {% crispy form %}
-        <button type="submit" class="btn btn-lg btn-success pull-left"><span class="fa fa-check"></span> Готово</button>
+        <button type="submit" class="btn btn-lg btn-success"><span class="fa fa-check"></span> Готово</button>
         <a href="
         {% if form.instance.pk %}
             {% url 'coordination:quest_detail' form.instance.pk %}
         {% else %}
             {% url 'coordination:quests' %}
         {% endif %}
-        " class="btn btn-lg btn-default pull-right"><span class="fa fa-close"></span> Отмена</a>
+        " class="btn btn-lg btn-default"><span class="fa fa-close"></span> Отмена</a>
     </form>
 {% endblock content %}
 

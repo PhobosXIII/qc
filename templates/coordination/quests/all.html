@@ -6,24 +6,20 @@
         <h1>{% block title %}Квесты{% endblock %}</h1>
     </div>
 
-    <div class="row">
-        <div class="col-xs-6 col-xs-offset-3 text-center">
-            {% if user|in_group:'organizers' %}
-                <a href="{% url 'coordination:quest_new' %}" class="btn btn-success">
-                    <span class="fa fa-plus fa-lg"></span> Создать квест
-                </a>
-            {% else %}
-                <a href="{% url 'auth_login' %}?next={{request.path}}" class="btn btn-warning btn-responsive">
-                    <span class="fa fa-info"></span> Войдите в систему как организатор, чтобы создать квест!
-                </a>
-            {% endif %}
-        </div>
-    </div>
-
-    <br>
+    <p class=" text-center">
+        {% if user|in_group:'organizers' %}
+            <a href="{% url 'coordination:quest_new' %}" class="btn btn-success">
+                <span class="fa fa-plus fa-lg"></span> Создать квест
+            </a>
+        {% else %}
+            <a href="{% url 'auth_login' %}?next={{request.path}}" class="btn btn-warning btn-responsive">
+                <span class="fa fa-info"></span> Войдите в систему как организатор, чтобы создать квест!
+            </a>
+        {% endif %}
+    </p>
 
     <div class="row">
-        <div class="col-xs-10 col-xs-offset-1">
+        <div class="col-md-10 col-md-offset-1">
             {% include 'coordination/quests/_list.html' %}
         </div>
     </div>

@@ -12,24 +12,17 @@
     </div>
 
     {% if user|is_organizer:quest or user.is_superuser %}
-        <div class="row">
-            <div class="col-sm-5 col-md-4 pull-right text-right">
-                <div class="col-xs-6">
-                    <a href="{% url 'coordination:mission_edit' mission.id %}" class="btn btn-primary">
-                        <span class="fa fa-edit fa-lg"></span> Редактировать
-                    </a>
-                </div>
+        <p class="text-right">
+                <a href="{% url 'coordination:mission_edit' mission.id %}" class="btn btn-primary">
+                    <span class="fa fa-edit fa-lg"></span> Редактировать
+                </a>
 
-                {% if not mission.is_start %}
-                    <div class="col-xs-6">
-                        <button data-href="{% url 'coordination:mission_delete' mission.id %}" data-toggle="modal"
-                                data-target="#confirm" class="btn btn-danger">
-                            <span class="fa fa-trash fa-lg"></span> Удалить
-                        </button>
-                    </div>
-                {% endif %}
-            </div>
-        </div>
+            {% if not mission.is_start %}
+                    <button data-href="{% url 'coordination:mission_delete' mission.id %}" data-toggle="modal"
+                            data-target="#confirm" class="btn btn-danger">
+                        <span class="fa fa-trash fa-lg"></span> Удалить
+                    </button>
+            {% endif %}
     {% endif %}
 
     {% if mission.text %}
@@ -52,7 +45,7 @@
             <h4>Добавить подсказку</h4>
             <form class="col-md-6 col-md-offset-3" action="" method="post">
                 {% crispy hint_form %}
-                <button type="submit" class="btn btn-lg btn-success"><span class="fa fa-check"></span> Готово</button>
+                <button type="submit" class="btn btn-success"><span class="fa fa-check"></span> Готово</button>
             </form>
         {% endif %}
     {% endif %}
