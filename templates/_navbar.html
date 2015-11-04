@@ -2,9 +2,10 @@
 {% load main_extras %}
 
 <div class="navbar navbar-default navbar-fixed-top">
-        <div class="container">
-          <div class="navbar-header">
-            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar"
+                    aria-expanded="false" aria-controls="navbar">
               <span class="sr-only">Toggle navigation</span>
               <span class="icon-bar"></span>
               <span class="icon-bar"></span>
@@ -14,12 +15,15 @@
                 <img class="logo" src="{% static "assets/images/favicon-96x96.png" %}">
                 <div class="brand">{{ PROJECT_NAME }}</div>
             </a>
-          </div>
-          <div id="navbar" class="navbar-collapse collapse">
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
             <ul class="nav navbar-nav">
                 {% menu_item 'Квесты' 'coordination:quests' %}
                 {% menu_item 'Контакты' %}
                 {% menu_item 'Новости' %}
+                {% if user.is_superuser %}
+                    <li><a href="{% url 'admin:index' %}" target="_blank">Админка</a></li>
+                {% endif %}
             </ul>
             <ul class="nav navbar-nav navbar-right">
                 {% url 'auth_login' as url_login %}
@@ -40,6 +44,6 @@
                         <span class="fa fa-sign-in fa-lg"></span> Вход</a></p></li>
                 {% endif %}
             </ul>
-          </div>
         </div>
     </div>
+</div>
