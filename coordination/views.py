@@ -1,7 +1,9 @@
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.shortcuts import render, get_object_or_404, redirect
+from django.utils import timezone
 from coordination.forms import QuestForm, MissionForm, HintForm
-from coordination.models import Quest, Mission, Hint
+from coordination.models import Quest, Mission, Hint, CurrentMission, Keylog
 from coordination.utils import is_quest_organizer, is_organizer
 
 
@@ -68,6 +70,53 @@ def publish_quest(request, quest_id):
     return redirect('coordination:quest_detail', quest_id=quest_id)
 
 
+@login_required
+def control_quest(request, quest_id):
+    quest = get_object_or_404(Quest, pk=quest_id)
+    context = {'quest': quest, }
+    return render(request, 'coordination/quests/control.html', context)
+
+
+@login_required
+def begin_quest(request, quest_id):
+    quest = get_object_or_404(Quest, pk=quest_id)
+    is_quest_organizer(request, quest)
+    quest.begin()
+    return redirect('coordination:quest_control')
+
+
+@login_required
+def end_quest(request, quest_id):
+    quest = get_object_or_404(Quest, pk=quest_id)
+    is_quest_organizer(request, quest)
+    quest.end()
+    return redirect('coordination:quest_control')
+
+
+@login_required
+def clear_quest(request, quest_id):
+    quest = get_object_or_404(Quest, pk=quest_id)
+    CurrentMission.objects.filter(mission__quest=quest).delete()
+    Keylog.objects.filter(mission__quest=quest).delete()
+    return redirect('coordination:quest_control')
+
+
+@login_required
+def next_mission(request, quest_id, user_id):
+    quest = get_object_or_404(Quest, pk=quest_id)
+    is_quest_organizer(request, quest)
+    player = get_object_or_404(User, pk=user_id)
+    cm = get_object_or_404(CurrentMission, mission__quest=quest, player=player)
+    if not cm.mission.is_finish:
+        right_key = cm.mission.key
+        keylog = Keylog(key=right_key, fix_time=timezone.now(), player=player, mission=cm.mission, is_right=True)
+        cm.mission = Mission.objects.get(order_number=cm.mission.order_number + 1)
+        cm.start_time = keylog.fix_time
+        keylog.save()
+        cm.save()
+    return redirect('coordination:quest_control')
+
+
 # Missions
 def detail_mission(request, mission_id):
     mission = get_object_or_404(Mission, pk=mission_id)
@@ -76,7 +125,7 @@ def detail_mission(request, mission_id):
         request = is_quest_organizer(request, quest)
     hints = None
     hint_form = None
-    if not mission.is_start:
+    if not mission.is_start and not mission.is_finish:
         hints = mission.hints()
         if request.method == 'POST':
             hint_form = HintForm(request.POST)
@@ -128,7 +177,9 @@ def delete_mission(request, mission_id):
     mission = get_object_or_404(Mission, pk=mission_id)
     quest = mission.quest
     is_quest_organizer(request, quest)
-    mission.delete()
+    if not mission.is_start and not mission.is_finish:
+        mission.delete()
+        Mission.update_finish_number(quest)
     return redirect('coordination:quest_detail', quest_id=quest.pk)
 
 

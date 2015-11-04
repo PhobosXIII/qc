@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ quest.title }} - Управление{% endblock %}
+
+{% block content %}
+    {% include 'coordination/_confirm_dialog.html' %}
+
+    <div class="page-header">
+        <h1>{{ quest.title }}</h1>
+    </div>
+
+    {% include 'coordination/quests/_nav.html' %}
+
+    <p class="text-center">
+        <button data-href="{% url 'coordination:clear_quest' quest.id %}" data-toggle="modal"
+                data-target="#confirm" class="btn btn-danger">
+            <span class="fa fa-trash fa-lg"></span> Очистить результаты квеста
+        </button>
+    </p>
+
+    {% if quest.not_started or quest.started %}
+        <p class="text-center">
+            {% url 'coordination:begin_quest' quest.id as begin_url %}
+            {% if quest.not_started %}
+                 <button data-href="{{ begin_url }}" data-toggle="modal" data-target="#confirm" class="btn btn-success">
+                     <span class="fa fa-play fa-lg"></span> Начать квест
+                 </button>
+            {% elif quest.started %}
+                <button data-href="{{ begin_url }}" data-toggle="modal" data-target="#confirm" class="btn btn-warning">
+                    <span class="fa fa-pause fa-lg"></span> Приостановить квест
+                </button>
+            {% endif %}
+        </p>
+    {% endif %}
+
+    {% if quest.started or quest.ended %}
+        <p class="text-center">
+            {% url 'coordination:end_quest' quest.id as end_url %}
+            {% if quest.started %}
+                 <button data-href="{{ end_url }}" data-toggle="modal" data-target="#confirm" class="btn btn-danger">
+                     <span class="fa fa-stop fa-lg"></span> Завершить квест
+                 </button>
+            {% elif quest.ended %}
+                <button data-href="{{ end_url }}" data-toggle="modal" data-target="#confirm" class="btn btn-warning">
+                    <span class="fa fa-play fa-lg"></span> Возобновить квест
+                </button>
+            {% endif %}
+        </p>
+    {% endif %}
+
+    {% if current_missions %}
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped text-center">
+                <thead>
+                    <tr>
+                        <th>Игрок</th>
+                        <th>Задание</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for cm in current_missions %}
+                    <tr {% if cm.mission.is_finish %}class="success"{% endif %}>
+                        <td>{{ cm.player.first_name }}
+                            {% if not cm.mission.is_finish and not quest.ended %}
+                                <button data-href="{% url 'coordination:next_mission' quest.id cm.player.id %}"
+                                        data-toggle="modal" data-target="#confirm" class="btn btn-sm btn-primary">
+                                    <span class="fa fa-step-forward"></span> Перевести на следующее задание
+                                </button>
+                            {% endif %}
+                        </td>
+                        <td>{{cm.mission}}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p class="text-center">Ни один игрок не переведен на старт.</p>
+    {% endif %}
+{% endblock content %}

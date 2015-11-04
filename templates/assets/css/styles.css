@@ -79,12 +79,6 @@ td, th {
     text-align: center;
 }
 
-table.table-cm {
-    width: auto;
-    margin-left:auto;
-    margin-right:auto;
-}
-
 .errorlist.nonfield {
     padding-left:0;
     list-style:none;

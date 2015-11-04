@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.models import User
 from django.db import models
 from django.forms import SelectMultiple
-from coordination.models import Quest, Mission
+from coordination.models import Quest, Mission, Hint, CurrentMission, Keylog
 
 
 def user_str(self):
@@ -22,12 +22,35 @@ class QuestAdmin(admin.ModelAdmin):
     ordering = ['-start']
 
 
+class HintInline(admin.TabularInline):
+    model = Hint
+    extra = 3
+
+
 class MissionAdmin(admin.ModelAdmin):
-    fields = ('quest', ('name', 'order_number'), 'name_in_table', 'text', 'picture', 'key')
+    fields = ('quest', ('name', 'order_number', 'is_finish'), 'name_in_table', 'text', 'media_file', 'key')
+    inlines = [HintInline]
     list_display = ('__str__', 'quest', )
     list_filter = ('quest', )
     ordering = ('quest', 'order_number')
 
 
+class CurrentMissionAdmin(admin.ModelAdmin):
+    list_display = ('player', 'mission', 'start_time')
+    ordering = ['-mission', 'start_time']
+
+
+class KeylogAdmin(admin.ModelAdmin):
+    list_display = ('player', 'get_quest', 'mission', 'key', 'fix_time', 'is_right')
+    ordering = ['fix_time']
+    list_filter = ('is_right', 'player', 'mission')
+
+    def get_quest(self, obj):
+        return obj.mission.quest
+    get_quest.short_description = 'квест'
+
+
 admin.site.register(Quest, QuestAdmin)
 admin.site.register(Mission, MissionAdmin)
+admin.site.register(CurrentMission, CurrentMissionAdmin)
+admin.site.register(Keylog, KeylogAdmin)

@@ -14,7 +14,7 @@
 
     {% if user|is_organizer:quest or user.is_superuser %}
        {% menu_item 'Игроки' %}
-       {% menu_item 'Управление' %}
+       {% menu_item 'Управление' 'coordination:quest_control' quest.id %}
        {% menu_item 'Таблички' %}
        {% menu_item 'История ключей' %}
     {% endif %}

@@ -24,7 +24,7 @@ class QuestForm(ModelForm):
 class MissionForm(ModelForm):
     class Meta:
         model = Mission
-        fields = ['name', 'name_in_table', 'text', 'picture', 'key', 'order_number']
+        fields = ['name', 'name_in_table', 'text', 'media_file', 'key', 'order_number']
 
     def __init__(self, *args, **kwargs):
         next_number = kwargs.pop('next_number', None)
@@ -33,11 +33,20 @@ class MissionForm(ModelForm):
         self.helper.form_tag = False
         self.helper.html5_required = True
         if self.instance.is_start:
-            self.Meta.fields = ['text', 'key', 'order_number']
+            self.Meta.fields = ['text', 'media_file', 'key', 'order_number']
             self.helper.layout = Layout(
                 HTML("<h2>{{ form.instance }}</h2>"),
                 'key',
                 'text',
+                'media_file',
+                Field('order_number', type="hidden"),
+            )
+        elif self.instance.is_finish:
+            self.Meta.fields = ['text', 'media_file', 'order_number']
+            self.helper.layout = Layout(
+                HTML("<h2>{{ form.instance }}</h2>"),
+                'text',
+                'media_file',
                 Field('order_number', type="hidden"),
             )
         else:
@@ -50,7 +59,7 @@ class MissionForm(ModelForm):
                 'name',
                 'name_in_table',
                 'text',
-                'picture',
+                'media_file',
             )
 
 

@@ -10,8 +10,14 @@ quest_patterns = [
         url(r'^edit/$', views.edit_quest, name='quest_edit'),
         url(r'^delete/$', views.delete_quest, name='quest_delete'),
         url(r'^publish/$', views.publish_quest, name='quest_publish'),
+        url(r'^control/', include([
+            url(r'^$', views.control_quest, name='quest_control'),
+            url(r'^begin/$', views.begin_quest, name='begin_quest'),
+            url(r'^end/$', views.end_quest, name='end_quest'),
+            url(r'^clear/$', views.clear_quest, name='clear_quest'),
+            url(r'^next_mission/(?P<user_id>[0-9]+)/$', views.next_mission, name='next_mission'),
+        ])),
     ])),
-
 ]
 
 mission_patterns = [
