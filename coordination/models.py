@@ -40,11 +40,13 @@ class Quest(models.Model):
         return self.title
 
     def save(self, *args, **kwargs):
+        is_create = not self.pk
         super(Quest, self).save(*args, **kwargs)
-        start_mission = Mission(quest=self, name_in_table='Старт', order_number=0)
-        finish_mission = Mission(quest=self, name_in_table='Финиш', order_number=1, is_finish=True)
-        start_mission.save()
-        finish_mission.save()
+        if is_create:
+            start_mission = Mission(quest=self, name_in_table='Старт', order_number=0)
+            finish_mission = Mission(quest=self, name_in_table='Финиш', order_number=1, is_finish=True)
+            start_mission.save()
+            finish_mission.save()
 
     def begin(self):
         if self.not_started:

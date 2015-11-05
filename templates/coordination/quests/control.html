@@ -11,23 +11,25 @@
 
     {% include 'coordination/quests/_nav.html' %}
 
-    <p class="text-center">
-        <button data-href="{% url 'coordination:clear_quest' quest.id %}" data-toggle="modal"
-                data-target="#confirm" class="btn btn-danger">
-            <span class="fa fa-trash fa-lg"></span> Очистить результаты квеста
-        </button>
-    </p>
+    {% if quest.not_started %}
+        <p class="text-center">
+            <button data-href="{% url 'coordination:clear_quest' quest.id %}" data-toggle="modal"
+                    data-target="#confirm" class="btn btn-danger">
+                <span class="fa fa-trash"></span> Очистить результаты квеста
+            </button>
+        </p>
+    {% endif %}
 
     {% if quest.not_started or quest.started %}
         <p class="text-center">
             {% url 'coordination:begin_quest' quest.id as begin_url %}
             {% if quest.not_started %}
                  <button data-href="{{ begin_url }}" data-toggle="modal" data-target="#confirm" class="btn btn-success">
-                     <span class="fa fa-play fa-lg"></span> Начать квест
+                     <span class="fa fa-play"></span> Начать квест
                  </button>
             {% elif quest.started %}
                 <button data-href="{{ begin_url }}" data-toggle="modal" data-target="#confirm" class="btn btn-warning">
-                    <span class="fa fa-pause fa-lg"></span> Приостановить квест
+                    <span class="fa fa-pause"></span> Приостановить квест
                 </button>
             {% endif %}
         </p>
@@ -38,11 +40,11 @@
             {% url 'coordination:end_quest' quest.id as end_url %}
             {% if quest.started %}
                  <button data-href="{{ end_url }}" data-toggle="modal" data-target="#confirm" class="btn btn-danger">
-                     <span class="fa fa-stop fa-lg"></span> Завершить квест
+                     <span class="fa fa-stop"></span> Завершить квест
                  </button>
             {% elif quest.ended %}
                 <button data-href="{{ end_url }}" data-toggle="modal" data-target="#confirm" class="btn btn-warning">
-                    <span class="fa fa-play fa-lg"></span> Возобновить квест
+                    <span class="fa fa-play"></span> Возобновить квест
                 </button>
             {% endif %}
         </p>

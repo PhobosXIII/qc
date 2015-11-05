@@ -73,6 +73,7 @@ def publish_quest(request, quest_id):
 @login_required
 def control_quest(request, quest_id):
     quest = get_object_or_404(Quest, pk=quest_id)
+    is_quest_organizer(request, quest)
     context = {'quest': quest, }
     return render(request, 'coordination/quests/control.html', context)
 
@@ -82,7 +83,7 @@ def begin_quest(request, quest_id):
     quest = get_object_or_404(Quest, pk=quest_id)
     is_quest_organizer(request, quest)
     quest.begin()
-    return redirect('coordination:quest_control')
+    return redirect('coordination:quest_control', quest_id=quest_id)
 
 
 @login_required
@@ -90,15 +91,17 @@ def end_quest(request, quest_id):
     quest = get_object_or_404(Quest, pk=quest_id)
     is_quest_organizer(request, quest)
     quest.end()
-    return redirect('coordination:quest_control')
+    return redirect('coordination:quest_control', quest_id=quest_id)
 
 
 @login_required
 def clear_quest(request, quest_id):
     quest = get_object_or_404(Quest, pk=quest_id)
-    CurrentMission.objects.filter(mission__quest=quest).delete()
-    Keylog.objects.filter(mission__quest=quest).delete()
-    return redirect('coordination:quest_control')
+    is_quest_organizer(request, quest)
+    if quest.not_started:
+        CurrentMission.objects.filter(mission__quest=quest).delete()
+        Keylog.objects.filter(mission__quest=quest).delete()
+    return redirect('coordination:quest_control', quest_id=quest_id)
 
 
 @login_required
@@ -114,7 +117,7 @@ def next_mission(request, quest_id, user_id):
         cm.start_time = keylog.fix_time
         keylog.save()
         cm.save()
-    return redirect('coordination:quest_control')
+    return redirect('coordination:quest_control', quest_id=quest_id)
 
 
 # Missions
