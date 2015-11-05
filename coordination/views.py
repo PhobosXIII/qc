@@ -2,9 +2,9 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
-from coordination.forms import QuestForm, MissionForm, HintForm
+from coordination.forms import QuestForm, MissionForm, HintForm, PlayerForm
 from coordination.models import Quest, Mission, Hint, CurrentMission, Keylog
-from coordination.utils import is_quest_organizer, is_organizer
+from coordination.utils import is_quest_organizer, is_organizer, generate_random_username
 
 
 # Quests
@@ -74,7 +74,8 @@ def publish_quest(request, quest_id):
 def control_quest(request, quest_id):
     quest = get_object_or_404(Quest, pk=quest_id)
     is_quest_organizer(request, quest)
-    context = {'quest': quest, }
+    current_missions = quest.current_missions()
+    context = {'quest': quest, 'current_missions': current_missions}
     return render(request, 'coordination/quests/control.html', context)
 
 
@@ -99,7 +100,8 @@ def clear_quest(request, quest_id):
     quest = get_object_or_404(Quest, pk=quest_id)
     is_quest_organizer(request, quest)
     if quest.not_started:
-        CurrentMission.objects.filter(mission__quest=quest).delete()
+        start_mission = quest.start_mission()
+        CurrentMission.objects.filter(mission__quest=quest).update(mission=start_mission)
         Keylog.objects.filter(mission__quest=quest).delete()
     return redirect('coordination:quest_control', quest_id=quest_id)
 
@@ -108,16 +110,46 @@ def clear_quest(request, quest_id):
 def next_mission(request, quest_id, user_id):
     quest = get_object_or_404(Quest, pk=quest_id)
     is_quest_organizer(request, quest)
-    player = get_object_or_404(User, pk=user_id)
-    cm = get_object_or_404(CurrentMission, mission__quest=quest, player=player)
-    if not cm.mission.is_finish:
-        right_key = cm.mission.key
-        keylog = Keylog(key=right_key, fix_time=timezone.now(), player=player, mission=cm.mission, is_right=True)
-        cm.mission = Mission.objects.get(order_number=cm.mission.order_number + 1)
-        cm.start_time = keylog.fix_time
-        keylog.save()
-        cm.save()
+    if quest.started:
+        player = get_object_or_404(User, pk=user_id)
+        cm = get_object_or_404(CurrentMission, mission__quest=quest, player=player)
+        if not cm.mission.is_finish:
+            right_key = cm.mission.key
+            keylog = Keylog(key=right_key, fix_time=timezone.now(), player=player, mission=cm.mission, is_right=True)
+            cm.mission = Mission.objects.get(order_number=cm.mission.order_number + 1)
+            cm.start_time = keylog.fix_time
+            keylog.save()
+            cm.save()
     return redirect('coordination:quest_control', quest_id=quest_id)
+
+
+@login_required
+def players_quest(request, quest_id):
+    quest = get_object_or_404(Quest, pk=quest_id)
+    is_quest_organizer(request, quest)
+    players = quest.players.all()
+    form = PlayerForm(request.POST or None)
+    if form.is_valid():
+        name = form.cleaned_data["name"]
+        username = generate_random_username()
+        password = User.objects.make_random_password(length=6)
+        user = User.objects.create_user(username=username, password=password, first_name=name, last_name=password)
+        quest.players.add(user)
+        start_mission = quest.start_mission()
+        CurrentMission.objects.create(player=user, mission=start_mission)
+        return redirect('coordination:quest_players', quest_id=quest_id)
+    context = {'quest': quest, 'form': form, 'players': players}
+    return render(request, 'coordination/quests/players.html', context)
+
+
+@login_required
+def delete_player(request, quest_id, player_id):
+    quest = get_object_or_404(Quest, pk=quest_id)
+    is_quest_organizer(request, quest)
+    player = get_object_or_404(User, pk=player_id)
+    quest.players.remove(player)
+    player.delete()
+    return redirect('coordination:quest_players', quest_id=quest_id)
 
 
 # Missions

@@ -121,3 +121,8 @@ ul.navbar-right {
     white-space: normal !important;
     word-wrap: break-word;
 }
+
+.row-margin {
+  padding-top: 10px;
+  margin-bottom: 20px;
+}

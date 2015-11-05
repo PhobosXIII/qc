@@ -17,6 +17,10 @@ quest_patterns = [
             url(r'^clear/$', views.clear_quest, name='clear_quest'),
             url(r'^next_mission/(?P<user_id>[0-9]+)/$', views.next_mission, name='next_mission'),
         ])),
+        url(r'^players/', include([
+            url(r'^$', views.players_quest, name='quest_players'),
+            url(r'^delete/(?P<player_id>[0-9]+)/$', views.delete_player, name='player_delete'),
+        ])),
     ])),
 ]
 

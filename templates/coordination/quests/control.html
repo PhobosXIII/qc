@@ -63,20 +63,21 @@
                 {% for cm in current_missions %}
                     <tr {% if cm.mission.is_finish %}class="success"{% endif %}>
                         <td>{{ cm.player.first_name }}
-                            {% if not cm.mission.is_finish and not quest.ended %}
+                            {% if not cm.mission.is_finish and quest.started %}
+                                <br>
                                 <button data-href="{% url 'coordination:next_mission' quest.id cm.player.id %}"
                                         data-toggle="modal" data-target="#confirm" class="btn btn-sm btn-primary">
                                     <span class="fa fa-step-forward"></span> Перевести на следующее задание
                                 </button>
                             {% endif %}
                         </td>
-                        <td>{{cm.mission}}</td>
+                        <td>{{ cm.mission }}</td>
                     </tr>
                 {% endfor %}
                 </tbody>
             </table>
         </div>
     {% else %}
-        <p class="text-center">Ни один игрок не переведен на старт.</p>
+        <p class="lead text-center">Ни один игрок не переведен на старт.</p>
     {% endif %}
 {% endblock content %}

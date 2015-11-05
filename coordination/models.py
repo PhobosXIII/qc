@@ -74,8 +74,14 @@ class Quest(models.Model):
     def missions(self):
         return Mission.objects.filter(quest=self)
 
+    def current_missions(self):
+        return CurrentMission.objects.filter(mission__quest=self)
+
     def next_mission_number(self):
         return len(self.missions()) - 1
+
+    def start_mission(self):
+        return Mission.objects.get(quest=self, order_number=0)
 
 
 class Mission(models.Model):
@@ -155,6 +161,7 @@ class CurrentMission(models.Model):
     class Meta:
         verbose_name = 'текущее задание'
         verbose_name_plural = 'текущие задания'
+        ordering = ['-mission', 'start_time']
 
 
 class Keylog(models.Model):

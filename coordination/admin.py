@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
 from django.db import models
 from django.forms import SelectMultiple
@@ -15,8 +16,13 @@ def user_str(self):
 User.__str__ = user_str
 
 
+class MyUserAdmin(UserAdmin):
+    list_filter = ()
+    list_display = ('username', 'first_name')
+
+
 class QuestAdmin(admin.ModelAdmin):
-    fields = [('title', 'is_published', 'ended'), 'organizer', 'start', 'description', 'players']
+    fields = [('title', 'is_published', 'status'), 'organizer', 'start', 'description', 'players']
     list_display = ('title', 'organizer', 'start')
     formfield_overrides = {models.ManyToManyField: {'widget': SelectMultiple(attrs={'size': '10'})}, }
     ordering = ['-start']
@@ -36,21 +42,29 @@ class MissionAdmin(admin.ModelAdmin):
 
 
 class CurrentMissionAdmin(admin.ModelAdmin):
-    list_display = ('player', 'mission', 'start_time')
+    list_display = ('player', 'get_quest', 'mission', 'start_time')
     ordering = ['-mission', 'start_time']
+    list_filter = ('mission__quest', )
 
 
 class KeylogAdmin(admin.ModelAdmin):
     list_display = ('player', 'get_quest', 'mission', 'key', 'fix_time', 'is_right')
     ordering = ['fix_time']
-    list_filter = ('is_right', 'player', 'mission')
+    list_filter = ('is_right', 'player', 'mission', 'mission__quest')
 
-    def get_quest(self, obj):
-        return obj.mission.quest
-    get_quest.short_description = 'квест'
+
+def get_quest(self, obj):
+    return obj.mission.quest
+get_quest.short_description = 'квест'
+
+
+CurrentMissionAdmin.get_quest = get_quest
+KeylogAdmin.get_quest = get_quest
 
 
 admin.site.register(Quest, QuestAdmin)
 admin.site.register(Mission, MissionAdmin)
 admin.site.register(CurrentMission, CurrentMissionAdmin)
 admin.site.register(Keylog, KeylogAdmin)
+admin.site.unregister(User)
+admin.site.register(User, MyUserAdmin)

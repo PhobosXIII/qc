@@ -1,6 +1,8 @@
+from crispy_forms.bootstrap import StrictButton
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Field, HTML, Div, Hidden, Row
-from django.forms import ModelForm
+from crispy_forms.layout import Layout, Field, HTML, Div, Row
+from django.forms import ModelForm, Form
+from django.forms.fields import CharField
 from coordination.models import Quest, Mission, Hint
 
 
@@ -81,4 +83,21 @@ class HintForm(ModelForm):
                 Div('delay', css_class='col-xs-6 col-sm-3 col-md-4')
             ),
             'text',
+        )
+
+
+class PlayerForm(Form):
+    name = CharField(max_length=100, required=True)
+
+    def __init__(self, *args, **kwargs):
+        super(PlayerForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.form_method = 'post'
+        self.helper.html5_required = True
+        self.helper.form_show_labels = False
+        self.helper.form_class = 'form-inline col-md-8 col-md-offset-4'
+        self.helper.field_template = 'bootstrap3/layout/inline_field.html'
+        self.helper.layout = Layout(
+            Field('name', autofocus=True, placeholder='Имя', size='50'),
+            StrictButton('Добавить игрока', type='submit', css_class='btn-success')
         )

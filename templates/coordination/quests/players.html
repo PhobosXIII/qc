@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ quest.title }} - Игроки{% endblock %}
+
+{% block content %}
+    {% include 'coordination/_confirm_dialog.html' %}
+
+    <div class="page-header">
+        <h1>{{ quest.title }}</h1>
+    </div>
+
+    {% include 'coordination/quests/_nav.html' %}
+
+    <div class="row row-margin">{% crispy form %}</div>
+
+    {% if players %}
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped text-center">
+                <thead>
+                    <tr>
+                        <th>Игрок</th>
+                        <th>Логин</th>
+                        <th>Пароль</th>
+                        <th>Удаление</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for player in players %}
+                    <tr>
+                        <td>{{ player.first_name }}</td>
+                        <td>{{ player.username }}</td>
+                        <td>{{ player.last_name }}</td>
+                        <td>
+                            <button data-href="{% url 'coordination:player_delete' quest.id player.id %}"
+                                    data-toggle="modal" data-target="#confirm" class="btn btn-sm btn-danger">
+                                <span class="fa fa-trash"></span> Удалить
+                            </button>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p class="lead text-center">Ни один игрок еще не добавлен к игре.</p>
+    {% endif %}
+{% endblock content %}
