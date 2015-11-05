@@ -12,7 +12,7 @@
     {% include 'coordination/quests/_nav.html' %}
 
     {% if quest.not_started %}
-        <p class="text-center">
+        <p class="row-margin text-center">
             <button data-href="{% url 'coordination:clear_quest' quest.id %}" data-toggle="modal"
                     data-target="#confirm" class="btn btn-danger">
                 <span class="fa fa-trash"></span> Очистить результаты квеста
@@ -21,7 +21,7 @@
     {% endif %}
 
     {% if quest.not_started or quest.started %}
-        <p class="text-center">
+        <p class="row-margin text-center">
             {% url 'coordination:begin_quest' quest.id as begin_url %}
             {% if quest.not_started %}
                  <button data-href="{{ begin_url }}" data-toggle="modal" data-target="#confirm" class="btn btn-success">
@@ -36,7 +36,7 @@
     {% endif %}
 
     {% if quest.started or quest.ended %}
-        <p class="text-center">
+        <p class="row-margin text-center">
             {% url 'coordination:end_quest' quest.id as end_url %}
             {% if quest.started %}
                  <button data-href="{{ end_url }}" data-toggle="modal" data-target="#confirm" class="btn btn-danger">

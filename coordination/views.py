@@ -2,9 +2,9 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
-from coordination.forms import QuestForm, MissionForm, HintForm, PlayerForm
+from coordination.forms import QuestForm, MissionForm, HintForm, PlayerForm, KeyForm
 from coordination.models import Quest, Mission, Hint, CurrentMission, Keylog
-from coordination.utils import is_quest_organizer, is_organizer, generate_random_username
+from coordination.utils import is_quest_organizer, is_quest_player, is_organizer, generate_random_username
 
 
 # Quests
@@ -152,6 +152,30 @@ def delete_player(request, quest_id, player_id):
     return redirect('coordination:quest_players', quest_id=quest_id)
 
 
+@login_required
+def coordination_quest(request, quest_id):
+    quest = get_object_or_404(Quest, pk=quest_id)
+    is_quest_player(request, quest)
+    current_mission = get_object_or_404(CurrentMission, mission__quest=quest, player=request.user)
+    mission = current_mission.mission
+    form = KeyForm(request.POST or None)
+    if form.is_valid():
+        key = form.cleaned_data["key"].strip()
+        right_key = mission.key.strip()
+        keylog = Keylog(key=key, fix_time=timezone.now(), player=request.user, mission=mission)
+        if right_key == key:
+            keylog.is_right = True
+            current_mission.mission = Mission.objects.get(quest=mission.quest, order_number=mission.order_number + 1)
+            current_mission.start_time = keylog.fix_time
+        keylog.save()
+        current_mission.save()
+        return redirect('coordination:quest_coordination', quest_id=quest_id)
+    wrong_keys = Keylog.wrong_keylogs(request.user, mission)
+    wrong_keys_str = ', '.join(str(i) for i in wrong_keys)
+    context = {'quest': quest, 'mission': mission, 'form': form, 'wrong_keys': wrong_keys_str}
+    return render(request, 'coordination/quests/coordination.html', context)
+
+
 # Missions
 def detail_mission(request, mission_id):
     mission = get_object_or_404(Mission, pk=mission_id)
@@ -241,4 +265,3 @@ def delete_hint(request, hint_id):
     is_quest_organizer(request, mission.quest)
     hint.delete()
     return redirect('coordination:mission_detail', mission_id=mission.id)
-

@@ -16,6 +16,12 @@ def is_quest_organizer(request, quest):
     raise PermissionDenied
 
 
+def is_quest_player(request, quest):
+    if request.user in quest.players.all():
+        return request
+    raise PermissionDenied
+
+
 def generate_random_username(length=6, chars=ascii_lowercase+digits, split=3, delimiter='-'):
     username = ''.join([choice(chars) for i in range(length)])
     if split:

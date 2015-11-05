@@ -23,6 +23,7 @@ class Quest(models.Model):
     class Meta:
         verbose_name = 'квест'
         verbose_name_plural = 'квесты'
+        ordering = ['start']
 
     @property
     def not_started(self):
@@ -114,6 +115,13 @@ class Mission(models.Model):
                                               ". " + self.name if self.name else "",
                                               " (" + self.name_in_table + ")" if self.name_in_table else "")
 
+    @property
+    def short_name(self):
+        if self.is_start or self.is_finish:
+            return self.__str__()
+        else:
+            return 'Задание {0}{1}'.format(self.order_number, ". " + self.name if self.name else "")
+
     def save(self, *args, **kwargs):
         super(Mission, self).save(*args, **kwargs)
         if not self.is_start and not self.is_finish:
@@ -175,7 +183,7 @@ class Keylog(models.Model):
         verbose_name = 'история ключей'
         verbose_name_plural = 'история ключей'
 
-    def __unicode__(self):
+    def __str__(self):
         return self.key
 
     @staticmethod

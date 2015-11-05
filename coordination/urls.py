@@ -21,6 +21,7 @@ quest_patterns = [
             url(r'^$', views.players_quest, name='quest_players'),
             url(r'^delete/(?P<player_id>[0-9]+)/$', views.delete_player, name='player_delete'),
         ])),
+        url(r'^coordination/$', views.coordination_quest, name='quest_coordination'),
     ])),
 ]
 

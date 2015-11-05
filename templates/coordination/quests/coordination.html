@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ quest.title }} - Координация{% endblock %}
+
+{% block content %}
+    <div class="page-header">
+        <h1>{{ quest.title }}</h1>
+    </div>
+
+    {% include 'coordination/quests/_nav.html' %}
+
+    <h2>{{ mission.short_name }}</h2>
+
+    {% if mission.text %}
+        <div class="well well-sm">
+            <p class="lead">{{ mission.text|linebreaksbr }}</p>
+        </div>
+    {% endif %}
+
+    {% if not mission.is_finish and quest.started %}
+        <div class="row-margin">{% crispy form %}</div>
+        {% if wrong_keys %}
+            <p><span class="text-danger">Не верно указан ключ: </span>{{ wrong_keys }}</p>
+        {% endif %}
+    {% endif %}
+{% endblock content %}

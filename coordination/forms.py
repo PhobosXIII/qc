@@ -1,4 +1,4 @@
-from crispy_forms.bootstrap import StrictButton
+from crispy_forms.bootstrap import StrictButton, PrependedText
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Field, HTML, Div, Row
 from django.forms import ModelForm, Form
@@ -96,8 +96,24 @@ class PlayerForm(Form):
         self.helper.html5_required = True
         self.helper.form_show_labels = False
         self.helper.form_class = 'form-inline col-md-8 col-md-offset-4'
-        self.helper.field_template = 'bootstrap3/layout/inline_field.html'
         self.helper.layout = Layout(
             Field('name', autofocus=True, placeholder='Имя', size='50'),
             StrictButton('Добавить игрока', type='submit', css_class='btn-success')
+        )
+
+
+class KeyForm(Form):
+    key = CharField(max_length=30, required=True)
+
+    def __init__(self, *args, **kwargs):
+        super(KeyForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.form_method = 'post'
+        self.helper.html5_required = True
+        self.helper.form_show_labels = False
+        self.helper.form_class = 'form-inline'
+        self.helper.layout = Layout(
+            HTML('<p class="alert alert-warning">Ключ вводится маленькими буквами, без пробелов и дефисов.</p>'),
+            PrependedText('key', '<span class="fa fa-key"></span>', autofocus=True, placeholder='ключ', size='30'),
+            StrictButton('Отправить', type='submit', css_class='btn-primary')
         )

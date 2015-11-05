@@ -9,7 +9,7 @@
     {% endif %}
 
     {% if user|is_player:quest %}
-       {% menu_item 'Координация' %}
+       {% menu_item 'Координация' 'coordination:quest_coordination' quest.id %}
     {% endif %}
 
     {% if user|is_organizer:quest or user.is_superuser %}
