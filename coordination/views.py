@@ -1,5 +1,6 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
 from coordination.forms import QuestForm, MissionForm, HintForm, PlayerForm, KeyForm
@@ -9,7 +10,15 @@ from coordination.utils import is_quest_organizer, is_quest_player, is_organizer
 
 # Quests
 def all_quests(request):
-    quests = Quest.objects.all().order_by('-start')
+    quest_list = Quest.objects.all().order_by('-start')
+    paginator = Paginator(quest_list, 15)
+    page = request.GET.get('page')
+    try:
+        quests = paginator.page(page)
+    except PageNotAnInteger:
+        quests = paginator.page(1)
+    except EmptyPage:
+        quests = paginator.page(paginator.num_pages)
     context = {'quests': quests}
     return render(request, 'coordination/quests/all.html', context)
 
@@ -187,6 +196,32 @@ def coordination_quest(request, quest_id):
     wrong_keys_str = ', '.join(str(i) for i in wrong_keys)
     context = {'quest': quest, 'mission': mission, 'form': form, 'wrong_keys': wrong_keys_str}
     return render(request, 'coordination/quests/coordination.html', context)
+
+
+@login_required
+def keylog_quest(request, quest_id):
+    quest = get_object_or_404(Quest, pk=quest_id)
+    is_quest_organizer(request, quest)
+    keylog_list = Keylog.objects.filter(mission__quest=quest).order_by('mission', 'player', 'fix_time')
+    paginator = Paginator(keylog_list, 30)
+    page = request.GET.get('page')
+    try:
+        keylogs = paginator.page(page)
+    except PageNotAnInteger:
+        keylogs = paginator.page(1)
+    except EmptyPage:
+        keylogs = paginator.page(paginator.num_pages)
+    context = {'quest': quest, 'keylogs': keylogs}
+    return render(request, 'coordination/quests/keylog.html', context)
+
+
+@login_required
+def delete_keylog(request, quest_id, keylog_id):
+    quest = get_object_or_404(Quest, pk=quest_id)
+    is_quest_organizer(request, quest)
+    keylog = get_object_or_404(Keylog, pk=keylog_id)
+    keylog.delete()
+    return redirect('coordination:quest_keylog', quest_id=quest_id)
 
 
 # Missions

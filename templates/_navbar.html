@@ -19,8 +19,8 @@
         <div id="navbar" class="navbar-collapse collapse">
             <ul class="nav navbar-nav">
                 {% menu_item 'Квесты' 'coordination:quests' %}
-                {% menu_item 'Контакты' %}
                 {% menu_item 'Новости' %}
+                {% menu_item 'Контакты' %}
                 {% if user.is_superuser %}
                     <li><a href="{% url 'admin:index' %}" target="_blank">Админка</a></li>
                 {% endif %}
