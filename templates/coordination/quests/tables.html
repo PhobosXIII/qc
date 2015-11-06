@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ quest.title }} - Таблички{% endblock %}
+
+{% block content %}
+    {% include 'coordination/_confirm_dialog.html' %}
+
+    <div class="page-header">
+        <h1>{{ quest.title }}</h1>
+    </div>
+
+    {% include 'coordination/quests/_nav.html' %}
+
+    <br>
+
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>Игрок</th>
+                    {% for mission in missions %}
+                        <th>{{ mission.table_name }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+            {% for player in players %}
+                <tr>
+                    <td>{{ player.first_name }}</td>
+                    {% for mission in missions %}
+                        <td>
+                            {% for keylog in keylogs %}
+                                {% if keylog.player == player and keylog.mission == mission %}
+                                    {{ keylog.fix_time|date:"H:i:s" }}
+                                {% endif %}
+                            {% endfor %}
+                        </td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if current_missions %}
+        <div class="table-responsive">
+            <table class="table table-bordered text-center">
+                <thead>
+                    <tr>
+                        <th>Место</th>
+                        <th>Игрок</th>
+                        <th>Задание</th>
+                        <th>Время начала задания</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for cm in current_missions %}
+                    <tr {% if cm.mission.is_finish %}class="success"{% endif %}>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ cm.player.first_name }}</td>
+                        <td>{{ cm.mission.table_name }}</td>
+                        <td>{{ cm.start_time|date:"H:i:s" }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p class="lead text-center">Ни один игрок еще не добавлен к квесту. Перейдите во вкладку Игроки.</p>
+    {% endif %}
+{% endblock content %}

@@ -71,6 +71,19 @@ def publish_quest(request, quest_id):
 
 
 @login_required
+def tables_quest(request, quest_id):
+    quest = get_object_or_404(Quest, pk=quest_id)
+    is_quest_organizer(request, quest)
+    players = quest.players.all().order_by('first_name')
+    missions = quest.missions().exclude(is_finish=True)
+    keylogs = Keylog.right_keylogs(missions).order_by('fix_time')
+    current_missions = quest.current_missions()
+    context = {'quest': quest, 'players': players, 'missions': missions, 'keylogs': keylogs,
+               'current_missions': current_missions, }
+    return render(request, 'coordination/quests/tables.html', context)
+
+
+@login_required
 def control_quest(request, quest_id):
     quest = get_object_or_404(Quest, pk=quest_id)
     is_quest_organizer(request, quest)
@@ -127,7 +140,7 @@ def next_mission(request, quest_id, user_id):
 def players_quest(request, quest_id):
     quest = get_object_or_404(Quest, pk=quest_id)
     is_quest_organizer(request, quest)
-    players = quest.players.all()
+    players = quest.players.all().order_by('first_name')
     form = PlayerForm(request.POST or None)
     if form.is_valid():
         name = form.cleaned_data["name"]

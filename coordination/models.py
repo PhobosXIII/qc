@@ -122,6 +122,13 @@ class Mission(models.Model):
         else:
             return 'Задание {0}{1}'.format(self.order_number, ". " + self.name if self.name else "")
 
+    @property
+    def table_name(self):
+        if self.is_start or self.is_finish:
+            return self.__str__()
+        else:
+            return '{0}{1}'.format(self.order_number, ". " + self.name_in_table if self.name_in_table else "")
+
     def save(self, *args, **kwargs):
         super(Mission, self).save(*args, **kwargs)
         if not self.is_start and not self.is_finish:
