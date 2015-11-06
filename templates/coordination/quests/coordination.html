@@ -18,7 +18,7 @@
         </div>
     {% endif %}
 
-    {% if not mission.is_finish and quest.started %}
+    {% if form %}
         <div class="row-margin">{% crispy form %}</div>
         {% if wrong_keys %}
             <p><span class="text-danger">Не верно указан ключ: </span>{{ wrong_keys }}</p>

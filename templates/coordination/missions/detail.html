@@ -40,15 +40,18 @@
         </div>
     {% endif %}
 
-    {% if hint_form %}
-        <h3>Подсказки</h3>
-        {% include 'coordination/hints/_list.html' %}
-        {% if user|is_organizer:quest or user.is_superuser%}
+    {% if user|is_organizer:quest or user.is_superuser%}
+        {% if hint_form %}
+            <h3>Подсказки</h3>
+            {% include 'coordination/hints/_list.html' %}
             <h4>Добавить подсказку</h4>
             <form class="col-md-6 col-md-offset-3" action="" method="post">
                 {% crispy hint_form %}
                 <button type="submit" class="btn btn-success"><span class="fa fa-check"></span> Готово</button>
             </form>
         {% endif %}
+    {% elif hints %}
+        <h3>Подсказки</h3>
+        {% include 'coordination/hints/_list.html' %}
     {% endif %}
 {% endblock content %}

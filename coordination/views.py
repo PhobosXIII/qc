@@ -186,23 +186,26 @@ def delete_player(request, quest_id, player_id):
 @login_required
 def coordination_quest(request, quest_id):
     quest = get_object_or_404(Quest, pk=quest_id)
-    is_quest_player(request, quest)
+    request = is_quest_player(request, quest)
     current_mission = get_object_or_404(CurrentMission, mission__quest=quest, player=request.user)
     mission = current_mission.mission
-    form = KeyForm(request.POST or None)
-    if form.is_valid():
-        key = form.cleaned_data["key"].strip()
-        right_key = mission.key.strip()
-        keylog = Keylog(key=key, fix_time=timezone.now(), player=request.user, mission=mission)
-        if right_key == key:
-            keylog.is_right = True
-            current_mission.mission = Mission.objects.get(quest=mission.quest, order_number=mission.order_number + 1)
-            current_mission.start_time = keylog.fix_time
-        keylog.save()
-        current_mission.save()
-        return redirect('coordination:quest_coordination', quest_id=quest_id)
-    wrong_keys = Keylog.wrong_keylogs(request.user, mission)
-    wrong_keys_str = ', '.join(str(i) for i in wrong_keys)
+    form = None
+    wrong_keys_str = None
+    if not mission.is_finish and quest.started:
+        form = KeyForm(request.POST or None)
+        if form.is_valid():
+            key = form.cleaned_data["key"].strip()
+            right_key = mission.key.strip()
+            keylog = Keylog(key=key, fix_time=timezone.now(), player=request.user, mission=mission)
+            if right_key == key:
+                keylog.is_right = True
+                current_mission.mission = Mission.objects.get(quest=mission.quest, order_number=mission.order_number + 1)
+                current_mission.start_time = keylog.fix_time
+            keylog.save()
+            current_mission.save()
+            return redirect('coordination:quest_coordination', quest_id=quest_id)
+        wrong_keys = Keylog.wrong_keylogs(request.user, mission)
+        wrong_keys_str = ', '.join(str(i) for i in wrong_keys)
     context = {'quest': quest, 'mission': mission, 'form': form, 'wrong_keys': wrong_keys_str}
     return render(request, 'coordination/quests/coordination.html', context)
 
@@ -210,7 +213,7 @@ def coordination_quest(request, quest_id):
 @login_required
 def keylog_quest(request, quest_id):
     quest = get_object_or_404(Quest, pk=quest_id)
-    is_quest_organizer(request, quest)
+    request = is_quest_organizer(request, quest)
     keylog_list = Keylog.objects.filter(mission__quest=quest).order_by('mission', 'player', 'fix_time')
     paginator = Paginator(keylog_list, 30)
     page = request.GET.get('page')
@@ -243,15 +246,16 @@ def detail_mission(request, mission_id):
     hint_form = None
     if not mission.is_start and not mission.is_finish:
         hints = mission.hints()
-        if request.method == 'POST':
-            hint_form = HintForm(request.POST)
-            if hint_form.is_valid():
-                hint = hint_form.save(commit=False)
-                hint.mission = mission
-                hint.save()
-                return redirect('coordination:mission_detail', mission_id=mission.pk)
-        else:
-            hint_form = HintForm(next_number=mission.next_hint_number())
+        if request.user == quest.organizer or request.user.is_superuser:
+            if request.method == 'POST':
+                hint_form = HintForm(request.POST)
+                if hint_form.is_valid():
+                    hint = hint_form.save(commit=False)
+                    hint.mission = mission
+                    hint.save()
+                    return redirect('coordination:mission_detail', mission_id=mission.pk)
+            else:
+                hint_form = HintForm(next_number=mission.next_hint_number())
     context = {'quest': quest, 'mission': mission, 'hints': hints, 'hint_form': hint_form}
     return render(request, 'coordination/missions/detail.html', context)
 
