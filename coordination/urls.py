@@ -23,6 +23,7 @@ quest_patterns = [
         ])),
         url(r'^coordination/$', views.coordination_quest, name='quest_coordination'),
         url(r'^tables/$', views.tables_quest, name='quest_tables'),
+        url(r'^results/$', views.results_quest, name='quest_results'),
         url(r'^keylog/', include([
             url(r'^$', views.keylog_quest, name='quest_keylog'),
             url(r'^delete/(?P<keylog_id>[0-9]+)/$', views.delete_keylog, name='keylog_delete'),

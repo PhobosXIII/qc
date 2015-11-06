@@ -5,7 +5,7 @@
     {% menu_item 'Об игре' 'coordination:quest_detail' quest.id %}
 
     {% if quest.ended %}
-        {% menu_item 'Итоги' %}
+        {% menu_item 'Итоги' 'coordination:quest_results' quest.id %}
     {% endif %}
 
     {% if user|is_player:quest %}

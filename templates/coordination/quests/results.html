@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ quest.title }} - Итоги{% endblock %}
+
+{% block content %}
+    <div class="page-header">
+        <h1>{{ quest.title }}</h1>
+    </div>
+
+    {% include 'coordination/quests/_nav.html' %}
+
+    {% if quest.ended %}
+        <br>
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped text-center">
+                <thead>
+                    <tr>
+                        <th>Место</th>
+                        <th>Игрок</th>
+                        {% for mission in missions %}
+                            <th><a href="{% url 'coordination:mission_detail' mission.id %}">{{ mission.table_name }}</a></th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                {% for cm in current_missions %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ cm.player.first_name }}</td>
+                        {% for mission in missions %}
+                            <td>
+                                {% for keylog in keylogs %}
+                                    {% if keylog.player == cm.player and keylog.mission == mission%}
+                                        {{ keylog.fix_time|date:"H:i:s" }}
+                                    {% endif %}
+                                {% endfor %}
+                            </td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p class="lead text-center">Чтобы просмотреть итоговую табличку, дождитесь окончания игры!</p>
+    {% endif %}
+{% endblock content %}

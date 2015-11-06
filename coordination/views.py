@@ -79,6 +79,15 @@ def publish_quest(request, quest_id):
     return redirect('coordination:quest_detail', quest_id=quest_id)
 
 
+def results_quest(request, quest_id):
+    quest = get_object_or_404(Quest, pk=quest_id)
+    missions = quest.missions().exclude(is_finish=True)
+    keylogs = Keylog.right_keylogs(missions).order_by('fix_time', 'mission__order_number')
+    current_missions = quest.current_missions()
+    context = {'quest': quest, 'missions': missions, 'keylogs': keylogs, 'current_missions': current_missions}
+    return render(request, 'coordination/quests/results.html', context)
+
+
 @login_required
 def tables_quest(request, quest_id):
     quest = get_object_or_404(Quest, pk=quest_id)
