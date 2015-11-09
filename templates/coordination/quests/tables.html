@@ -53,7 +53,7 @@
                 </thead>
                 <tbody>
                 {% for cm in current_missions %}
-                    <tr {% if cm.mission.is_finish %}class="success"{% endif %}>
+                    <tr {% if cm.mission.is_finish %}class="success"{% elif cm.alarm %}class="danger"{% endif %}>
                         <td>{{ forloop.counter }}</td>
                         <td>{{ cm.player.first_name }}</td>
                         <td>{{ cm.mission.table_name }}</td>

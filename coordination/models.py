@@ -130,6 +130,14 @@ class Mission(models.Model):
         else:
             return '{0}{1}'.format(self.order_number, ". " + self.name_in_table if self.name_in_table else "")
 
+    @property
+    def total_hints_time(self):
+        hint = Hint.objects.filter(mission=self).order_by('order_number').last()
+        if hint is not None:
+            return hint.abs_delay
+        else:
+            return 0
+
     def save(self, *args, **kwargs):
         super(Mission, self).save(*args, **kwargs)
         if not self.is_start and not self.is_finish:
@@ -141,12 +149,23 @@ class Mission(models.Model):
     def next_hint_number(self):
         return len(self.hints()) + 1
 
+    def is_completed(self, player):
+        keylog = Keylog.objects.filter(mission=self, player=player, is_right=True).first()
+        return keylog is not None
+
     @staticmethod
     def update_finish_number(quest):
         missions = quest.missions()
         finish = missions.filter(is_finish=True).first()
         finish.order_number = missions.filter(is_finish=False).last().order_number + 1
         finish.save()
+
+    @staticmethod
+    def completed_missions(quest, player):
+        keylogs = Keylog.objects.filter(mission__quest=quest, player=player, is_right=True)
+        keylogs = keylogs.order_by('mission__id').distinct('mission__id')
+        missions = keylogs.values('mission__id')
+        return Mission.objects.filter(pk__in=missions)
 
 
 class Hint(models.Model):
@@ -174,8 +193,7 @@ class Hint(models.Model):
     @staticmethod
     def display_hints(current_mission):
         display_hints = []
-        delta = get_timedelta_with_now(current_mission.start_time)
-        minutes = time_in_minutes(delta)
+        minutes = time_in_minutes(get_timedelta_with_now(current_mission.start_time))
         hints = current_mission.mission.hints()
         for hint in hints:
             if hint.abs_delay <= minutes:
@@ -185,8 +203,7 @@ class Hint(models.Model):
     @staticmethod
     def next_hint_time(current_mission):
         next_hint_time = None
-        delta = get_timedelta_with_now(current_mission.start_time)
-        minutes = time_in_minutes(delta)
+        minutes = time_in_minutes(get_timedelta_with_now(current_mission.start_time))
         hints = current_mission.mission.hints()
         for hint in hints:
             if hint.abs_delay > minutes:
@@ -202,6 +219,14 @@ class CurrentMission(models.Model):
 
     def __str__(self):
         return '{0} - {1}'.format(self.player, self.mission)
+
+    @property
+    def alarm(self):
+        if self.mission.is_start or self.mission.is_finish:
+            return False
+        minutes = time_in_minutes(get_timedelta_with_now(self.start_time))
+        threshold = self.mission.total_hints_time + 30
+        return minutes >= threshold
 
     class Meta:
         verbose_name = 'текущее задание'
@@ -225,7 +250,9 @@ class Keylog(models.Model):
 
     @staticmethod
     def right_keylogs(missions):
-        return Keylog.objects.filter(mission__in=missions, is_right=True)
+        keylogs = Keylog.objects.filter(mission__in=missions, is_right=True)
+        return keylogs.order_by('player', 'fix_time', 'mission__order_number').distinct('player', 'fix_time',
+                                                                                        'mission__order_number')
 
     @staticmethod
     def wrong_keylogs(player, mission):

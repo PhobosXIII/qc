@@ -31,6 +31,18 @@
             <p><span class="text-danger">Не верно указан ключ: </span>{{ wrong_keys }}</p>
         {% endif %}
     {% endif %}
+
+    {% if completed_missions %}
+        <div class="row row-margin">
+            <div class="col-sm-4 list-group">
+                <p class="lead">Пройденные задания</p>
+                {% for mission in completed_missions %}
+                    <a href="{% url 'coordination:mission_detail' mission.id %}"
+                       class="list-group-item list-group-item-success">{{ mission }}</a>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
 {% endblock content %}
 
 {% block scripts %}

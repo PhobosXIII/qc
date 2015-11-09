@@ -82,7 +82,7 @@ def publish_quest(request, quest_id):
 def results_quest(request, quest_id):
     quest = get_object_or_404(Quest, pk=quest_id)
     missions = quest.missions().exclude(is_finish=True)
-    keylogs = Keylog.right_keylogs(missions).order_by('fix_time', 'mission__order_number')
+    keylogs = Keylog.right_keylogs(missions)
     current_missions = quest.current_missions()
     context = {'quest': quest, 'missions': missions, 'keylogs': keylogs, 'current_missions': current_missions}
     return render(request, 'coordination/quests/results.html', context)
@@ -94,7 +94,7 @@ def tables_quest(request, quest_id):
     is_quest_organizer(request, quest)
     players = quest.players.all().order_by('first_name')
     missions = quest.missions().exclude(is_finish=True)
-    keylogs = Keylog.right_keylogs(missions).order_by('fix_time')
+    keylogs = Keylog.right_keylogs(missions)
     current_missions = quest.current_missions()
     context = {'quest': quest, 'players': players, 'missions': missions, 'keylogs': keylogs,
                'current_missions': current_missions, }
@@ -187,10 +187,12 @@ def delete_player(request, quest_id, player_id):
 def coordination_quest(request, quest_id):
     quest = get_object_or_404(Quest, pk=quest_id)
     request = is_quest_player(request, quest)
-    current_mission = get_object_or_404(CurrentMission, mission__quest=quest, player=request.user)
+    player = request.user
+    current_mission = get_object_or_404(CurrentMission, mission__quest=quest, player=player)
     mission = current_mission.mission
     hints = Hint.display_hints(current_mission)
     next_hint_time = Hint.next_hint_time(current_mission)
+    completed_missions = Mission.completed_missions(quest, player)
     form = None
     wrong_keys_str = None
     if not mission.is_finish and quest.started:
@@ -198,18 +200,18 @@ def coordination_quest(request, quest_id):
         if form.is_valid():
             key = form.cleaned_data["key"].strip()
             right_key = mission.key.strip()
-            keylog = Keylog(key=key, fix_time=timezone.now(), player=request.user, mission=mission)
+            keylog = Keylog(key=key, fix_time=timezone.now(), player=player, mission=mission)
             if right_key == key:
                 keylog.is_right = True
-                current_mission.mission = Mission.objects.get(quest=mission.quest, order_number=mission.order_number + 1)
+                current_mission.mission = Mission.objects.get(quest=quest, order_number=mission.order_number + 1)
                 current_mission.start_time = keylog.fix_time
             keylog.save()
             current_mission.save()
             return redirect('coordination:quest_coordination', quest_id=quest_id)
-        wrong_keys = Keylog.wrong_keylogs(request.user, mission)
+        wrong_keys = Keylog.wrong_keylogs(player, mission)
         wrong_keys_str = ', '.join(str(i) for i in wrong_keys)
     context = {'quest': quest, 'mission': mission, 'hints': hints, 'form': form, 'wrong_keys': wrong_keys_str,
-               'next_hint_time': next_hint_time}
+               'next_hint_time': next_hint_time, 'completed_missions': completed_missions}
     return render(request, 'coordination/quests/coordination.html', context)
 
 
@@ -243,7 +245,9 @@ def delete_keylog(request, quest_id, keylog_id):
 def detail_mission(request, mission_id):
     mission = get_object_or_404(Mission, pk=mission_id)
     quest = mission.quest
-    if not quest.is_published or not quest.ended:
+    can_user_view = quest.is_published and\
+                    (quest.ended or (request.user.is_authenticated() and mission.is_completed(request.user)))
+    if not can_user_view:
         request = is_quest_organizer(request, quest)
     hints = None
     hint_form = None
