@@ -189,6 +189,8 @@ def coordination_quest(request, quest_id):
     request = is_quest_player(request, quest)
     current_mission = get_object_or_404(CurrentMission, mission__quest=quest, player=request.user)
     mission = current_mission.mission
+    hints = Hint.display_hints(current_mission)
+    next_hint_time = Hint.next_hint_time(current_mission)
     form = None
     wrong_keys_str = None
     if not mission.is_finish and quest.started:
@@ -206,7 +208,8 @@ def coordination_quest(request, quest_id):
             return redirect('coordination:quest_coordination', quest_id=quest_id)
         wrong_keys = Keylog.wrong_keylogs(request.user, mission)
         wrong_keys_str = ', '.join(str(i) for i in wrong_keys)
-    context = {'quest': quest, 'mission': mission, 'form': form, 'wrong_keys': wrong_keys_str}
+    context = {'quest': quest, 'mission': mission, 'hints': hints, 'form': form, 'wrong_keys': wrong_keys_str,
+               'next_hint_time': next_hint_time}
     return render(request, 'coordination/quests/coordination.html', context)
 
 

@@ -1,8 +1,9 @@
-from datetime import datetime
+from datetime import timedelta
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.utils import timezone
+from coordination.utils import get_timedelta_with_now, time_in_minutes
 
 
 class Quest(models.Model):
@@ -164,11 +165,40 @@ class Hint(models.Model):
     def __str__(self):
         return 'Подсказка {0}'.format(self.order_number)
 
+    @property
+    def abs_delay(self):
+        hints = Hint.objects.filter(mission=self.mission, order_number__lte=self.order_number)
+        aggregation = hints.aggregate(abs_delay=models.Sum('delay'))
+        return aggregation.get('abs_delay', self.delay)
+
+    @staticmethod
+    def display_hints(current_mission):
+        display_hints = []
+        delta = get_timedelta_with_now(current_mission.start_time)
+        minutes = time_in_minutes(delta)
+        hints = current_mission.mission.hints()
+        for hint in hints:
+            if hint.abs_delay <= minutes:
+                display_hints.append(hint)
+        return display_hints
+
+    @staticmethod
+    def next_hint_time(current_mission):
+        next_hint_time = None
+        delta = get_timedelta_with_now(current_mission.start_time)
+        minutes = time_in_minutes(delta)
+        hints = current_mission.mission.hints()
+        for hint in hints:
+            if hint.abs_delay > minutes:
+                next_hint_time = current_mission.start_time + timedelta(minutes=hint.abs_delay)
+                break
+        return next_hint_time
+
 
 class CurrentMission(models.Model):
     player = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name='игрок')
     mission = models.ForeignKey(Mission, verbose_name='задание')
-    start_time = models.DateTimeField('время начала задания', default=datetime.now)
+    start_time = models.DateTimeField('время начала задания', default=timezone.now)
 
     def __str__(self):
         return '{0} - {1}'.format(self.player, self.mission)

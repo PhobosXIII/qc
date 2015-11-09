@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load crispy_forms_tags %}
+{% load staticfiles %}
 
 {% block title %}{{ quest.title }} - Координация{% endblock %}
 
@@ -18,6 +19,12 @@
         </div>
     {% endif %}
 
+    <div class="lead" id="countdown"></div>
+
+    {% if hints %}
+        {% include 'coordination/hints/_list.html' %}
+    {% endif %}
+
     {% if form %}
         <div class="row-margin">{% crispy form %}</div>
         {% if wrong_keys %}
@@ -25,3 +32,34 @@
         {% endif %}
     {% endif %}
 {% endblock content %}
+
+{% block scripts %}
+    {{ block.super }}
+    <script type="text/javascript" src="{% static "assets/js/jquery.countdown.min.js" %}"></script>
+    <script type="text/javascript">
+        var time = new Date({{ next_hint_time|date:"U" }} * 1000);
+        $(function () {
+            $('#countdown').countdown(time)
+                .on('update.countdown', function(event) {
+                    var format = '<b>%M:%S</b>';
+                    $(this).html(event.strftime('До следующей подсказки осталось: ' + format +
+                            '. Если страница не обновилась автоматически, обновите ее вручную!'));
+                })
+                .on('finish.countdown', function(event) {
+                   refresh();
+                });
+        });
+
+        function refresh() {
+            sleep(1000);
+            window.location.reload(true);
+        }
+
+        function sleep(duration) {
+         var d = new Date().getTime() + duration;
+          while(new Date().getTime() <= d ) {
+            //Do nothing
+          }
+        }
+    </script>
+{% endblock %}
