@@ -2,7 +2,7 @@
 {% load coordination_extras %}
 {% load crispy_forms_tags %}
 
-{% block title %}{{ quest.title }}. {{ mission }}{% endblock %}
+{% block title %}{{ quest.title }}. {{ mission.short_name }}{% endblock %}
 
 {% block content %}
     {% include 'coordination/_confirm_dialog.html' %}

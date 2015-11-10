@@ -11,6 +11,9 @@
             {% if user|in_group:'organizers' %}
                 <p><a class="btn btn-success btn-lg" href="{% url 'coordination:quest_new' %}">
                     <span class="fa fa-plus fa-lg"></span> Создать квест</a></p>
+            {% elif quest %}
+                <p><a class="btn btn-success btn-lg" href="{% url 'coordination:quest_coordination' quest.id %}">
+                    <span class="fa fa-user fa-lg"></span> Играть</a></p>
             {% else %}
                 <p><a class="btn btn-success btn-lg" href="#"><span class="fa fa-user-secret fa-lg"></span>
                     Стать организатором</a></p>

@@ -11,6 +11,7 @@ def is_organizer(user, quest):
             user_is_organizer = True
     return user_is_organizer
 
+
 @register.filter
 def is_player(user, quest):
     user_is_player = False
