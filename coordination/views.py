@@ -3,8 +3,8 @@ from django.contrib.auth.models import User
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
-from coordination.forms import QuestForm, MissionForm, HintForm, PlayerForm, KeyForm
-from coordination.models import Quest, Mission, Hint, CurrentMission, Keylog
+from coordination.forms import QuestForm, MissionForm, HintForm, PlayerForm, KeyForm, MessageForm
+from coordination.models import Quest, Mission, Hint, CurrentMission, Keylog, Message
 from coordination.utils import is_quest_organizer, is_quest_player, is_organizer, generate_random_username
 
 
@@ -193,6 +193,7 @@ def coordination_quest(request, quest_id):
     hints = Hint.display_hints(current_mission)
     next_hint_time = Hint.next_hint_time(current_mission)
     completed_missions = Mission.completed_missions(quest, player)
+    messages = quest.messages().filter(is_show=True)
     form = None
     wrong_keys_str = None
     if not mission.is_finish and quest.started:
@@ -211,7 +212,7 @@ def coordination_quest(request, quest_id):
         wrong_keys = Keylog.wrong_keylogs(player, mission)
         wrong_keys_str = ', '.join(str(i) for i in wrong_keys)
     context = {'quest': quest, 'mission': mission, 'hints': hints, 'form': form, 'wrong_keys': wrong_keys_str,
-               'next_hint_time': next_hint_time, 'completed_missions': completed_missions}
+               'next_hint_time': next_hint_time, 'completed_missions': completed_missions, 'messages': messages}
     return render(request, 'coordination/quests/coordination.html', context)
 
 
@@ -241,11 +242,62 @@ def delete_keylog(request, quest_id, keylog_id):
     return redirect('coordination:quest_keylog', quest_id=quest_id)
 
 
+def messages_quest(request, quest_id):
+    quest = get_object_or_404(Quest, pk=quest_id)
+    request = is_quest_organizer(request, quest)
+    messages = quest.messages()
+    if request.method == 'POST':
+        form = MessageForm(request.POST)
+        if form.is_valid():
+            message = form.save(commit=False)
+            message.quest = quest
+            message.save()
+            return redirect('coordination:quest_messages', quest_id=quest.id)
+    else:
+        form = MessageForm()
+    context = {'quest': quest, 'messages': messages, 'form': form}
+    return render(request, 'coordination/quests/messages.html', context)
+
+
+@login_required
+def show_message(request, quest_id, message_id):
+    quest = get_object_or_404(Quest, pk=quest_id)
+    is_quest_organizer(request, quest)
+    message = get_object_or_404(Message, pk=message_id)
+    message.show()
+    return redirect('coordination:quest_messages', quest_id=quest_id)
+
+
+@login_required()
+def edit_message(request, quest_id, message_id):
+    quest = get_object_or_404(Quest, pk=quest_id)
+    request = is_quest_organizer(request, quest)
+    message = get_object_or_404(Message, pk=message_id)
+    if request.method == "POST":
+        form = MessageForm(request.POST, instance=message)
+        if form.is_valid():
+            form.save()
+            return redirect('coordination:quest_messages', quest_id=quest_id)
+    else:
+        form = MessageForm(instance=message)
+    context = {'form': form}
+    return render(request, 'coordination/messages/form.html', context)
+
+
+@login_required
+def delete_message(request, quest_id, message_id):
+    quest = get_object_or_404(Quest, pk=quest_id)
+    is_quest_organizer(request, quest)
+    message = get_object_or_404(Message, pk=message_id)
+    message.delete()
+    return redirect('coordination:quest_messages', quest_id=quest_id)
+
+
 # Missions
 def detail_mission(request, mission_id):
     mission = get_object_or_404(Mission, pk=mission_id)
     quest = mission.quest
-    can_user_view = quest.is_published and\
+    can_user_view = quest.is_published and \
                     (quest.ended or (request.user.is_authenticated() and mission.is_completed(request.user)))
     if not can_user_view:
         request = is_quest_organizer(request, quest)
@@ -253,16 +305,15 @@ def detail_mission(request, mission_id):
     hint_form = None
     if not mission.is_start and not mission.is_finish:
         hints = mission.hints()
-        if request.user == quest.organizer or request.user.is_superuser:
-            if request.method == 'POST':
-                hint_form = HintForm(request.POST)
-                if hint_form.is_valid():
-                    hint = hint_form.save(commit=False)
-                    hint.mission = mission
-                    hint.save()
-                    return redirect('coordination:mission_detail', mission_id=mission.pk)
-            else:
-                hint_form = HintForm(next_number=mission.next_hint_number())
+        if request.method == 'POST':
+            hint_form = HintForm(request.POST)
+            if hint_form.is_valid():
+                hint = hint_form.save(commit=False)
+                hint.mission = mission
+                hint.save()
+                return redirect('coordination:mission_detail', mission_id=mission.id)
+        else:
+            hint_form = HintForm(next_number=mission.next_hint_number())
     context = {'quest': quest, 'mission': mission, 'hints': hints, 'hint_form': hint_form}
     return render(request, 'coordination/missions/detail.html', context)
 

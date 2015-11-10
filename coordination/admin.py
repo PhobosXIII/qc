@@ -3,7 +3,7 @@ from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
 from django.db import models
 from django.forms import SelectMultiple
-from coordination.models import Quest, Mission, Hint, CurrentMission, Keylog
+from coordination.models import Quest, Mission, Hint, CurrentMission, Keylog, Message
 
 
 def user_str(self):
@@ -53,6 +53,11 @@ class KeylogAdmin(admin.ModelAdmin):
     list_filter = ('is_right', 'player', 'mission', 'mission__quest')
 
 
+class MessageAdmin(admin.ModelAdmin):
+    list_display = ('text', 'is_show')
+    list_filter = ('quest', )
+
+
 def get_quest(self, obj):
     return obj.mission.quest
 get_quest.short_description = 'квест'
@@ -66,5 +71,6 @@ admin.site.register(Quest, QuestAdmin)
 admin.site.register(Mission, MissionAdmin)
 admin.site.register(CurrentMission, CurrentMissionAdmin)
 admin.site.register(Keylog, KeylogAdmin)
+admin.site.register(Message, MessageAdmin)
 admin.site.unregister(User)
 admin.site.register(User, MyUserAdmin)

@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <div class="page-header">
+        <h1>{% block title %}Редактирование сообщения{% endblock %}</h1>
+    </div>
+
+    <form class="col-md-6 col-md-offset-3" action="" method="post">
+        {% crispy form %}
+        <button type="submit" class="btn btn-lg btn-success"><span class="fa fa-check"></span> Готово</button>
+        <a href="{% url 'coordination:quest_messages' form.instance.quest_id %}" class="btn btn-lg btn-default">
+            <span class="fa fa-close"></span> Отмена</a>
+    </form>
+{% endblock content %}

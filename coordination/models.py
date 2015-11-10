@@ -85,6 +85,9 @@ class Quest(models.Model):
     def start_mission(self):
         return Mission.objects.get(quest=self, order_number=0)
 
+    def messages(self):
+        return Message.objects.filter(quest=self)
+
 
 class Mission(models.Model):
     quest = models.ForeignKey(Quest, verbose_name='квест')
@@ -257,3 +260,20 @@ class Keylog(models.Model):
     @staticmethod
     def wrong_keylogs(player, mission):
         return Keylog.objects.filter(player=player, mission=mission, is_right=False)
+
+
+class Message(models.Model):
+    quest = models.ForeignKey(Quest, verbose_name='квест')
+    text = models.TextField('текст сообщения')
+    is_show = models.BooleanField('отображать', default=True)
+
+    class Meta:
+        verbose_name = 'сообщение'
+        verbose_name_plural = 'сообщения'
+
+    def __str__(self):
+        return self.text
+
+    def show(self):
+        self.is_show = not self.is_show
+        self.save()

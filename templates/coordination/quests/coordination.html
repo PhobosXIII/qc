@@ -13,6 +13,10 @@
 
     <h2>{{ mission.short_name }}</h2>
 
+    {% for message in messages %}
+        <p class="alert alert-info">{{ message.text|linebreaksbr }}</p>
+    {% endfor %}
+
     {% if mission.text %}
         <div class="well well-sm">
             <p class="lead">{{ mission.text|linebreaksbr }}</p>
@@ -33,7 +37,7 @@
     {% endif %}
 
     {% if completed_missions %}
-        <div class="row row-margin">
+        <div class="row-margin">
             <div class="col-sm-4 list-group">
                 <p class="lead">Пройденные задания</p>
                 {% for mission in completed_missions %}

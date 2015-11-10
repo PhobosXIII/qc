@@ -28,6 +28,12 @@ quest_patterns = [
             url(r'^$', views.keylog_quest, name='quest_keylog'),
             url(r'^delete/(?P<keylog_id>[0-9]+)/$', views.delete_keylog, name='keylog_delete'),
         ])),
+        url(r'^messages/$', views.messages_quest, name='quest_messages'),
+        url(r'^messages/(?P<message_id>[0-9]+)/', include([
+            url(r'^show/$', views.show_message, name='message_show'),
+            url(r'^edit/$', views.edit_message, name='message_edit'),
+            url(r'^delete/$', views.delete_message, name='message_delete'),
+        ])),
     ])),
 ]
 

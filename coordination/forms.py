@@ -3,7 +3,7 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Field, HTML, Div, Row
 from django.forms import ModelForm, Form
 from django.forms.fields import CharField
-from coordination.models import Quest, Mission, Hint
+from coordination.models import Quest, Mission, Hint, Message
 
 
 class QuestForm(ModelForm):
@@ -116,4 +116,19 @@ class KeyForm(Form):
             HTML('<p class="alert alert-warning">Ключ вводится маленькими буквами, без пробелов и дефисов.</p>'),
             PrependedText('key', '<span class="fa fa-key"></span>', autofocus=True, placeholder='ключ', size='30'),
             StrictButton('Отправить', type='submit', css_class='btn-primary')
+        )
+
+
+class MessageForm(ModelForm):
+    class Meta:
+        model = Message
+        fields = ['text']
+
+    def __init__(self, *args, **kwargs):
+        super(MessageForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.form_tag = False
+        self.helper.html5_required = True
+        self.helper.layout = Layout(
+            'text',
         )
