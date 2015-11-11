@@ -14,12 +14,12 @@
     <h2>{{ mission.short_name }}</h2>
 
     {% for message in messages %}
-        <p class="alert alert-info">{{ message.text|linebreaksbr }}</p>
+        <p class="alert alert-info">{{ message.text|linebreaksbr|urlize }}</p>
     {% endfor %}
 
     {% if mission.text %}
         <div class="well well-sm">
-            <p class="lead">{{ mission.text|linebreaksbr }}</p>
+            <p class="lead">{{ mission.text|linebreaksbr|urlize }}</p>
         </div>
     {% endif %}
 

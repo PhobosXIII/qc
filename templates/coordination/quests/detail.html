@@ -50,7 +50,7 @@
     <h3>Организатор: <span class="label label-primary">{{ quest.organizer|nice_name }}</span></h3>
 
     <div class="well text-base">
-        {{ quest.description|default:"Подробности позже."|linebreaks }}
+        {{ quest.description|default:"Подробности позже."|linebreaks|urlize }}
     </div>
 
     {% if user|is_organizer:quest or user.is_superuser %}
