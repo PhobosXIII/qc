@@ -17,9 +17,10 @@ from django.conf.urls import include, url
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from main import views as main_views
+from qc import settings
 
 urlpatterns = [
-    url(r'^admin/', include(admin.site.urls)),
+    url(r'^{}/'.format(settings.ADMIN_URL_PATH), include(admin.site.urls)),
     url(r'^login/$', auth_views.login, name='auth_login'),
     url(r'^logout/$', auth_views.logout, {'next_page': 'auth_login'}, name='auth_logout'),
     url(r'^password_change/$', auth_views.password_change, name='auth_password_change'),
