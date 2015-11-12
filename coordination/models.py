@@ -73,6 +73,10 @@ class Quest(models.Model):
         now = timezone.now()
         return Quest.objects.filter(is_published=True, start__gte=now)
 
+    @staticmethod
+    def my_quests(organizer):
+        return Quest.objects.filter(organizer=organizer)
+
     def missions(self):
         return Mission.objects.filter(quest=self)
 

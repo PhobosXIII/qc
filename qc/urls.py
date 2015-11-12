@@ -23,8 +23,11 @@ urlpatterns = [
     url(r'^{}/'.format(settings.ADMIN_URL_PATH), include(admin.site.urls)),
     url(r'^login/$', auth_views.login, name='auth_login'),
     url(r'^logout/$', auth_views.logout, {'next_page': 'auth_login'}, name='auth_logout'),
-    url(r'^password_change/$', auth_views.password_change, name='auth_password_change'),
-    url(r'^password_change/done/$', auth_views.password_change_done, name='auth_password_change_done'),
     url(r'^$', main_views.home, name='home'),
+    url(r'^profile/', include([
+        url(r'^$', main_views.my_profile, name='my_profile'),
+        url(r'^password_change/$', auth_views.password_change, name='password_change'),
+        url(r'^password_change/done/$', auth_views.password_change_done, name='password_change_done'),
+    ])),
     url(r'^', include('coordination.urls', namespace='coordination')),
 ]

@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% load main_extras %}
+
+{% block title %}Профиль организатора{% endblock %}
+
+{% block content %}
+    <div class="page-header">
+            <h1><span class="fa fa-user-secret"></span> {{ user|nice_name }}</h1>
+    </div>
+
+    <p class=" text-center">
+        <a href="{% url 'password_change' %}" class="btn btn-warning btn-lg">
+            <span class="fa fa-lock fa-lg"></span> Изменить пароль
+        </a>
+    </p>
+
+    <div class="row">
+        <div class="col-md-10 col-md-offset-1">
+            <h2>Мои игры</h2>
+            {% include 'coordination/quests/_list.html' with quests=my_quests %}
+            {% include 'coordination/_pagination.html' with p=my_quests %}
+        </div>
+    </div>
+{% endblock content %}

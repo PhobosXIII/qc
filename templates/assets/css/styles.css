@@ -79,7 +79,7 @@ td, th {
     text-align: center;
 }
 
-.errorlist.nonfield {
+.errorlist {
     padding-left:0;
     list-style:none;
 }
