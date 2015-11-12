@@ -254,8 +254,7 @@ class Keylog(models.Model):
     @staticmethod
     def right_keylogs(missions):
         keylogs = Keylog.objects.filter(mission__in=missions, is_right=True)
-        return keylogs.order_by('player', 'fix_time', 'mission__order_number').distinct('player', 'fix_time',
-                                                                                        'mission__order_number')
+        return keylogs.order_by('player', 'mission__order_number').distinct('player', 'mission__order_number')
 
     @staticmethod
     def wrong_keylogs(player, mission):
