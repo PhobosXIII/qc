@@ -35,9 +35,7 @@
     <br>
 
     {% if not mission.is_finish %}
-        <div class="well well-sm">
-            <p class="text-base">Ключ: {{ mission.key|default:"Не указан" }}</p>
-        </div>
+        <p class="label label-info text-base"><span class="fa fa-key"></span> {{ mission.key|default:"Не указан" }}</p>
     {% endif %}
 
     {% if user|is_organizer:quest or user.is_superuser%}
