@@ -1,3 +1,16 @@
 from django.db import models
 
-# Create your models here.
+
+class News(models.Model):
+    title = models.CharField('заголовок', max_length=255)
+    text = models.TextField('текст новости')
+    is_published = models.BooleanField('опубликована', default=False)
+    published_date = models.DateTimeField('дата публикации', blank=True, null=True)
+
+    class Meta:
+        verbose_name = 'новость'
+        verbose_name_plural = 'новости'
+        ordering = ['-published_date']
+
+    def __str__(self):
+        return self.title

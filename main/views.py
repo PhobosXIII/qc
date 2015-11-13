@@ -1,19 +1,21 @@
 from django.core.mail import send_mail, BadHeaderError
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.http import HttpResponse
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from coordination.models import Quest
 from coordination.utils import is_organizer
 from main.forms import ContactForm
+from main.models import News
 from qc import settings
 
 
 def home(request):
+    last_news = News.objects.filter(is_published=True)[:3]
     coming_quests = Quest.coming_quests()[:3]
     quest = None
     if request.user.is_authenticated():
         quest = Quest.objects.filter(players=request.user).first()
-    context = {'coming_quests': coming_quests, 'quest': quest}
+    context = {'coming_quests': coming_quests, 'quest': quest, 'last_news': last_news}
     return render(request, 'home.html', context)
 
 
@@ -52,3 +54,23 @@ def contacts(request, subj_code=0):
         form = ContactForm(subj_code=subj_code)
     context = {'form': form}
     return render(request, 'contacts/form.html', context)
+
+
+def all_news(request):
+    news = News.objects.filter(is_published=True)
+    paginator = Paginator(news, 10)
+    page = request.GET.get('page')
+    try:
+        news_list = paginator.page(page)
+    except PageNotAnInteger:
+        news_list = paginator.page(1)
+    except EmptyPage:
+        news_list = paginator.page(paginator.num_pages)
+    context = {'news_list': news_list}
+    return render(request, 'news/all.html', context)
+
+
+def detail_news(request, news_id):
+    news = get_object_or_404(News, pk=news_id)
+    context = {'news': news}
+    return render(request, 'news/detail.html', context)

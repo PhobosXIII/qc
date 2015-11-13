@@ -31,5 +31,9 @@ urlpatterns = [
         url(r'^password_change/$', auth_views.password_change, name='password_change'),
         url(r'^password_change/done/$', auth_views.password_change_done, name='password_change_done'),
     ])),
+    url(r'^news/', include([
+        url(r'^$', main_views.all_news, name='news'),
+        url(r'^(?P<news_id>[0-9]+)/$', main_views.detail_news, name='news_detail'),
+    ])),
     url(r'^', include('coordination.urls', namespace='coordination')),
 ]
