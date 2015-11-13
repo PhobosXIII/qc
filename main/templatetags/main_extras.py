@@ -6,14 +6,19 @@ register = template.Library()
 
 
 @register.inclusion_tag('tags/menu_item.html', takes_context=True)
-def menu_item(context, link_text, named_url=None, *args):
+def menu_item(context, link_text, named_url=None, *args, **kwargs):
+    contains = kwargs.pop('contains', False)
     active = False
     item_url = '#'
     request = context['request']
     if named_url:
         item_url = reverse(named_url, args=args)
-        if item_url and request.path == item_url:
-            active = True
+        if contains:
+            if item_url and item_url in request.path:
+                active = True
+        else:
+            if item_url and request.path == item_url:
+                active = True
     return {'item_url': item_url, 'link_text': link_text, 'active': active}
 
 

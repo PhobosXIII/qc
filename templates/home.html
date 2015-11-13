@@ -15,8 +15,8 @@
                 <p><a class="btn btn-success btn-lg" href="{% url 'coordination:quest_coordination' quest.id %}">
                     <span class="fa fa-user fa-lg"></span> Играть</a></p>
             {% else %}
-                <p><a class="btn btn-success btn-lg" href="#"><span class="fa fa-user-secret fa-lg"></span>
-                    Стать организатором</a></p>
+                <p><a class="btn btn-success btn-lg" href="{% url 'contacts_org' %}">
+                    <span class="fa fa-user-secret fa-lg"></span> Стать организатором</a></p>
             {% endif %}
             </div>
     </div>

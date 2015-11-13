@@ -20,7 +20,7 @@
             <ul class="nav navbar-nav">
                 {% menu_item 'Квесты' 'coordination:quests' %}
                 {% menu_item 'Новости' %}
-                {% menu_item 'Контакты' %}
+                {% menu_item 'Контакты' 'contacts' contains=True %}
                 {% if user.is_superuser %}
                     <li><a href="{% url 'admin:index' %}" target="_blank">Админка</a></li>
                 {% endif %}

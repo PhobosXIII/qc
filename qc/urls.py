@@ -24,6 +24,8 @@ urlpatterns = [
     url(r'^login/$', auth_views.login, name='auth_login'),
     url(r'^logout/$', auth_views.logout, {'next_page': 'auth_login'}, name='auth_logout'),
     url(r'^$', main_views.home, name='home'),
+    url(r'^contacts/$', main_views.contacts, name='contacts'),
+    url(r'^contacts/org/$', main_views.contacts, {'subj_code': 1}, name='contacts_org'),
     url(r'^profile/', include([
         url(r'^$', main_views.my_profile, name='my_profile'),
         url(r'^password_change/$', auth_views.password_change, name='password_change'),

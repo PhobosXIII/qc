@@ -65,7 +65,8 @@
                 {% now "Y" as current_year %}
                 {{ FULL_PROJECT_NAME }} {{ PROJECT_VERSION }} <span class="fa fa-copyright"></span> {{ current_year }}
             </div>
-            <a class="label label-info email-link" href="#"><span class="fa fa-envelope"></span> Написать разработчику</a>
+            <a class="label label-info link" href="{% url 'contacts' %}">
+                <span class="fa fa-envelope"></span> Написать разработчику</a>
         </div>
     </div>
 

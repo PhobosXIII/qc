@@ -26,6 +26,7 @@ SECRET_KEY = get_env_variable('QC_SECRET_KEY')
 if ENV_ROLE == 'dev':
     DEBUG = True
     ALLOWED_HOSTS = []
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 if ENV_ROLE == 'prod':
     DEBUG = False
@@ -38,6 +39,12 @@ ADMINS = (
 )
 
 MANAGERS = ADMINS
+
+EMAIL_HOST = 'smtp.yandex.ru'
+EMAIL_HOST_USER = 'dev@quect.ru'
+EMAIL_HOST_PASSWORD = get_env_variable('EMAIL_HOST_PASSWORD')
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
 
 # Application definition
 
