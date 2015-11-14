@@ -5,7 +5,8 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
 from coordination.forms import QuestForm, MissionForm, HintForm, PlayerForm, KeyForm, MessageForm
 from coordination.models import Quest, Mission, Hint, CurrentMission, Keylog, Message
-from coordination.utils import is_quest_organizer, is_quest_player, is_organizer, generate_random_username
+from coordination.utils import is_quest_organizer, is_quest_player, is_organizer, generate_random_username, \
+    generate_random_password
 
 
 # Quests
@@ -163,7 +164,7 @@ def players_quest(request, quest_id):
     if form.is_valid():
         name = form.cleaned_data["name"]
         username = generate_random_username()
-        password = User.objects.make_random_password(length=6)
+        password = generate_random_password()
         user = User.objects.create_user(username=username, password=password, first_name=name, last_name=password)
         quest.players.add(user)
         start_mission = quest.start_mission()

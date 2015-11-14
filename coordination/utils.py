@@ -23,15 +23,17 @@ def is_quest_player(request, quest):
     raise PermissionDenied
 
 
-def generate_random_username(length=6, chars=ascii_lowercase+digits, split=3, delimiter='-'):
-    username = ''.join([choice(chars) for i in range(length)])
-    if split:
-        username = delimiter.join([username[start:start+split] for start in range(0, len(username), split)])
+def generate_random_username(length=8, chars=ascii_lowercase+digits):
+    username = User.objects.make_random_password(length=length, allowed_chars=chars)
     try:
         User.objects.get(username=username)
-        return generate_random_username(length=length, chars=chars, split=split, delimiter=delimiter)
+        return generate_random_username(length=length, chars=chars)
     except User.DoesNotExist:
         return username
+
+
+def generate_random_password(length=4, chars=digits):
+    return User.objects.make_random_password(length=length, allowed_chars=chars)
 
 
 def get_timedelta(time):
