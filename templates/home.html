@@ -12,7 +12,8 @@
                 <p><a class="btn btn-success btn-lg" href="{% url 'coordination:quest_new' %}">
                     <span class="fa fa-plus fa-lg"></span> Создать квест</a></p>
             {% elif quest %}
-                <p><a class="btn btn-success btn-lg" href="{% url 'coordination:quest_coordination' quest.id %}">
+                <p><a class="btn btn-success btn-lg {% if not quest.is_published %}disabled{% endif %}"
+                      href="{% url 'coordination:quest_coordination' quest.id %}">
                     <span class="fa fa-user fa-lg"></span> Играть</a></p>
             {% else %}
                 <p><a class="btn btn-success btn-lg" href="{% url 'contacts_org' %}">

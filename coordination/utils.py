@@ -18,7 +18,7 @@ def is_quest_organizer(request, quest):
 
 
 def is_quest_player(request, quest):
-    if request.user in quest.players.all():
+    if quest.is_published and request.user in quest.players.all():
         return request
     raise PermissionDenied
 
