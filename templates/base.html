@@ -50,7 +50,7 @@
 </head>
 
 <body>
-    {% include '_navbar.html' %}
+    {% block nav %}{% include '_navbar.html' %}{% endblock %}
 
     {% block jumbotron %}{% endblock %}
 
@@ -58,17 +58,19 @@
         {% block content %}{% endblock %}
     </div>
 
-    <div id="footer">
-        <div class="container">
-            <img class="logo" src="{% static "assets/images/favicon-96x96.png" %}">
-            <div class="footer-text">
-                {% now "Y" as current_year %}
-                {{ FULL_PROJECT_NAME }} {{ PROJECT_VERSION }} <span class="fa fa-copyright"></span> {{ current_year }}
+    {% block footer %}
+        <div id="footer">
+            <div class="container">
+                <img class="logo" src="{% static "assets/images/favicon-96x96.png" %}">
+                <div class="footer-text">
+                    {% now "Y" as current_year %}
+                    {{ FULL_PROJECT_NAME }} {{ PROJECT_VERSION }} <span class="fa fa-copyright"></span> {{ current_year }}
+                </div>
+                <a class="label label-info link" href="{% url 'contacts' %}">
+                    <span class="fa fa-envelope"></span> Написать разработчику</a>
             </div>
-            <a class="label label-info link" href="{% url 'contacts' %}">
-                <span class="fa fa-envelope"></span> Написать разработчику</a>
         </div>
-    </div>
+    {% endblock footer %}
 
     {% block scripts %}
         <script src="{% static "assets/js/jquery.min.js" %}"></script>

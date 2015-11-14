@@ -175,6 +175,15 @@ def players_quest(request, quest_id):
 
 
 @login_required
+def players_quest_print(request, quest_id):
+    quest = get_object_or_404(Quest, pk=quest_id)
+    is_quest_organizer(request, quest)
+    players = quest.players.all().order_by('first_name')
+    context = {'quest': quest, 'players': players}
+    return render(request, 'coordination/quests/players_print.html', context)
+
+
+@login_required
 def delete_player(request, quest_id, player_id):
     quest = get_object_or_404(Quest, pk=quest_id)
     is_quest_organizer(request, quest)

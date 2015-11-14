@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+
+{% block styles %}
+    <link rel="stylesheet" href="{% static "assets/css/bootstrap.min.css" %}">
+{% endblock %}
+
+{% block title %}{{ quest.title }} - Игроки (печать){% endblock %}
+
+{% block nav %}{% endblock %}
+
+{% block content %}
+    {% if players %}
+        <table class="table text-center">
+            <tbody>
+            {% for player in players %}
+                <tr>
+                    <td>{{ player.first_name }}</td>
+                    <td>Логин: <b>{{ player.username }}</b></td>
+                    <td>Пароль: <b>{{ player.last_name }}</b></td>
+                    <td>quect.ru</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p class="lead text-center">Ни один игрок еще не добавлен к квесту.</p>
+    {% endif %}
+{% endblock content %}
+
+{% block footer %}{% endblock %}
+
+{% block scripts %}{% endblock %}

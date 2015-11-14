@@ -15,6 +15,11 @@
     <div class="row row-margin">{% crispy form %}</div>
 
     {% if players %}
+        <p class="text-center">
+            <a href="{% url 'coordination:quest_players_print' quest.id %}" class="btn btn-primary" target="_blank">
+                <span class="fa fa-print fa-lg"></span> Версия для печати
+            </a>
+        </p>
         <div class="table-responsive">
             <table class="table table-bordered table-striped text-center">
                 <thead>
