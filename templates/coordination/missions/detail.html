@@ -32,9 +32,12 @@
         </div>
     {% endif %}
 
-    <br>
+    {% if mission.media_file %}
+        <a href="{{ mission.media_file }}" target="_blank"><img src="{{ mission.media_file }}" class="img-responsive"></a>
+    {% endif %}
 
     {% if not mission.is_finish %}
+        <br>
         <p class="label label-info text-base"><span class="fa fa-key"></span> {{ mission.key|default:"Не указан" }}</p>
     {% endif %}
 
