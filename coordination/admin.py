@@ -31,6 +31,7 @@ class QuestAdmin(admin.ModelAdmin):
 class HintInline(admin.TabularInline):
     model = Hint
     extra = 3
+    fields = ('order_number', 'text', 'delay')
 
 
 class MissionAdmin(admin.ModelAdmin):

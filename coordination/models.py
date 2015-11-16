@@ -177,7 +177,7 @@ class Mission(models.Model):
 
 class Hint(models.Model):
     mission = models.ForeignKey(Mission, verbose_name='задание')
-    text = models.CharField('подсказка', max_length=255)
+    text = models.TextField('текст подсказки')
     delay = models.PositiveSmallIntegerField('время отправления',
                                              validators=[MinValueValidator(1), MaxValueValidator(90)])
     order_number = models.PositiveSmallIntegerField('номер подсказки',
