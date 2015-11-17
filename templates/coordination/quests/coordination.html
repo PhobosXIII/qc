@@ -23,8 +23,8 @@
         </div>
     {% endif %}
 
-    {% if mission.media_file %}
-        <a href="{{ mission.media_file }}" target="_blank"><img src="{{ mission.media_file }}" class="img-responsive"></a>
+    {% if mission.picture %}
+        <a href="{{ mission.picture.url }}" target="_blank"><img src="{{ mission.picture.url }}" class="img-responsive"></a>
     {% endif %}
 
     <div class="lead" id="countdown"></div>

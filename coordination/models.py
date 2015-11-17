@@ -6,6 +6,10 @@ from django.utils import timezone
 from coordination.utils import get_timedelta_with_now, time_in_minutes
 
 
+def mission_file_name(instance, filename):
+    return '/'.join(['missions', '{0}'.format(instance.quest.organizer.pk), '{0}'.format(instance.quest.pk), filename])
+
+
 class Quest(models.Model):
     STATUSES = (
         ('NTS', 'Не запущен'),
@@ -98,7 +102,7 @@ class Mission(models.Model):
     name = models.CharField('название', max_length=100, blank=True)
     name_in_table = models.CharField('название в табличке', max_length=100, blank=True)
     text = models.TextField('текст задания', blank=True)
-    media_file = models.URLField('медиафайл', blank=True)
+    picture = models.ImageField('картинка', upload_to=mission_file_name, blank=True)
     key = models.CharField('ключ', max_length=30, blank=True)
     order_number = models.PositiveSmallIntegerField('номер задания',
                                                     validators=[MinValueValidator(0), MaxValueValidator(99)])

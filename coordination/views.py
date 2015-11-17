@@ -333,7 +333,7 @@ def create_mission(request, quest_id):
     quest = get_object_or_404(Quest, pk=quest_id)
     request = is_quest_organizer(request, quest)
     if request.method == 'POST':
-        form = MissionForm(request.POST)
+        form = MissionForm(request.POST, request.FILES)
         if form.is_valid():
             mission = form.save(commit=False)
             mission.quest = quest
@@ -350,7 +350,7 @@ def edit_mission(request, mission_id):
     mission = get_object_or_404(Mission, pk=mission_id)
     request = is_quest_organizer(request, mission.quest)
     if request.method == "POST":
-        form = MissionForm(request.POST, instance=mission)
+        form = MissionForm(request.POST, request.FILES, instance=mission)
         if form.is_valid():
             form.save()
             return redirect('coordination:mission_detail', mission_id=mission_id)

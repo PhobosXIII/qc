@@ -6,7 +6,7 @@
         <h1>{% block title %}{{ form.instance.pk|yesno:'Редактирование задания, Новое задание' }}{% endblock %}</h1>
     </div>
 
-    <form class="col-md-6 col-md-offset-3" action="" method="post">
+    <form class="col-md-6 col-md-offset-3" action="" method="post" enctype="multipart/form-data">
         {% crispy form %}
         <button type="submit" class="btn btn-lg btn-success"><span class="fa fa-check"></span> Готово</button>
         <a href="
