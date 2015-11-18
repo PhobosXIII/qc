@@ -7,7 +7,9 @@ from coordination.utils import get_timedelta_with_now, time_in_minutes
 
 
 def mission_file_name(instance, filename):
-    return '/'.join(['missions', '{0}'.format(instance.quest.organizer.pk), '{0}'.format(instance.quest.pk), filename])
+    ext = filename.split('.')[-1].lower()
+    filename = "{0}.{1}".format(timezone.now().strftime("%d-%m-%Y-%H-%M-%S"), ext)
+    return '/'.join(['missions', str(instance.quest.organizer.pk), str(instance.quest.pk), filename])
 
 
 class Quest(models.Model):

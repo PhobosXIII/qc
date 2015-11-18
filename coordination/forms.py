@@ -114,7 +114,7 @@ class KeyForm(Form):
         self.helper.form_class = 'form-inline'
         self.helper.layout = Layout(
             HTML('<p class="alert alert-warning">Ключ вводится маленькими буквами, без пробелов и дефисов.</p>'),
-            PrependedText('key', '<span class="fa fa-key"></span>', autofocus=True, placeholder='ключ', size='30'),
+            PrependedText('key', '<span class="fa fa-key"></span>', placeholder='ключ', size='30'),
             StrictButton('Отправить', type='submit', css_class='btn-primary')
         )
 

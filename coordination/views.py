@@ -163,7 +163,7 @@ def players_quest(request, quest_id):
     form = PlayerForm(request.POST or None)
     if form.is_valid():
         name = form.cleaned_data["name"]
-        username = generate_random_username()
+        username = generate_random_username(name)
         password = generate_random_password()
         user = User.objects.create_user(username=username, password=password, first_name=name, last_name=password)
         quest.players.add(user)

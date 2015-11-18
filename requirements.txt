@@ -4,3 +4,4 @@ dj-database-url==0.3.0
 whitenoise==2.0.6
 django-crispy-forms==1.5.2
 Pillow=3.0.0
+awesome-slugify=1.6.5
