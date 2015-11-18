@@ -26,7 +26,7 @@ class QuestForm(ModelForm):
 class MissionForm(ModelForm):
     class Meta:
         model = Mission
-        fields = ['name', 'name_in_table', 'text', 'picture', 'key', 'order_number']
+        fields = ['name', 'name_in_table', 'text', 'key', 'order_number']
 
     def __init__(self, *args, **kwargs):
         next_number = kwargs.pop('next_number', None)
@@ -40,7 +40,6 @@ class MissionForm(ModelForm):
                 HTML("<h2>{{ form.instance }}</h2>"),
                 'key',
                 'text',
-                'picture',
                 Field('order_number', type="hidden"),
             )
         elif self.instance.is_finish:
@@ -48,7 +47,6 @@ class MissionForm(ModelForm):
             self.helper.layout = Layout(
                 HTML("<h2>{{ form.instance }}</h2>"),
                 'text',
-                'picture',
                 Field('order_number', type="hidden"),
             )
         else:
@@ -61,7 +59,6 @@ class MissionForm(ModelForm):
                 'name',
                 'name_in_table',
                 'text',
-                'picture',
             )
 
 
