@@ -15,6 +15,9 @@
                 <p><a class="btn btn-success btn-lg {% if not quest.is_published %}disabled{% endif %}"
                       href="{% url 'coordination:quest_coordination' quest.id %}">
                     <span class="fa fa-user fa-lg"></span> Играть</a></p>
+            {% elif user.is_superuser %}
+                <p><a class="btn btn-success btn-lg" href="{% url 'admin:index' %}">
+                    <span class="fa fa-hand-spock-o fa-lg"></span> Перейти в админку</a></p>
             {% else %}
                 <p><a class="btn btn-success btn-lg" href="{% url 'contacts_org' %}">
                     <span class="fa fa-user-secret fa-lg"></span> Стать организатором</a></p>
