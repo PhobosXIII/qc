@@ -32,6 +32,7 @@ if ENV_ROLE == 'prod':
     DEBUG = False
     ALLOWED_HOSTS = [
         '.quect.ru',
+        '.quect.herokuapp.com',
     ]
 
 ADMINS = (
