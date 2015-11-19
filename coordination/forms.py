@@ -79,7 +79,7 @@ class HintForm(ModelForm):
                     css_class='col-xs-6 col-sm-3 col-md-4'),
                 Div('delay', css_class='col-xs-6 col-sm-3 col-md-4')
             ),
-            'text',
+            Field('text', rows=4),
         )
 
 
