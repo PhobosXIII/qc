@@ -97,7 +97,7 @@ WSGI_APPLICATION = 'qc.wsgi.application'
 # https://docs.djangoproject.com/en/1.8/topics/i18n/
 
 LANGUAGE_CODE = 'ru-RU'
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Krasnoyarsk'
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
