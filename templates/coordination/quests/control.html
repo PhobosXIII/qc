@@ -20,34 +20,38 @@
         </p>
     {% endif %}
 
-    {% if quest.not_started or quest.started %}
-        <p class="row-margin text-center">
-            {% url 'coordination:begin_quest' quest.id as begin_url %}
-            {% if quest.not_started %}
-                 <button data-href="{{ begin_url }}" data-toggle="modal" data-target="#confirm" class="btn btn-success">
-                     <span class="fa fa-play"></span> Начать квест
-                 </button>
-            {% elif quest.started %}
-                <button data-href="{{ begin_url }}" data-toggle="modal" data-target="#confirm" class="btn btn-warning">
-                    <span class="fa fa-pause"></span> Приостановить квест
-                </button>
-            {% endif %}
-        </p>
-    {% endif %}
+    {% if quest.is_published %}
+        {% if quest.not_started or quest.started %}
+            <p class="row-margin text-center">
+                {% url 'coordination:begin_quest' quest.id as begin_url %}
+                {% if quest.not_started %}
+                     <button data-href="{{ begin_url }}" data-toggle="modal" data-target="#confirm" class="btn btn-success">
+                         <span class="fa fa-play"></span> Начать квест
+                     </button>
+                {% elif quest.started %}
+                    <button data-href="{{ begin_url }}" data-toggle="modal" data-target="#confirm" class="btn btn-warning">
+                        <span class="fa fa-pause"></span> Приостановить квест
+                    </button>
+                {% endif %}
+            </p>
+        {% endif %}
 
-    {% if quest.started or quest.ended %}
-        <p class="row-margin text-center">
-            {% url 'coordination:end_quest' quest.id as end_url %}
-            {% if quest.started %}
-                 <button data-href="{{ end_url }}" data-toggle="modal" data-target="#confirm" class="btn btn-danger">
-                     <span class="fa fa-stop"></span> Завершить квест
-                 </button>
-            {% elif quest.ended %}
-                <button data-href="{{ end_url }}" data-toggle="modal" data-target="#confirm" class="btn btn-warning">
-                    <span class="fa fa-play"></span> Возобновить квест
-                </button>
-            {% endif %}
-        </p>
+        {% if quest.started or quest.ended %}
+            <p class="row-margin text-center">
+                {% url 'coordination:end_quest' quest.id as end_url %}
+                {% if quest.started %}
+                     <button data-href="{{ end_url }}" data-toggle="modal" data-target="#confirm" class="btn btn-danger">
+                         <span class="fa fa-stop"></span> Завершить квест
+                     </button>
+                {% elif quest.ended %}
+                    <button data-href="{{ end_url }}" data-toggle="modal" data-target="#confirm" class="btn btn-warning">
+                        <span class="fa fa-play"></span> Возобновить квест
+                    </button>
+                {% endif %}
+            </p>
+        {% endif %}
+    {% else %}
+        <p class="lead text-center">Опубликуйте квест для управления его состоянием.</p>
     {% endif %}
 
     {% if current_missions %}
@@ -63,7 +67,7 @@
                 {% for cm in current_missions %}
                     <tr {% if cm.mission.is_finish %}class="success"{% endif %}>
                         <td>{{ cm.player.first_name }}
-                            {% if not cm.mission.is_finish and quest.started %}
+                            {% if not cm.mission.is_finish and quest.is_published and quest.started %}
                                 <br>
                                 <button data-href="{% url 'coordination:next_mission' quest.id cm.player.id %}"
                                         data-toggle="modal" data-target="#confirm" class="btn btn-sm btn-primary">
