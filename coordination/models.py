@@ -101,8 +101,11 @@ class Quest(models.Model):
 
 class Mission(models.Model):
     quest = models.ForeignKey(Quest, verbose_name='квест')
-    name = models.CharField('название', max_length=100, blank=True)
-    name_in_table = models.CharField('название в табличке', max_length=100, blank=True)
+    name = models.CharField('название', max_length=100, blank=True,
+                            help_text='В основном для сюжетных игр, например, Панофобия, Колдунья и т.д. '
+                                      'Отображается игрокам в координации.')
+    name_in_table = models.CharField('название в табличке', max_length=100, blank=True,
+                                     help_text='Как правило ответ на задание. Отображается в итоговой табличке.')
     text = models.TextField('текст задания', blank=True)
     picture = models.ImageField('картинка', upload_to=mission_file_name, blank=True)
     key = models.CharField('ключ', max_length=30, blank=True)

@@ -13,8 +13,10 @@ class ContactForm(forms.Form):
     def __init__(self, *args, **kwargs):
         subj_code = int(kwargs.pop('subj_code', 0))
         subj = None
+        help = None
         if subj_code == 1:
             subj = 'Получить аккаунт организатора'
+            help = 'Обязательно укажите имя, ник или команду'
         super(ContactForm, self).__init__(*args, **kwargs)
         self.helper = FormHelper()
         self.helper.form_method = 'post'
@@ -24,7 +26,7 @@ class ContactForm(forms.Form):
             self.helper.layout = Layout(
                 Field('subject', value=subj),
                 Field('sender', autofocus=True),
-                'message',
+                Field('message', placeholder=help),
                 StrictButton('Отправить', type='submit', css_class='btn-primary')
             )
         else:
