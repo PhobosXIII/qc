@@ -212,7 +212,7 @@ def coordination_quest(request, quest_id):
             key = form.cleaned_data["key"].strip()
             right_key = mission.key.strip()
             keylog = Keylog(key=key, fix_time=timezone.now(), player=player, mission=mission)
-            if right_key == key:
+            if len(right_key) > 0 and right_key == key:
                 keylog.is_right = True
                 current_mission.mission = Mission.objects.get(quest=quest, order_number=mission.order_number + 1)
                 current_mission.start_time = keylog.fix_time
