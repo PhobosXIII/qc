@@ -1,8 +1,14 @@
+{% load coordination_extras %}
+
 <div class="list-group">
     {% for mission in missions %}
         <a href="{% url 'coordination:mission_detail' mission.id %}"
            class="list-group-item text-base text-left">
-            {{ mission }}
+            {% if user|is_organizer:quest or user.is_superuser %}
+                {{ mission }}
+            {% else %}
+                {{ mission.short_name }}
+            {% endif %}
         </a>
     {% endfor %}
 </div>
