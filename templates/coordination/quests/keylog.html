@@ -28,11 +28,11 @@
             {% for keylog in keylogs %}
                 <tr>
                     <td>{{ keylog.player.first_name }}</td>
-                    <td>{{ keylog.mission }}</td>
+                    <td>{{ keylog.mission.medium_name }}</td>
                     <td>{{ keylog.fix_time|date:"d E Y H:i:s" }}</td>
                     <td>
-                        <span class="fa {% if keylog.is_right %}fa-check-circle text-success{% else %}fa-minus-circle text-danger{% endif %}"></span>
-                        {{ keylog.key }}
+                        <span class="fa {% if keylog.is_right %}fa-check-circle text-success{% else %}fa-minus-circle
+                        text-danger{% endif %}"></span> {{ keylog.key }}
                     </td>
                     <td>
                         <button data-href="{% url 'coordination:keylog_delete' quest.id keylog.id %}" data-toggle="modal"

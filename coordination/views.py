@@ -6,7 +6,7 @@ from django.utils import timezone
 from coordination.forms import QuestForm, MissionForm, HintForm, PlayerForm, KeyForm, MessageForm
 from coordination.models import Quest, Mission, Hint, CurrentMission, Keylog, Message
 from coordination.utils import is_quest_organizer, is_quest_player, is_organizer, generate_random_username, \
-    generate_random_password
+    generate_random_password, is_organizer_features
 
 
 # Quests
@@ -34,13 +34,16 @@ def detail_quest(request, quest_id):
 
 
 @login_required()
-def create_quest(request):
+def create_quest(request, type='L'):
+    if type != 'L':
+        request = is_organizer_features(request)
     request = is_organizer(request)
     if request.method == 'POST':
         form = QuestForm(request.POST)
         if form.is_valid():
             quest = form.save(commit=False)
             quest.organizer = request.user
+            quest.type = type
             quest.save()
             return redirect('coordination:quest_detail', quest_id=quest.pk)
     else:
@@ -206,18 +209,25 @@ def coordination_quest(request, quest_id):
     messages = quest.messages().filter(is_show=True)
     form = None
     wrong_keys_str = None
-    if not mission.is_finish and quest.started:
+    if quest.started and not mission.is_finish:
         form = KeyForm(request.POST or None)
         if form.is_valid():
             key = form.cleaned_data["key"].strip()
-            right_key = mission.key.strip()
+            next_missions = Mission.objects.filter(quest=quest, order_number=mission.order_number + 1)
+            if quest.linear:
+                right_key = mission.key.strip()
+                next_mission = next_missions.first()
+                is_right = len(right_key) > 0 and right_key == key
+            else:
+                next_mission = next_missions.filter(key=key).first()
+                is_right = next_mission is not None
             keylog = Keylog(key=key, fix_time=timezone.now(), player=player, mission=mission)
-            if len(right_key) > 0 and right_key == key:
+            if is_right:
                 keylog.is_right = True
-                current_mission.mission = Mission.objects.get(quest=quest, order_number=mission.order_number + 1)
+                current_mission.mission = next_mission
                 current_mission.start_time = keylog.fix_time
+                current_mission.save()
             keylog.save()
-            current_mission.save()
             return redirect('coordination:quest_coordination', quest_id=quest_id)
         wrong_keys = Keylog.wrong_keylogs(player, mission)
         wrong_keys_str = ', '.join(str(i) for i in wrong_keys)
@@ -346,6 +356,15 @@ def create_mission(request, quest_id):
 
 
 @login_required()
+def create_finish_mission(request, quest_id):
+    quest = get_object_or_404(Quest, pk=quest_id)
+    is_quest_organizer(request, quest)
+    finish = Mission.objects.create(quest=quest, name_in_table='Финиш', order_number=1, is_finish=True)
+    Mission.update_finish_number(quest)
+    return redirect('coordination:mission_detail', mission_id=finish.id)
+
+
+@login_required()
 def edit_mission(request, mission_id):
     mission = get_object_or_404(Mission, pk=mission_id)
     request = is_quest_organizer(request, mission.quest)
@@ -365,9 +384,14 @@ def delete_mission(request, mission_id):
     mission = get_object_or_404(Mission, pk=mission_id)
     quest = mission.quest
     is_quest_organizer(request, quest)
-    if not mission.is_start and not mission.is_finish:
-        mission.delete()
-        Mission.update_finish_number(quest)
+    if quest.linear:
+        if not mission.is_start and not mission.is_finish:
+            mission.delete()
+            Mission.update_finish_number(quest)
+    else:
+        if not mission.is_start:
+            mission.delete()
+            Mission.update_finish_number(quest)
     return redirect('coordination:quest_detail', quest_id=quest.pk)
 
 

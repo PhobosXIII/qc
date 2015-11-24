@@ -16,6 +16,14 @@
                 <span class="fa fa-info"></span> Войдите в систему как организатор, чтобы создать квест!
             </a>
         {% endif %}
+        {% if user|in_group:'organizers_features' %}
+            <a href="{% url 'coordination:quest_new_lnl' %}" class="btn btn-success">
+                <span class="fa fa-exchange fa-lg"></span> Создать линейно-нелинейный квест
+            </a>
+            <a href="{% url 'coordination:quest_new_nl' %}" class="btn btn-success disabled">
+                <span class="fa fa-arrows fa-lg"></span> Создать нелинейный квест
+            </a>
+        {% endif %}
     </p>
 
     <div class="row">

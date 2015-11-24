@@ -4,7 +4,11 @@ from . import views
 
 quest_patterns = [
     url(r'^quests/$', views.all_quests, name='quests'),
-    url(r'^quests/new/$', views.create_quest, name='quest_new'),
+    url(r'^quests/new/', include([
+        url(r'^$', views.create_quest, name='quest_new'),
+        url(r'^nl/$', views.create_quest, {'type': 'NL'}, name='quest_new_nl'),
+        url(r'^lnl/$', views.create_quest, {'type': 'LNL'}, name='quest_new_lnl'),
+    ])),
     url(r'^quests/(?P<quest_id>[0-9]+)/', include([
         url(r'^$', views.detail_quest, name='quest_detail'),
         url(r'^edit/$', views.edit_quest, name='quest_edit'),
@@ -40,6 +44,7 @@ quest_patterns = [
 
 mission_patterns = [
     url(r'^missions/new/(?P<quest_id>[0-9]+)/$', views.create_mission, name='mission_new'),
+    url(r'^missions/new/(?P<quest_id>[0-9]+)/finish/$', views.create_finish_mission, name='finish_new'),
     url(r'^missions/(?P<mission_id>[0-9]+)/', include([
         url(r'^$', views.detail_mission, name='mission_detail'),
         url(r'^edit/$', views.edit_mission, name='mission_edit'),

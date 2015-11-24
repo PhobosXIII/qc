@@ -56,7 +56,7 @@
                     <tr {% if cm.mission.is_finish %}class="success"{% elif cm.alarm %}class="danger"{% endif %}>
                         <td>{{ forloop.counter }}</td>
                         <td>{{ cm.player.first_name }}</td>
-                        <td>{{ cm.mission.table_name }}</td>
+                        <td>{{ cm.mission.medium_name }}</td>
                         <td>{{ cm.start_time|date:"H:i:s" }}</td>
                     </tr>
                 {% endfor %}

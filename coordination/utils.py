@@ -12,6 +12,12 @@ def is_organizer(request):
     raise PermissionDenied
 
 
+def is_organizer_features(request):
+    if bool(request.user.groups.filter(name='organizers_features').values('name')):
+        return request
+    raise PermissionDenied
+
+
 def is_quest_organizer(request, quest):
     if request.user == quest.organizer or request.user.is_superuser:
         return request

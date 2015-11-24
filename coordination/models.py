@@ -13,6 +13,11 @@ def mission_file_name(instance, filename):
 
 
 class Quest(models.Model):
+    TYPES = (
+        ('L', 'Линейный'),
+        ('NL', 'Нелинейный'),
+        ('LNL', 'Линейно-нелинейный'),
+    )
     STATUSES = (
         ('NTS', 'Не запущен'),
         ('STR', 'Запущен'),
@@ -22,6 +27,7 @@ class Quest(models.Model):
     title = models.CharField('название', max_length=255)
     start = models.DateTimeField('старт', null=True, blank=True)
     description = models.TextField('описание', blank=True)
+    type = models.CharField('тип', max_length=3, choices=TYPES, default='L')
     status = models.CharField('статус', max_length=3, choices=STATUSES, default='NTS')
     is_published = models.BooleanField('опубликован', default=False)
     players = models.ManyToManyField(settings.AUTH_USER_MODEL, verbose_name='игроки', related_name='players',
@@ -44,6 +50,18 @@ class Quest(models.Model):
     def ended(self):
         return self.status == 'END'
 
+    @property
+    def linear(self):
+        return self.type == 'L'
+
+    @property
+    def nonlinear(self):
+        return self.type == 'NL'
+
+    @property
+    def line_nonlinear(self):
+        return self.type == 'LNL'
+
     def __str__(self):
         return self.title
 
@@ -51,10 +69,8 @@ class Quest(models.Model):
         is_create = not self.pk
         super(Quest, self).save(*args, **kwargs)
         if is_create:
-            start_mission = Mission(quest=self, name_in_table='Старт', order_number=0)
-            finish_mission = Mission(quest=self, name_in_table='Финиш', order_number=1, is_finish=True)
-            start_mission.save()
-            finish_mission.save()
+            Mission.objects.create(quest=self, name_in_table='Старт', order_number=0)
+            Mission.objects.create(quest=self, name_in_table='Финиш', order_number=1, is_finish=True)
 
     def begin(self):
         if self.not_started:
@@ -116,7 +132,7 @@ class Mission(models.Model):
     class Meta:
         verbose_name = 'задание'
         verbose_name_plural = 'задания'
-        ordering = ['order_number']
+        ordering = ['order_number', 'name']
 
     @property
     def is_start(self):
@@ -126,7 +142,10 @@ class Mission(models.Model):
         if self.is_start:
             return 'Старт'
         elif self.is_finish:
-            return 'Финиш'
+            if self.quest.line_nonlinear:
+                return 'Финиш{0}'.format(". " + self.name if self.name else "")
+            else:
+                return 'Финиш'
         else:
             return 'Задание {0}{1}{2}'.format(self.order_number,
                                               ". " + self.name if self.name else "",
@@ -138,6 +157,14 @@ class Mission(models.Model):
             return self.__str__()
         else:
             return 'Задание {0}{1}'.format(self.order_number, ". " + self.name if self.name else "")
+
+    @property
+    def medium_name(self):
+        if self.is_start or self.is_finish:
+            return self.__str__()
+        else:
+            return '{0}{1}{2}'.format(self.order_number, ". " + self.name if self.name else "",
+                                      " (" + self.name_in_table + ")" if self.name_in_table else "")
 
     @property
     def table_name(self):
@@ -172,9 +199,8 @@ class Mission(models.Model):
     @staticmethod
     def update_finish_number(quest):
         missions = quest.missions()
-        finish = missions.filter(is_finish=True).first()
-        finish.order_number = missions.filter(is_finish=False).last().order_number + 1
-        finish.save()
+        order_number = missions.filter(is_finish=False).last().order_number + 1
+        missions.filter(is_finish=True).update(order_number=order_number)
 
     @staticmethod
     def completed_missions(quest, player):

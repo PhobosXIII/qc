@@ -1,6 +1,7 @@
 from crispy_forms.bootstrap import StrictButton, PrependedText
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Field, HTML, Div, Row
+from django.core.exceptions import ObjectDoesNotExist
 from django.forms import ModelForm, Form
 from django.forms.fields import CharField
 from coordination.models import Quest, Mission, Hint, Message
@@ -34,21 +35,41 @@ class MissionForm(ModelForm):
         self.helper = FormHelper()
         self.helper.form_tag = False
         self.helper.html5_required = True
+        try:
+            quest = self.instance.quest
+        except ObjectDoesNotExist:
+            quest = None
+        simple_layout = Layout(
+            HTML("<h2>{{ form.instance }}</h2>"),
+            'text',
+            Field('order_number', type="hidden"),
+        )
+        simple_fields = ['text', 'order_number']
         if self.instance.is_start:
-            self.Meta.fields = ['text', 'media_file', 'key', 'order_number']
-            self.helper.layout = Layout(
-                HTML("<h2>{{ form.instance }}</h2>"),
-                'key',
-                'text',
-                Field('order_number', type="hidden"),
-            )
+            if quest.linear:
+                self.Meta.fields = ['text', 'key', 'order_number']
+                self.helper.layout = Layout(
+                    HTML("<h2>{{ form.instance }}</h2>"),
+                    'key',
+                    'text',
+                    Field('order_number', type="hidden"),
+                )
+            elif quest.line_nonlinear:
+                self.Meta.fields = simple_fields
+                self.helper.layout = simple_layout
         elif self.instance.is_finish:
-            self.Meta.fields = ['text', 'media_file', 'order_number']
-            self.helper.layout = Layout(
-                HTML("<h2>{{ form.instance }}</h2>"),
-                'text',
-                Field('order_number', type="hidden"),
-            )
+            if quest.linear:
+                self.Meta.fields = simple_fields
+                self.helper.layout = simple_layout
+            elif quest.line_nonlinear:
+                self.Meta.fields = ['name', 'text', 'key', 'order_number']
+                self.helper.layout = Layout(
+                    HTML("<h2>{{ form.instance }}</h2>"),
+                    'name',
+                    'key',
+                    'text',
+                    Field('order_number', type="hidden"),
+                )
         else:
             self.helper.layout = Layout(
                 Row(
