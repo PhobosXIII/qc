@@ -7,21 +7,19 @@
                class="list-group-item {% if not quest.ended %}list-group-item-info{% endif %}">
                 <div class="row">
                     <div class="list-group-item-heading">
-                        {% if not quest.is_published %}
-                            <div class="col-sm-2">
-
-                                    <h4>
-                                        <span class="pull-left-sm label label-warning">Не опубликован</span>
-                                    </h4>
-                            </div>
-                            <div class="col-xs-12 col-sm-6">
-                        {% else  %}
-                            <div class="col-xs-12 col-sm-8">
-                        {% endif %}
-                             <h4>
-                                 {% if user|is_organizer:quest %}<span class="fa fa-user-secret"></span>{% endif %}
-                                 {{ quest.title }}
-                             </h4>
+                        <div class="col-sm-3">
+                            {% if not quest.is_published %}
+                                <h4>
+                                    <span class="pull-left-sm label label-warning">Не опубликован</span>
+                                </h4>
+                            {% else  %}
+                                <h4>
+                                    <span class="pull-left-sm label label-primary">{{ quest.organizer }}</span>
+                                </h4>
+                            {% endif %}
+                        </div>
+                        <div class="col-xs-12 col-sm-5">
+                             <h4>{{ quest.title }}</h4>
                         </div>
                         <div class="col-sm-4">
                             <h4>
