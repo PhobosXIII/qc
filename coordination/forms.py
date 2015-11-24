@@ -82,6 +82,9 @@ class MissionForm(ModelForm):
                 'text',
             )
 
+    def clean_key(self):
+        return self.cleaned_data["key"].strip()
+
 
 class HintForm(ModelForm):
     class Meta:
@@ -135,6 +138,9 @@ class KeyForm(Form):
             PrependedText('key', '<span class="fa fa-key"></span>', placeholder='ключ', size='30'),
             StrictButton('Отправить', type='submit', css_class='btn-primary')
         )
+
+    def clean_key(self):
+        return self.cleaned_data["key"].strip()
 
 
 class MessageForm(ModelForm):

@@ -212,10 +212,10 @@ def coordination_quest(request, quest_id):
     if quest.started and not mission.is_finish:
         form = KeyForm(request.POST or None)
         if form.is_valid():
-            key = form.cleaned_data["key"].strip()
+            key = form.cleaned_data["key"]
             next_missions = Mission.objects.filter(quest=quest, order_number=mission.order_number + 1)
             if quest.linear:
-                right_key = mission.key.strip()
+                right_key = mission.key
                 next_mission = next_missions.first()
                 is_right = len(right_key) > 0 and right_key == key
             else:
