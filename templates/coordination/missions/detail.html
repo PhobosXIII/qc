@@ -40,12 +40,7 @@
             {% endif %}
     {% endif %}
 
-    {% if mission.text %}
-        <br>
-        <div class="well well-sm text-base">
-            {{ mission.text|linebreaks|urlize }}
-        </div>
-    {% endif %}
+    {{ mission.text|safe }}
 
     {% if mission.picture %}
         <a href="{{ mission.picture.url }}" target="_blank"><img src="{{ mission.picture.url }}" class="img-responsive"></a>

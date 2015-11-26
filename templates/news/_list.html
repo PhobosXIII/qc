@@ -1,13 +1,10 @@
 <div class="list-group">
     {% for news in news_list %}
-        <a href="{% url 'news_detail' news.id %}"
-           class="list-group-item">
+        <a href="{% url 'news_detail' news.id %}" class="list-group-item">
             <div class="row">
                 <div class="list-group-item-heading">
                     <div class="col-xs-12 col-sm-8">
-                         <h4>
-                             {{ news.title }}
-                         </h4>
+                         <h4>{{ news.title }}</h4>
                     </div>
                     <div class="col-sm-4">
                         <h4>
@@ -19,9 +16,9 @@
                     </div>
                 </div>
             </div>
-            <p class="list-group-item-text text-base">
-                {{ news.text|linebreaksbr|truncatechars:100 }}
-            </p>
+            <div class="list-group-item-text">
+                {{ news.text|safe|truncatechars_html:80 }}
+            </div>
         </a>
     {% endfor %}
 </div>

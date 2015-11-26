@@ -59,6 +59,7 @@ INSTALLED_APPS = (
     'crispy_forms',
     'main',
     'coordination',
+    'ckeditor',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -174,4 +175,31 @@ LOGGING = {
             'propagate': True
         }
     }
+}
+
+CKEDITOR_CONFIGS = {
+    'default': {
+        'toolbar': 'Custom',
+        'toolbar_Custom': [
+            {'name': 'clipboard', 'items': ['Undo', 'Redo', 'Maximize']},
+            {'name': 'basicstyles',
+             'items': ['Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', '-', 'RemoveFormat']},
+            {'name': 'links', 'items': ['Link', 'Unlink', 'SpecialChar']},
+            {'name': 'colors', 'items': ['TextColor', 'BGColor']},
+            {'name': 'paragraph',
+             'items': ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', 'Blockquote','JustifyLeft',
+                       'JustifyCenter', 'JustifyRight', 'JustifyBlock', '-', 'BidiLtr', 'BidiRtl']},
+            {'name': 'styles', 'items': ['Font', 'FontSize']},
+        ],
+        'width': '100%',
+        'extraPlugins': ','.join(
+            [
+                'autolink',
+                'autogrow',
+            ]),
+        'forcePasteAsPlainText': True,
+        'contentsCss': ['/static/ckeditor/ckeditor/contents.css', '/static/assets/css/ckeditor_custom.css'],
+        'font_defaultLabel': 'Arial',
+        'fontSize_defaultLabel': 16,
+    },
 }

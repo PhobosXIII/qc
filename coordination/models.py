@@ -1,4 +1,6 @@
 from datetime import timedelta
+
+from ckeditor.fields import RichTextField
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
@@ -26,7 +28,7 @@ class Quest(models.Model):
     organizer = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name='организатор', related_name='organizer')
     title = models.CharField('название', max_length=255)
     start = models.DateTimeField('старт', null=True, blank=True)
-    description = models.TextField('описание', blank=True)
+    description = RichTextField('описание', blank=True)
     type = models.CharField('тип', max_length=3, choices=TYPES, default='L')
     status = models.CharField('статус', max_length=3, choices=STATUSES, default='NTS')
     is_published = models.BooleanField('опубликован', default=False)
@@ -122,7 +124,7 @@ class Mission(models.Model):
                                       'Отображается игрокам в координации.')
     name_in_table = models.CharField('название в табличке', max_length=100, blank=True,
                                      help_text='Как правило ответ на задание. Отображается в итоговой табличке.')
-    text = models.TextField('текст задания', blank=True)
+    text = RichTextField('текст задания', blank=True)
     picture = models.ImageField('картинка', upload_to=mission_file_name, blank=True)
     key = models.CharField('ключ', max_length=30, blank=True)
     order_number = models.PositiveSmallIntegerField('номер задания',
@@ -212,7 +214,7 @@ class Mission(models.Model):
 
 class Hint(models.Model):
     mission = models.ForeignKey(Mission, verbose_name='задание')
-    text = models.TextField('текст подсказки')
+    text = RichTextField('текст подсказки')
     delay = models.PositiveSmallIntegerField('время отправления',
                                              validators=[MinValueValidator(1), MaxValueValidator(90)])
     order_number = models.PositiveSmallIntegerField('номер подсказки',

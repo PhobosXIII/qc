@@ -31,9 +31,9 @@
                         </div>
                     </div>
                 </div>
-                <p class="list-group-item-text text-base">
-                    {{ quest.description|default:"Подробности позже."|linebreaksbr|truncatechars:100 }}
-                </p>
+                <div class="list-group-item-text">
+                    {{ quest.description|default:"<p class='text-base'>Подробности позже.</p>"|safe|truncatechars_html:80 }}
+                </div>
             </a>
         {% endif %}
     {% endfor %}

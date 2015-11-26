@@ -49,9 +49,7 @@
 
     <h3>Организатор: <span class="label label-primary">{{ quest.organizer|nice_name }}</span></h3>
 
-    <div class="well text-base">
-        {{ quest.description|default:"Подробности позже."|linebreaks|urlize }}
-    </div>
+    {{ quest.description|default:"<p class='text-base'>Подробности позже.</p>"|safe }}
 
     {% if user|is_organizer:quest or user.is_superuser %}
         <h3>Задания</h3>
