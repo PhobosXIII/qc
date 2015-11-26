@@ -6,3 +6,4 @@ django-crispy-forms==1.5.2
 Pillow==3.0.0
 awesome-slugify==1.6.5
 gunicorn==19.3.0
+django-htmlmin==0.8.0
