@@ -19,9 +19,9 @@
 
     {% if user|is_organizer:quest or user.is_superuser %}
         <p class="text-right">
-                <a href="{% url 'coordination:mission_edit' mission.id %}" class="btn btn-primary">
-                    <span class="fa fa-edit fa-lg"></span> Редактировать
-                </a>
+            <a href="{% url 'coordination:mission_edit' mission.id %}" class="btn btn-primary">
+                <span class="fa fa-edit fa-lg"></span> Редактировать
+            </a>
 
             {% if quest.linear %}
                 {% if not mission.is_start and not mission.is_finish %}
@@ -40,7 +40,7 @@
             {% endif %}
     {% endif %}
 
-    {{ mission.text|safe }}
+    <div class="text-base">{{ mission.text|safe }}</div>
 
     {% if mission.picture %}
         <a href="{{ mission.picture.url }}" target="_blank"><img src="{{ mission.picture.url }}" class="img-responsive"></a>

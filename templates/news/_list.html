@@ -17,7 +17,7 @@
                 </div>
             </div>
             <div class="list-group-item-text">
-                {{ news.text|safe|truncatechars_html:80 }}
+                <div class="text-base">{{ news.text|striptags|linebreaks|truncatewords_html:13 }}</div>
             </div>
         </a>
     {% endfor %}

@@ -71,8 +71,6 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
-    'htmlmin.middleware.HtmlMinifyMiddleware',
-    'htmlmin.middleware.MarkRequestMiddleware',
 )
 
 ROOT_URLCONF = 'qc.urls'
@@ -182,14 +180,13 @@ CKEDITOR_CONFIGS = {
         'toolbar': 'Custom',
         'toolbar_Custom': [
             {'name': 'clipboard', 'items': ['Undo', 'Redo', 'Maximize']},
-            {'name': 'basicstyles',
-             'items': ['Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', '-', 'RemoveFormat']},
             {'name': 'links', 'items': ['Link', 'Unlink', 'SpecialChar']},
-            {'name': 'colors', 'items': ['TextColor', 'BGColor']},
             {'name': 'paragraph',
-             'items': ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', 'Blockquote','JustifyLeft',
-                       'JustifyCenter', 'JustifyRight', 'JustifyBlock', '-', 'BidiLtr', 'BidiRtl']},
-            {'name': 'styles', 'items': ['Font', 'FontSize']},
+             'items': ['NumberedList', 'BulletedList', 'Outdent', 'Indent', 'Blockquote','JustifyLeft',
+                       'JustifyCenter', 'JustifyRight', 'JustifyBlock', 'TextColor', 'BGColor',]},
+            {'name': 'basicstyles',
+             'items': ['Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', 'RemoveFormat']},
+            {'name': 'styles', 'items': ['Format', 'Font', 'FontSize']},
         ],
         'width': '100%',
         'extraPlugins': ','.join(
@@ -198,8 +195,7 @@ CKEDITOR_CONFIGS = {
                 'autogrow',
             ]),
         'forcePasteAsPlainText': True,
-        'contentsCss': ['/static/ckeditor/ckeditor/contents.css', '/static/assets/css/ckeditor_custom.css'],
-        'font_defaultLabel': 'Arial',
-        'fontSize_defaultLabel': 16,
+        'fontSize_sizes': '10/10px;12/12px;14/14px;16/16px;20/20px;24/24px;36/36px;48/48px;',
+        'format_tags': 'p;div',
     },
 }

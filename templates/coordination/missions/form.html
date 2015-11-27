@@ -8,13 +8,14 @@
 
     <form class="col-md-6 col-md-offset-3" action="" method="post" enctype="multipart/form-data">
         {% crispy form %}
-        <button type="submit" class="btn btn-lg btn-success"><span class="fa fa-check"></span> Готово</button>
+        <button type="submit" class="btn btn-success"><span class="fa fa-check"></span> Готово</button>
+
         <a href="
         {% if form.instance.pk %}
             {% url 'coordination:mission_detail' form.instance.pk %}
         {% else %}
             {% url 'coordination:quest_detail' quest.id%}
         {% endif %}
-        " class="btn btn-lg btn-default"><span class="fa fa-close"></span> Отмена</a>
+        " class="btn btn-default"><span class="fa fa-close"></span> Отмена</a>
     </form>
 {% endblock content %}

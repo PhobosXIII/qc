@@ -17,7 +17,7 @@
         <p class="alert alert-info">{{ message.text|linebreaksbr|urlize }}</p>
     {% endfor %}
 
-    {{ mission.text|safe }}
+    <div class="text-base">{{ mission.text|safe }}</div>
 
     {% if mission.picture %}
         <a href="{{ mission.picture.url }}" target="_blank"><img src="{{ mission.picture.url }}" class="img-responsive"></a>
