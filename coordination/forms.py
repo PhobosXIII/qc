@@ -2,9 +2,13 @@ from crispy_forms.bootstrap import StrictButton, PrependedText
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Field, HTML, Div, Row
 from django.core.exceptions import ObjectDoesNotExist
-from django.forms import ModelForm, Form
+from django.forms import ModelForm, Form, ValidationError
 from django.forms.fields import CharField
 from coordination.models import Quest, Mission, Hint, Message
+
+
+def clean_key(key):
+    return key.replace(" ", "").lower()
 
 
 class QuestForm(ModelForm):
@@ -83,7 +87,8 @@ class MissionForm(ModelForm):
             )
 
     def clean_key(self):
-        return self.cleaned_data["key"].strip()
+        key = self.cleaned_data["key"]
+        return clean_key(key)
 
 
 class HintForm(ModelForm):
@@ -134,13 +139,16 @@ class KeyForm(Form):
         self.helper.form_show_labels = False
         self.helper.form_class = 'form-inline'
         self.helper.layout = Layout(
-            HTML('<p class="alert alert-warning">Ключ вводится маленькими буквами, без пробелов и дефисов.</p>'),
             PrependedText('key', '<span class="fa fa-key"></span>', placeholder='ключ', size='30'),
             StrictButton('Отправить', type='submit', css_class='btn-primary')
         )
 
     def clean_key(self):
-        return self.cleaned_data["key"].strip()
+        key = self.cleaned_data["key"]
+        key_cleaned = clean_key(key)
+        if len(key_cleaned) == 0:
+            raise ValidationError("Пожалуйста введите хотя бы 1 символ.")
+        return key_cleaned
 
 
 class MessageForm(ModelForm):
