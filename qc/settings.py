@@ -23,10 +23,34 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 SECRET_KEY = get_env_variable('QC_SECRET_KEY')
 
+INSTALLED_APPS = (
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'crispy_forms',
+    'main',
+    'coordination',
+    'ckeditor',
+)
+
 if ENV_ROLE == 'dev':
     DEBUG = True
     ALLOWED_HOSTS = []
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+    MIDDLEWARE_CLASSES = (
+        'django.contrib.sessions.middleware.SessionMiddleware',
+        'django.middleware.common.CommonMiddleware',
+        'django.middleware.csrf.CsrfViewMiddleware',
+        'django.contrib.auth.middleware.AuthenticationMiddleware',
+        'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
+        'django.contrib.messages.middleware.MessageMiddleware',
+        'django.middleware.clickjacking.XFrameOptionsMiddleware',
+        'django.middleware.security.SecurityMiddleware',
+    )
 
 if ENV_ROLE == 'prod':
     DEBUG = False
@@ -34,6 +58,28 @@ if ENV_ROLE == 'prod':
         '.quect.ru',
         '.quect.herokuapp.com',
     ]
+
+    INSTALLED_APPS += (
+        'opbeat.contrib.django',
+    )
+
+    OPBEAT = {
+        'ORGANIZATION_ID': get_env_variable('OPBEAT_ORG_ID'),
+        'APP_ID': get_env_variable('OPBEAT_APP_ID'),
+        'SECRET_TOKEN': get_env_variable('OPBEAT_SECRET'),
+    }
+
+    MIDDLEWARE_CLASSES = (
+        'opbeat.contrib.django.middleware.OpbeatAPMMiddleware',
+        'django.contrib.sessions.middleware.SessionMiddleware',
+        'django.middleware.common.CommonMiddleware',
+        'django.middleware.csrf.CsrfViewMiddleware',
+        'django.contrib.auth.middleware.AuthenticationMiddleware',
+        'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
+        'django.contrib.messages.middleware.MessageMiddleware',
+        'django.middleware.clickjacking.XFrameOptionsMiddleware',
+        'django.middleware.security.SecurityMiddleware',
+    )
 
 ADMINS = (
     ('Phobos', 'dev@quect.ru'),
@@ -46,40 +92,6 @@ EMAIL_HOST_USER = 'dev@quect.ru'
 EMAIL_HOST_PASSWORD = get_env_variable('EMAIL_HOST_PASSWORD')
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-
-# Application definition
-
-INSTALLED_APPS = (
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'crispy_forms',
-    'opbeat.contrib.django',
-    'main',
-    'coordination',
-    'ckeditor',
-)
-
-OPBEAT = {
-    'ORGANIZATION_ID': get_env_variable('OPBEAT_ORG_ID'),
-    'APP_ID': get_env_variable('OPBEAT_APP_ID'),
-    'SECRET_TOKEN': get_env_variable('OPBEAT_SECRET'),
-}
-
-MIDDLEWARE_CLASSES = (
-    'opbeat.contrib.django.middleware.OpbeatAPMMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django.middleware.security.SecurityMiddleware',
-)
 
 ROOT_URLCONF = 'qc.urls'
 
