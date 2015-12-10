@@ -57,12 +57,20 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'crispy_forms',
+    'opbeat.contrib.django',
     'main',
     'coordination',
     'ckeditor',
 )
 
+OPBEAT = {
+    'ORGANIZATION_ID': get_env_variable('OPBEAT_ORG_ID'),
+    'APP_ID': get_env_variable('OPBEAT_APP_ID'),
+    'SECRET_TOKEN': get_env_variable('OPBEAT_SECRET'),
+}
+
 MIDDLEWARE_CLASSES = (
+    'opbeat.contrib.django.middleware.OpbeatAPMMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
