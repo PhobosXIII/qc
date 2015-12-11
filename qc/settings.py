@@ -212,6 +212,8 @@ CKEDITOR_CONFIGS = {
         'extraPlugins': ','.join(
             [
                 'autolink',
+                'autoembed',
+                'embed',
                 'autogrow',
             ]),
         'forcePasteAsPlainText': True,
