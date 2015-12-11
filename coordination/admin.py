@@ -17,8 +17,7 @@ User.__str__ = user_str
 
 
 class MyUserAdmin(UserAdmin):
-    list_filter = ()
-    list_display = ('username', 'first_name')
+    list_display = ('username', 'first_name', 'get_quest')
 
 
 class QuestAdmin(admin.ModelAdmin):
@@ -66,6 +65,14 @@ get_quest.short_description = 'квест'
 
 CurrentMissionAdmin.get_quest = get_quest
 KeylogAdmin.get_quest = get_quest
+
+
+def get_player_quest(self, obj):
+    return Quest.objects.filter(players=obj).first()
+get_player_quest.short_description = 'квест'
+
+
+MyUserAdmin.get_quest = get_player_quest
 
 
 admin.site.register(Quest, QuestAdmin)
