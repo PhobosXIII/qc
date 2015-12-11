@@ -24,6 +24,7 @@ quest_patterns = [
         url(r'^players/', include([
             url(r'^$', views.players_quest, name='quest_players'),
             url(r'^print/$', views.players_quest_print, name='quest_players_print'),
+            url(r'^delete/$', views.delete_players, name='players_delete'),
             url(r'^delete/(?P<player_id>[0-9]+)/$', views.delete_player, name='player_delete'),
         ])),
         url(r'^coordination/$', views.coordination_quest, name='quest_coordination'),
@@ -31,6 +32,7 @@ quest_patterns = [
         url(r'^results/$', views.results_quest, name='quest_results'),
         url(r'^keylog/', include([
             url(r'^$', views.keylog_quest, name='quest_keylog'),
+            url(r'^delete/$', views.delete_keylogs, name='keylogs_delete'),
             url(r'^delete/(?P<keylog_id>[0-9]+)/$', views.delete_keylog, name='keylog_delete'),
         ])),
         url(r'^messages/$', views.messages_quest, name='quest_messages'),

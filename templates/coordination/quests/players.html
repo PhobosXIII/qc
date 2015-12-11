@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'base_table.html' %}
 {% load crispy_forms_tags %}
 
 {% block title %}{{ quest.title }} - Игроки{% endblock %}
@@ -14,40 +14,74 @@
 
     <div class="row row-margin">{% crispy form %}</div>
 
-    {% if players %}
-        <p class="text-center">
-            <a href="{% url 'coordination:quest_players_print' quest.id %}" class="btn btn-primary" target="_blank">
-                <span class="fa fa-print fa-lg"></span> Версия для печати
-            </a>
-        </p>
-        <div class="table-responsive">
-            <table class="table table-bordered table-striped text-center">
-                <thead>
-                    <tr>
-                        <th>Игрок</th>
-                        <th>Логин</th>
-                        <th>Пароль</th>
-                        <th>Удаление</th>
-                    </tr>
-                </thead>
-                <tbody>
-                {% for player in players %}
-                    <tr>
-                        <td>{{ player.first_name }}</td>
-                        <td>{{ player.username }}</td>
-                        <td>{{ player.last_name }}</td>
-                        <td>
-                            <button data-href="{% url 'coordination:player_delete' quest.id player.id %}"
-                                    data-toggle="modal" data-target="#confirm" class="btn btn-sm btn-danger">
-                                <span class="fa fa-trash"></span> Удалить
-                            </button>
-                        </td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    {% else %}
-        <p class="lead text-center">Ни один игрок еще не добавлен к квесту.</p>
-    {% endif %}
+    <p class="text-center">
+        <a href="{% url 'coordination:quest_players_print' quest.id %}" class="btn btn-primary" target="_blank">
+            <span class="fa fa-print fa-lg"></span> Версия для печати
+        </a>
+    </p>
+
+    <div id="toolbar">
+        {% csrf_token %}
+        <button id="remove" class="btn btn-danger" disabled data-toggle="modal" data-target="#confirm">
+            <span class="fa fa-trash"></span> Удалить
+        </button>
+    </div>
+    <table id="table" data-toggle="table" data-toolbar="#toolbar">
+        <thead>
+            <tr>
+                <th data-field="state" data-checkbox="true"></th>
+                <th data-field="id" class="hidden"></th>
+                <th>Игрок</th>
+                <th>Логин</th>
+                <th>Пароль</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for player in players %}
+            <tr>
+                <td></td>
+                <td class="hidden">{{ player.id }}</td>
+                <td>{{ player.first_name }}</td>
+                <td>{{ player.username }}</td>
+                <td>{{ player.last_name }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
 {% endblock content %}
+
+{% block scripts %}
+    {{ block.super }}
+    <script>
+        var $table = $('#table');
+        var $remove = $('#remove');
+        var $confirm = $('#btn_confirm');
+
+        $(function () {
+            $table.on('check.bs.table uncheck.bs.table ' +
+                    'check-all.bs.table uncheck-all.bs.table', function () {
+                $remove.prop('disabled', !$table.bootstrapTable('getSelections').length);
+            });
+
+            $confirm.click(function () {
+                var ids = $.map($table.bootstrapTable('getSelections'), function (row) {
+                    return row.id;
+                });
+                $table.bootstrapTable('remove', {
+                    field: 'id',
+                    values: ids
+                });
+                $remove.prop('disabled', true);
+
+                $.ajax({
+                    "type": "POST",
+                    "url": "{% url 'coordination:players_delete' quest.id %}",
+                    "data": {'delete_ids': ids},
+                    "success": function() {
+                        window.location.reload(true);
+                    }
+                });
+            });
+        });
+    </script>
+{% endblock scripts %}

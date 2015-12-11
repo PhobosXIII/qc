@@ -197,6 +197,15 @@ def delete_player(request, quest_id, player_id):
 
 
 @login_required
+def delete_players(request, quest_id):
+    quest = get_object_or_404(Quest, pk=quest_id)
+    is_quest_organizer(request, quest)
+    player_ids = request.POST.getlist('delete_ids[]')
+    User.objects.filter(id__in=player_ids).delete()
+    return redirect('coordination:quest_players', quest_id=quest_id)
+
+
+@login_required
 def coordination_quest(request, quest_id):
     quest = get_object_or_404(Quest, pk=quest_id)
     request = is_quest_player(request, quest)
@@ -259,6 +268,15 @@ def delete_keylog(request, quest_id, keylog_id):
     is_quest_organizer(request, quest)
     keylog = get_object_or_404(Keylog, pk=keylog_id)
     keylog.delete()
+    return redirect('coordination:quest_keylog', quest_id=quest_id)
+
+
+@login_required
+def delete_keylogs(request, quest_id):
+    quest = get_object_or_404(Quest, pk=quest_id)
+    is_quest_organizer(request, quest)
+    keylog_ids = request.POST.getlist('delete_ids[]')
+    Keylog.objects.filter(id__in=keylog_ids).delete()
     return redirect('coordination:quest_keylog', quest_id=quest_id)
 
 

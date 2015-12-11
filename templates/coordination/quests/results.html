@@ -1,4 +1,6 @@
-{% extends 'base.html' %}
+{% extends 'base_table.html' %}
+{% load staticfiles %}
+{% load coordination_extras %}
 
 {% block title %}{{ quest.title }} - Итоги{% endblock %}
 
@@ -11,37 +13,43 @@
 
     {% if quest.ended %}
         <br>
-        <div class="table-responsive">
-            <table class="table table-bordered table-striped text-center">
-                <thead>
-                    <tr>
-                        <th>Место</th>
-                        <th>Игрок</th>
-                        {% for mission in missions %}
-                            <th><a href="{% url 'coordination:mission_detail' mission.id %}">{{ mission.table_name }}</a></th>
-                        {% endfor %}
-                    </tr>
-                </thead>
-                <tbody>
-                {% for cm in current_missions %}
-                    <tr>
-                        <td>{{ forloop.counter }}</td>
-                        <td>{{ cm.player.first_name }}</td>
-                        {% for mission in missions %}
-                            <td>
-                                {% for keylog in keylogs %}
-                                    {% if keylog.player == cm.player and keylog.mission == mission%}
-                                        {{ keylog.fix_time|date:"H:i:s" }}
-                                    {% endif %}
-                                {% endfor %}
-                            </td>
-                        {% endfor %}
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-        </div>
+        <table data-toggle="table" {% if user|is_organizer:quest or user.is_superuser %}
+               data-show-export="true" data-export-types="['excel']"
+        {% endif %}>
+            <thead>
+                <tr>
+                    <th>Место</th>
+                    <th>Игрок</th>
+                    {% for mission in missions %}
+                        <th><a href="{% url 'coordination:mission_detail' mission.id %}">{{ mission.table_name }}</a></th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+            {% for cm in current_missions %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ cm.player.first_name }}</td>
+                    {% for mission in missions %}
+                        <td>
+                            {% for keylog in keylogs %}
+                                {% if keylog.player == cm.player and keylog.mission == mission%}
+                                    {{ keylog.fix_time|date:"H:i:s" }}
+                                {% endif %}
+                            {% endfor %}
+                        </td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
     {% else %}
         <p class="lead text-center">Чтобы просмотреть итоговую табличку, дождитесь окончания игры!</p>
     {% endif %}
 {% endblock content %}
+
+{% block scripts %}
+    {{ block.super }}
+    <script type="text/javascript" src="{% static "assets/js/bootstrap-table-export.min.js" %}"></script>
+    <script type="text/javascript" src="{% static "assets/js/tableExport.min.js" %}"></script>
+{% endblock scripts %}
