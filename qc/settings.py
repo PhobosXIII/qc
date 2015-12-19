@@ -77,7 +77,7 @@ if ENV_ROLE == 'prod' or ENV_ROLE == 'stage':
         'django.middleware.security.SecurityMiddleware',
     )
 
-    ENV_ROLE == 'stage':
+    if ENV_ROLE == 'stage':
         ALLOWED_HOSTS = [
             '.quect.ru',
             '.quect.herokuapp.com',
