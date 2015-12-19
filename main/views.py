@@ -42,7 +42,7 @@ def contacts(request, subj_code=0):
             sender = form.cleaned_data['sender']
             message = form.cleaned_data['message']
 
-            result_message = "{0}\nОт: {1}".format(message, sender)
+            result_message = "{0}\nОт: {1}\n{2}-версия".format(message, sender, settings.ENV_ROLE)
             from_email = settings.EMAIL_HOST_USER
             recipients = [from_email]
             try:

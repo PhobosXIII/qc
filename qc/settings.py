@@ -52,12 +52,8 @@ if ENV_ROLE == 'dev':
         'django.middleware.security.SecurityMiddleware',
     )
 
-if ENV_ROLE == 'prod':
+if ENV_ROLE == 'prod' or ENV_ROLE == 'stage':
     DEBUG = False
-    ALLOWED_HOSTS = [
-        '.quect.ru',
-        '.quect.herokuapp.com',
-    ]
 
     INSTALLED_APPS += (
         'opbeat.contrib.django',
@@ -80,6 +76,17 @@ if ENV_ROLE == 'prod':
         'django.middleware.clickjacking.XFrameOptionsMiddleware',
         'django.middleware.security.SecurityMiddleware',
     )
+
+    ENV_ROLE == 'stage':
+        ALLOWED_HOSTS = [
+            '.quect.ru',
+            '.quect.herokuapp.com',
+        ]
+
+    if ENV_ROLE == 'prod':
+        ALLOWED_HOSTS = [
+            '.quect.ru',
+        ]
 
 ADMINS = (
     ('Phobos', 'dev@quect.ru'),
