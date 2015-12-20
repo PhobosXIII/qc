@@ -6,7 +6,7 @@ from django.utils import timezone
 from coordination.forms import QuestForm, MissionForm, HintForm, PlayerForm, KeyForm, MessageForm
 from coordination.models import Quest, Mission, Hint, CurrentMission, Keylog, Message
 from coordination.utils import is_quest_organizer, is_quest_player, is_organizer, generate_random_username, \
-    generate_random_password, is_organizer_features
+    generate_random_password, is_organizer_features, get_timedelta
 
 
 # Quests
@@ -214,6 +214,9 @@ def coordination_quest(request, quest_id):
     mission = current_mission.mission
     hints = Hint.display_hints(current_mission)
     next_hint_time = Hint.next_hint_time(current_mission)
+    delay = None
+    if next_hint_time:
+        delay = get_timedelta(next_hint_time)
     completed_missions = Mission.completed_missions(quest, player)
     messages = quest.messages().filter(is_show=True)
     form = None
@@ -241,7 +244,7 @@ def coordination_quest(request, quest_id):
         wrong_keys = Keylog.wrong_keylogs(player, mission)
         wrong_keys_str = ', '.join(str(i) for i in wrong_keys)
     context = {'quest': quest, 'mission': mission, 'hints': hints, 'form': form, 'wrong_keys': wrong_keys_str,
-               'next_hint_time': next_hint_time, 'completed_missions': completed_missions, 'messages': messages}
+               'delay': delay, 'completed_missions': completed_missions, 'messages': messages}
     return render(request, 'coordination/quests/coordination.html', context)
 
 

@@ -51,19 +51,15 @@
 
 {% block scripts %}
     {{ block.super }}
+    <script type="text/javascript" src="{% static "assets/js/jquery.plugin.min.js" %}"></script>
     <script type="text/javascript" src="{% static "assets/js/jquery.countdown.min.js" %}"></script>
     <script type="text/javascript">
-        var time = new Date({{ next_hint_time|date:"U" }} * 1000);
+        var time = {{ delay }}
         $(function () {
-            $('#countdown').countdown(time)
-                .on('update.countdown', function(event) {
-                    var format = '<b>%M:%S</b>';
-                    $(this).html(event.strftime('До следующей подсказки осталось: ' + format +
-                            '. Если страница не обновилась автоматически, обновите ее вручную!'));
-                })
-                .on('finish.countdown', function(event) {
-                   refresh();
-                });
+            $('#countdown').countdown({until: +time, compact: true,
+                layout: 'До следующей подсказки осталось: <b>{mnn}{sep}{snn}</b>. Если страница не обновилась автоматически, обновите ее вручную!',
+                onExpiry: refresh
+            });
         });
 
         function refresh() {
