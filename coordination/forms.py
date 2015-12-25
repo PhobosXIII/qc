@@ -113,7 +113,7 @@ class HintForm(ModelForm):
 
 
 class PlayerForm(Form):
-    name = CharField(max_length=100, required=True)
+    name = CharField(max_length=30, required=True)
 
     def __init__(self, *args, **kwargs):
         super(PlayerForm, self).__init__(*args, **kwargs)
@@ -123,7 +123,7 @@ class PlayerForm(Form):
         self.helper.form_show_labels = False
         self.helper.form_class = 'form-inline col-md-8 col-md-offset-4'
         self.helper.layout = Layout(
-            Field('name', autofocus=True, placeholder='Имя', size='50'),
+            Field('name', autofocus=True, placeholder='Имя', size='45'),
             StrictButton('Добавить игрока', type='submit', css_class='btn-success')
         )
 
