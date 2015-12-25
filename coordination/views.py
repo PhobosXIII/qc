@@ -253,7 +253,7 @@ def keylog_quest(request, quest_id):
     quest = get_object_or_404(Quest, pk=quest_id)
     request = is_quest_organizer(request, quest)
     keylog_list = Keylog.objects.filter(mission__quest=quest).order_by('mission', 'player', 'fix_time')
-    paginator = Paginator(keylog_list, 30)
+    paginator = Paginator(keylog_list, 60)
     page = request.GET.get('page')
     try:
         keylogs = paginator.page(page)
