@@ -28,7 +28,11 @@ quest_patterns = [
             url(r'^delete/(?P<player_id>[0-9]+)/$', views.delete_player, name='player_delete'),
         ])),
         url(r'^coordination/$', views.coordination_quest, name='quest_coordination'),
-        url(r'^tables/$', views.tables_quest, name='quest_tables'),
+        url(r'^tables/', include([
+            url(r'^$', views.tables_quest, name='quest_tables'),
+            url(r'^current/$', views.tables_quest_current, name='quest_tables_current'),
+            url(r'^all/$', views.tables_quest_all, name='quest_tables_all'),
+        ])),
         url(r'^results/$', views.results_quest, name='quest_results'),
         url(r'^keylog/', include([
             url(r'^$', views.keylog_quest, name='quest_keylog'),

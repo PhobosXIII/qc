@@ -1,0 +1,9 @@
+{% load main_extras %}
+{% load coordination_extras %}
+
+<ul class="nav nav-pills">
+    {% if user|is_organizer:quest or user.is_superuser %}
+       {% menu_item 'Текущие задания' 'coordination:quest_tables_current' quest.id %}
+       {% menu_item 'Все задания' 'coordination:quest_tables_all' quest.id %}
+    {% endif %}
+</ul>

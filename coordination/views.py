@@ -94,15 +94,27 @@ def results_quest(request, quest_id):
 
 @login_required
 def tables_quest(request, quest_id):
+    return redirect('coordination:quest_tables_current', quest_id=quest_id)
+
+
+@login_required
+def tables_quest_all(request, quest_id):
     quest = get_object_or_404(Quest, pk=quest_id)
     is_quest_organizer(request, quest)
     players = quest.players.all().order_by('first_name')
     missions = quest.missions().exclude(is_finish=True)
     keylogs = Keylog.right_keylogs(missions)
+    context = {'quest': quest, 'players': players, 'missions': missions, 'keylogs': keylogs, }
+    return render(request, 'coordination/quests/tables/all.html', context)
+
+
+@login_required
+def tables_quest_current(request, quest_id):
+    quest = get_object_or_404(Quest, pk=quest_id)
+    is_quest_organizer(request, quest)
     current_missions = quest.current_missions()
-    context = {'quest': quest, 'players': players, 'missions': missions, 'keylogs': keylogs,
-               'current_missions': current_missions, }
-    return render(request, 'coordination/quests/tables.html', context)
+    context = {'quest': quest, 'current_missions': current_missions, }
+    return render(request, 'coordination/quests/tables/current.html', context)
 
 
 @login_required

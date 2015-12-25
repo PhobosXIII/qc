@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}{{ quest.title }} - Таблички{% endblock %}
+{% block title %}{{ quest.title }} - Табличка для текущих заданий{% endblock %}
 
 {% block content %}
     <div class="page-header">
@@ -8,37 +8,9 @@
     </div>
 
     {% include 'coordination/quests/_nav.html' %}
-
     <br>
-
-    <div class="table-responsive">
-        <table class="table table-bordered table-striped">
-            <thead>
-                <tr>
-                    <th>Игрок</th>
-                    {% for mission in missions %}
-                        <th>{{ mission.table_name }}</th>
-                    {% endfor %}
-                </tr>
-            </thead>
-            <tbody>
-            {% for player in players %}
-                <tr>
-                    <td>{{ player.first_name }}</td>
-                    {% for mission in missions %}
-                        <td>
-                            {% for keylog in keylogs %}
-                                {% if keylog.player == player and keylog.mission == mission %}
-                                    {{ keylog.fix_time|date:"H:i:s" }}
-                                {% endif %}
-                            {% endfor %}
-                        </td>
-                    {% endfor %}
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
-    </div>
+    {% include 'coordination/quests/tables/_nav.html' %}
+    <br>
 
     {% if current_missions %}
         <div class="table-responsive">
