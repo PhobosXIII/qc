@@ -28,8 +28,7 @@ def detail_quest(request, quest_id):
     quest = get_object_or_404(Quest, pk=quest_id)
     if not quest.is_published:
         request = is_quest_organizer(request, quest)
-    missions = quest.missions()
-    context = {'quest': quest, 'missions': missions}
+    context = {'quest': quest}
     return render(request, 'coordination/quests/detail.html', context)
 
 
@@ -347,6 +346,15 @@ def delete_message(request, quest_id, message_id):
 
 
 # Missions
+def quest_missions(request, quest_id):
+    quest = get_object_or_404(Quest, pk=quest_id)
+    if not quest.is_published or not quest.ended:
+        request = is_quest_organizer(request, quest)
+    missions = quest.missions()
+    context = {'quest': quest, 'missions': missions}
+    return render(request, 'coordination/missions/all.html', context)
+
+
 def detail_mission(request, mission_id):
     mission = get_object_or_404(Mission, pk=mission_id)
     quest = mission.quest
@@ -425,7 +433,7 @@ def delete_mission(request, mission_id):
         if not mission.is_start:
             mission.delete()
             Mission.update_finish_number(quest)
-    return redirect('coordination:quest_detail', quest_id=quest.pk)
+    return redirect('coordination:quest_missions', quest_id=quest.pk)
 
 
 # Hints

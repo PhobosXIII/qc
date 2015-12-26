@@ -14,6 +14,7 @@ quest_patterns = [
         url(r'^edit/$', views.edit_quest, name='quest_edit'),
         url(r'^delete/$', views.delete_quest, name='quest_delete'),
         url(r'^publish/$', views.publish_quest, name='quest_publish'),
+        url(r'^missions/$', views.quest_missions, name='quest_missions'),
         url(r'^control/', include([
             url(r'^$', views.control_quest, name='quest_control'),
             url(r'^begin/$', views.begin_quest, name='begin_quest'),
