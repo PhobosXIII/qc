@@ -18,7 +18,7 @@
                     <td>{{ player.first_name }}</td>
                     <td>Логин: <b>{{ player.username }}</b></td>
                     <td>Пароль: <b>{{ player.last_name }}</b></td>
-                    <td>quect.ru/login</td>
+                    <td>{{ request.get_host }}{% url 'auth_login' %}</td>
                 </tr>
             {% endfor %}
             </tbody>
