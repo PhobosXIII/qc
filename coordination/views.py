@@ -103,7 +103,7 @@ def tables_quest_all(request, quest_id):
     players = quest.players.all().order_by('first_name')
     missions = quest.missions().exclude(is_finish=True)
     keylogs = Keylog.right_keylogs(missions)
-    context = {'quest': quest, 'players': players, 'missions': missions, 'keylogs': keylogs, }
+    context = {'quest': quest, 'players': players, 'missions': missions, 'keylogs': keylogs}
     return render(request, 'coordination/quests/tables/all.html', context)
 
 
@@ -112,7 +112,7 @@ def tables_quest_current(request, quest_id):
     quest = get_object_or_404(Quest, pk=quest_id)
     is_quest_organizer(request, quest)
     current_missions = quest.current_missions()
-    context = {'quest': quest, 'current_missions': current_missions, }
+    context = {'quest': quest, 'current_missions': current_missions}
     return render(request, 'coordination/quests/tables/current.html', context)
 
 
@@ -162,7 +162,7 @@ def next_mission(request, quest_id, user_id):
         if not cm.mission.is_finish:
             right_key = cm.mission.key
             keylog = Keylog(key=right_key, fix_time=timezone.now(), player=player, mission=cm.mission, is_right=True)
-            cm.mission = Mission.objects.get(order_number=cm.mission.order_number + 1)
+            cm.mission = Mission.objects.get(quest=quest, order_number=cm.mission.order_number + 1)
             cm.start_time = keylog.fix_time
             keylog.save()
             cm.save()
