@@ -11,13 +11,15 @@
 
     {% include 'coordination/quests/_nav.html' %}
 
-    <h2>{{ mission.short_name }}</h2>
+    <h2 id="mission_name">{{ mission.short_name }}</h2>
 
-    {% for message in messages %}
-        <p class="alert alert-info">{{ message.text|linebreaksbr|urlize }}</p>
-    {% endfor %}
+    <div id="messages">
+        {% for message in messages %}
+            <p class="alert alert-info">{{ message.text|linebreaksbr|urlize }}</p>
+        {% endfor %}
+    </div>
 
-    <div class="text-base">{{ mission.text|safe }}</div>
+    <div id="text" class="text-base">{{ mission.text|safe }}</div>
 
     {% if mission.picture %}
         <a href="{{ mission.picture.url }}" target="_blank"><img src="{{ mission.picture.url }}" class="img-responsive"></a>
@@ -25,9 +27,7 @@
 
     <div class="text-base" id="countdown"></div>
 
-    {% if hints %}
-        {% include 'coordination/hints/_list.html' %}
-    {% endif %}
+    {% include 'coordination/hints/_list.html' %}
 
     {% if form %}
         <div class="row-margin">{% crispy form %}</div>
@@ -54,24 +54,14 @@
     <script type="text/javascript" src="{% static "assets/js/jquery.plugin.min.js" %}"></script>
     <script type="text/javascript" src="{% static "assets/js/jquery.countdown.min.js" %}"></script>
     <script type="text/javascript">
-        var time = {{ delay }}
+        var url = "{% url 'coordination:quest_coordination_ajax' quest.id %}";
         $(function () {
-            $('#countdown').countdown({until: +time, compact: true,
-                layout: 'До следующей подсказки осталось: <b>{mnn}{sep}{snn}</b>. Если страница не обновилась автоматически, обновите ее вручную!',
-                onExpiry: refresh
-            });
+            start_countdown({{ delay }});
         });
 
-        function refresh() {
-            sleep(1000);
-            window.location.reload(true);
-        }
-
-        function sleep(duration) {
-         var d = new Date().getTime() + duration;
-          while(new Date().getTime() <= d ) {
-            //Do nothing
-          }
-        }
+        setInterval(function () {
+            update_coordination()
+        }, 103000);
     </script>
+    <script type="text/javascript" src="{% static "assets/js/coordination.js" %}"></script>
 {% endblock %}

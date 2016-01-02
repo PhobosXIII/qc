@@ -198,6 +198,12 @@ class Mission(models.Model):
         keylog = Keylog.objects.filter(mission=self, player=player, is_right=True).first()
         return keylog is not None
 
+    def as_json(self):
+        return {
+            "name": self.short_name,
+            "text": self.text
+        }
+
     @staticmethod
     def update_finish_number(quest):
         missions = quest.missions()
@@ -233,6 +239,20 @@ class Hint(models.Model):
         hints = Hint.objects.filter(mission=self.mission, order_number__lte=self.order_number)
         aggregation = hints.aggregate(abs_delay=models.Sum('delay'))
         return aggregation.get('abs_delay', self.delay)
+
+    def as_json(self):
+        return {
+            "title": self.__str__(),
+            "delay": self.delay,
+            "text": self.text
+        }
+
+    @staticmethod
+    def as_json_array(hints):
+        array = []
+        for hint in hints:
+            array.append(hint.as_json())
+        return array
 
     @staticmethod
     def display_hints(current_mission):
@@ -317,3 +337,15 @@ class Message(models.Model):
     def show(self):
         self.is_show = not self.is_show
         self.save()
+
+    def as_json(self):
+        return {
+            "text": self.text
+        }
+
+    @staticmethod
+    def as_json_array(messages):
+        array = []
+        for message in messages:
+            array.append(message.as_json())
+        return array
