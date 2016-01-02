@@ -153,7 +153,7 @@ LOGIN_REDIRECT_URL = reverse_lazy('home')
 
 PROJECT_NAME = 'QC'
 FULL_PROJECT_NAME = 'QuestCoordination'
-PROJECT_VERSION = 'v3.0'
+PROJECT_VERSION = 'v3.1'
 
 # Honor the 'X-Forwarded-Proto' header for request.is_secure()
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
