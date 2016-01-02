@@ -38,6 +38,10 @@ urlpatterns = [
         url(r'^$', main_views.all_news, name='news'),
         url(r'^(?P<news_id>[0-9]+)/$', main_views.detail_news, name='news_detail'),
     ])),
+    url(r'^help/', include([
+        url(r'^$', main_views.help, name='help'),
+        url(r'^(?P<category_id>[0-9]+)/$', main_views.help_category, name='help_category'),
+    ])),
     url(r'^', include('coordination.urls', namespace='coordination')),
 ]
 

@@ -1,11 +1,11 @@
 from django.core.mail import send_mail, BadHeaderError
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.http import HttpResponse
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from coordination.models import Quest
 from coordination.utils import is_organizer
 from main.forms import ContactForm
-from main.models import News
+from main.models import News, HelpCategory, Faq
 from qc import settings
 
 
@@ -74,3 +74,19 @@ def detail_news(request, news_id):
     news = get_object_or_404(News, pk=news_id)
     context = {'news': news}
     return render(request, 'news/detail.html', context)
+
+
+def help(request):
+    categories = HelpCategory.objects.all()
+    if len(categories) > 0:
+        category_id = categories.first().pk
+        return redirect('help_category', category_id=category_id)
+    return render(request, 'help/index.html', {'categories': None})
+
+
+def help_category(request, category_id):
+    category = get_object_or_404(HelpCategory, pk=category_id)
+    faqs = Faq.objects.filter(category=category)
+    categories = HelpCategory.objects.all()
+    context = {'categories': categories, 'faqs': faqs, 'cur_category': category}
+    return render(request, 'help/index.html', context)

@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="page-header">
+        <h1>{% block title %}Помощь{% endblock %}</h1>
+    </div>
+
+    <div class="row">
+        {% if categories %}
+            <div class="col-sm-4 col-md-3">
+                <div class="list-group">
+                    {% for category in categories %}
+                        {% url 'help_category' category.id as cat_url %}
+                        <a href="{{ cat_url }}" class="list-group-item{% if category == cur_category %} active{% endif %}">
+                            {{ category }}
+                        </a>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="col-sm-8 col-md-9">
+                <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+                    {% for faq in faqs %}
+                        <div class="panel panel-default">
+                            <div class="panel-heading" role="tab" id="headingOne">
+                                <h4 class="panel-title text-left">
+                                    <a role="button" data-toggle="collapse" data-parent="#accordion"
+                                       href="#collapse{{ forloop.counter }}" aria-expanded="true"
+                                       aria-controls="collapse{{ forloop.counter }}">
+                                        {{ faq.question }}
+                                    </a>
+                                </h4>
+                            </div>
+                            <div id="collapse{{ forloop.counter }}"
+                                 class="panel-collapse collapse{% if forloop.counter == 1 %} in{% endif %}" role="tabpanel"
+                                 aria-labelledby="heading{{ forloop.counter }}">
+                                <div class="panel-body">
+                                    <div class="text-base">{{ faq.answer|safe }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% else %}
+            <p class="lead text-center">Данный раздел пока не заполнен.</p>
+        {% endif %}
+    </div>
+{% endblock content %}

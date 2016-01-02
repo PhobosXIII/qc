@@ -21,6 +21,7 @@
                 {% menu_item 'Квесты' 'coordination:quests' %}
                 {% menu_item 'Новости' 'news' contains=True %}
                 {% menu_item 'Контакты' 'contacts' contains=True %}
+                {% menu_item 'Помощь' 'help' contains=True %}
                 {% if user.is_superuser %}
                     <li><a href="{% url 'admin:index' %}" target="_blank">Админка</a></li>
                 {% endif %}
