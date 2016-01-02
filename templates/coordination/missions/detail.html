@@ -8,7 +8,7 @@
     {% include 'coordination/_confirm_dialog.html' %}
 
     <div class="page-header">
-        <h1><a href="{% url 'coordination:quest_missions' quest.id %}">{{ quest.title }}</a>.
+        <h1>{{ quest.title }}.
             {% if user|is_organizer:quest or user.is_superuser %}
                 {{ mission }}
             {% else %}
@@ -16,6 +16,9 @@
             {% endif %}
         </h1>
     </div>
+
+    {% include 'coordination/quests/_nav.html' %}
+    <br>
 
     {% if user|is_organizer:quest or user.is_superuser %}
         <p class="text-right">
