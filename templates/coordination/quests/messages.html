@@ -11,38 +11,8 @@
     </div>
 
     {% include 'coordination/quests/_nav.html' %}
-
-    <div class="row row-margin">
-        {% for message in messages %}
-            <div class="col-md-6">
-                <div class="panel panel-default">
-                    <div class="panel-body">
-                        <p class="text-base">{{ message.text|linebreaksbr|urlize }}</p>
-                    </div>
-                    <p class="text-center">
-                        {% url 'coordination:message_show' quest.id message.id as show_url %}
-                        {% if message.is_show %}
-                             <button data-href="{{ show_url }}" data-toggle="modal" data-target="#confirm" class="btn btn-warning">
-                                 <span class="fa fa-eye-slash fa-lg"></span> Скрыть сообщение
-                             </button>
-                        {% else %}
-                            <button data-href="{{ show_url }}" data-toggle="modal" data-target="#confirm" class="btn btn-success">
-                                <span class="fa fa-eye fa-lg"></span> Отображать сообщение
-                            </button>
-                        {% endif %}
-
-                        <a href="{% url 'coordination:message_edit' quest.id message.id %}" class="btn btn-primary">
-                            <span class="fa fa-edit fa-lg"></span> Редактировать</a>
-
-                        <button data-href="{% url 'coordination:message_delete' quest.id message.id %}" data-toggle="modal"
-                                data-target="#confirm" class="btn btn-danger">
-                            <span class="fa fa-trash fa-lg"></span> Удалить
-                        </button>
-                    </p>
-                </div>
-            </div>
-        {% endfor %}
-    </div>
+    <br>
+    {% include 'coordination/messages/_list.html' %}
 
     <h4>Добавить сообщение</h4>
     <form class="col-md-6 col-md-offset-3" action="" method="post">

@@ -10,7 +10,7 @@ function update_coordination() {
             $("#text").html(mission["text"]);
             var messages = data["messages"];
             $.each(messages, function(key,message) {
-                $("#messages").append('<p class="alert alert-info">' + message.text + '</p>');
+                $("#messages").append('<div class="alert alert-info">' + message.text + '</div>');
             });
             var hints = data["hints"];
             $.each(hints, function(key,hint) {

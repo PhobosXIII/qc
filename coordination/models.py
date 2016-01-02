@@ -324,7 +324,7 @@ class Keylog(models.Model):
 
 class Message(models.Model):
     quest = models.ForeignKey(Quest, verbose_name='квест')
-    text = models.TextField('текст сообщения')
+    text = RichTextField('текст сообщения')
     is_show = models.BooleanField('отображать', default=True)
 
     class Meta:

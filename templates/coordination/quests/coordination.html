@@ -13,11 +13,7 @@
 
     <h2 id="mission_name">{{ mission.short_name }}</h2>
 
-    <div id="messages">
-        {% for message in messages %}
-            <p class="alert alert-info">{{ message.text|linebreaksbr|urlize }}</p>
-        {% endfor %}
-    </div>
+    {% include 'coordination/messages/_list.html' %}
 
     <div id="text" class="text-base">{{ mission.text|safe }}</div>
 
