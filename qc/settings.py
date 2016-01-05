@@ -23,6 +23,10 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 SECRET_KEY = get_env_variable('QC_SECRET_KEY')
 
+PROJECT_NAME = 'QC'
+FULL_PROJECT_NAME = 'QuestCoordination'
+PROJECT_VERSION_BASE = 'v3.1'
+
 INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.auth',
@@ -78,15 +82,19 @@ if ENV_ROLE == 'prod' or ENV_ROLE == 'stage':
     )
 
     if ENV_ROLE == 'stage':
+        PROJECT_VERSION = PROJECT_VERSION_BASE + '-beta'
         ALLOWED_HOSTS = [
             '.quect.ru',
             '.quect.herokuapp.com',
         ]
 
     if ENV_ROLE == 'prod':
+        PROJECT_VERSION = PROJECT_VERSION_BASE
         ALLOWED_HOSTS = [
             '.quect.ru',
         ]
+else:
+    PROJECT_VERSION = PROJECT_VERSION_BASE + '-debug'
 
 ADMINS = (
     ('Phobos', 'dev@quect.ru'),
@@ -150,10 +158,6 @@ STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
 LOGOUT_URL = reverse_lazy('auth_logout')
 LOGIN_URL = reverse_lazy('auth_login')
 LOGIN_REDIRECT_URL = reverse_lazy('home')
-
-PROJECT_NAME = 'QC'
-FULL_PROJECT_NAME = 'QuestCoordination'
-PROJECT_VERSION = 'v3.1'
 
 # Honor the 'X-Forwarded-Proto' header for request.is_secure()
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')

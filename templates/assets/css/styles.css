@@ -23,8 +23,8 @@ body {
     height: 170px;
     background-color: #d0d2f2;
     text-align: center;
-    padding-top: 20px;
-    padding-bottom: 20px;
+    padding-top: 10px;
+    padding-bottom: 5px;
 }
 
 body > .container {
@@ -67,10 +67,10 @@ a.inline-block {
     display: block;
     font-size: 18px;
     font-style: normal;
+    margin-bottom: 10px;
 }
 
 .link {
-    margin-top: 15px;
     font-size: 16px;
     font-style: normal;
 }
