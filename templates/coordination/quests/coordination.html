@@ -13,7 +13,9 @@
 
     <h2 id="mission_name">{{ mission.short_name }}</h2>
 
-    {% include 'coordination/messages/_list.html' %}
+    <div id="messages">
+        {% include 'coordination/messages/_list.html' %}
+    </div>
 
     <div id="text" class="text-base">{{ mission.text|safe }}</div>
 
@@ -23,26 +25,20 @@
 
     <div class="text-base" id="countdown"></div>
 
-    {% include 'coordination/hints/_list.html' %}
+    <div id="hints" class="row">
+        {% include 'coordination/hints/_list.html' %}
+    </div>
 
-    {% if form %}
-        <div class="row-margin">{% crispy form %}</div>
-        {% if wrong_keys %}
-            <p><span class="text-danger">Не верно указан ключ: </span>{{ wrong_keys }}</p>
+    <div id="form">
+        {% if form %}
+            <div class="row-margin">{% crispy form %}</div>
+            <div id="wrong_keys">{% include 'coordination/quests/_wrong_keys.html' %}</div>
         {% endif %}
-    {% endif %}
+    </div>
 
-    {% if completed_missions %}
-        <div class="row-margin">
-            <div class="col-sm-4 list-group">
-                <p class="lead">Пройденные задания</p>
-                {% for mission in completed_missions %}
-                    <a href="{% url 'coordination:mission_detail' mission.id %}"
-                       class="list-group-item list-group-item-success">{{ mission }}</a>
-                {% endfor %}
-            </div>
-        </div>
-    {% endif %}
+    <div id="completed_missions" class="row-margin">
+        {% include 'coordination/quests/_completed_missions.html' %}
+    </div>
 {% endblock content %}
 
 {% block scripts %}
@@ -50,14 +46,14 @@
     <script type="text/javascript" src="{% static "assets/js/jquery.plugin.min.js" %}"></script>
     <script type="text/javascript" src="{% static "assets/js/jquery.countdown.min.js" %}"></script>
     <script type="text/javascript">
-        var url = "{% url 'coordination:quest_coordination_ajax' quest.id %}";
+        var url = "{% url 'coordination:quest_coordination' quest.id %}";
         $(function () {
             start_countdown({{ delay }});
         });
 
         setInterval(function () {
             update_coordination()
-        }, 103000);
+        }, 13000);
     </script>
     <script type="text/javascript" src="{% static "assets/js/coordination.js" %}"></script>
 {% endblock %}

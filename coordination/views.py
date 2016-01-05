@@ -1,9 +1,9 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.core import serializers
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.http.response import JsonResponse, Http404
+from django.http.response import JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
+from django.template.loader import render_to_string
 from django.utils import timezone
 from coordination.forms import QuestForm, MissionForm, HintForm, PlayerForm, KeyForm, MessageForm
 from coordination.models import Quest, Mission, Hint, CurrentMission, Keylog, Message
@@ -253,33 +253,29 @@ def coordination_quest(request, quest_id):
                 current_mission.start_time = keylog.fix_time
                 current_mission.save()
             keylog.save()
-            return redirect('coordination:quest_coordination', quest_id=quest_id)
         wrong_keys = Keylog.wrong_keylogs(player, mission)
         wrong_keys_str = ', '.join(str(i) for i in wrong_keys)
-    context = {'quest': quest, 'mission': mission, 'hints': hints, 'form': form, 'wrong_keys': wrong_keys_str,
-               'delay': delay, 'completed_missions': completed_missions, 'messages': messages}
-    return render(request, 'coordination/quests/coordination.html', context)
-
-
-@login_required
-def coordination_quest_ajax(request, quest_id):
-    if request.is_ajax():
-        quest = get_object_or_404(Quest, pk=quest_id)
-        request = is_quest_player(request, quest)
-        current_mission = get_object_or_404(CurrentMission, mission__quest=quest, player=request.user)
-        mission = current_mission.mission
-        hints = Hint.display_hints(current_mission)
-        next_hint_time = Hint.next_hint_time(current_mission)
-        delay = None
-        if next_hint_time:
-            delay = get_timedelta(next_hint_time)
-        messages = quest.messages().filter(is_show=True)
-        json_hints = Hint.as_json_array(hints)
-        json_messages = Message.as_json_array(messages)
-        data = {'mission': mission.as_json(), 'hints': json_hints, 'delay': delay, 'messages': json_messages}
-        return JsonResponse(data)
-    else:
-        raise Http404
+    if request.method == 'GET':
+        if request.is_ajax():
+            json_mission = mission.as_json()
+            html_hints = render_to_string('coordination/hints/_list.html', {'hints': hints})
+            html_messages = render_to_string('coordination/messages/_list.html', {'messages': messages})
+            html_wrong_keys = render_to_string('coordination/quests/_wrong_keys.html',
+                                               {'wrong_keys': wrong_keys_str})
+            html_completed_missions = render_to_string('coordination/quests/_completed_missions.html',
+                                                       {'completed_missions': completed_missions})
+            hide_form = form is None
+            data = {'mission': json_mission, 'hints': html_hints, 'delay': delay, 'messages': html_messages,
+                    'wrong_keys': html_wrong_keys, 'completed_missions': html_completed_missions,
+                    'hide_form': hide_form}
+            return JsonResponse(data)
+        else:
+            context = {'quest': quest, 'mission': mission, 'hints': hints, 'form': form,
+                       'wrong_keys': wrong_keys_str, 'delay': delay, 'completed_missions': completed_missions,
+                       'messages': messages}
+            return render(request, 'coordination/quests/coordination.html', context)
+    if request.method == 'POST':
+        return redirect('coordination:quest_coordination', quest_id=quest_id)
 
 
 @login_required

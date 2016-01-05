@@ -1,0 +1,9 @@
+{% if completed_missions %}
+<div class="col-sm-4 list-group">
+    <h4 class="text-left">Пройденные задания</h4>
+    {% for mission in completed_missions %}
+        <a href="{% url 'coordination:mission_detail' mission.id %}"
+           class="list-group-item list-group-item-success">{{ mission }}</a>
+    {% endfor %}
+</div>
+{% endif %}

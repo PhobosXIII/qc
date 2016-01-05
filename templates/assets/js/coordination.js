@@ -3,41 +3,31 @@ function update_coordination() {
         type: "GET",
         url: url,
         success: function(data) {
-            $("#messages").empty();
-            $("#hints").empty();
             var mission = data["mission"];
             $("#mission_name").text(mission["name"]);
             $("#text").html(mission["text"]);
             var messages = data["messages"];
-            $.each(messages, function(key,message) {
-                $("#messages").append('<div class="alert alert-info">' + message.text + '</div>');
-            });
+            $("#messages").html(messages);
             var hints = data["hints"];
-            $.each(hints, function(key,hint) {
-                $("#hints").append(
-                        '<div class="col-md-4">' +
-                        '<div class="panel panel-primary">' +
-                        '<div class="panel-heading">' +
-                        '<h4 class="panel-title">' +
-                        hint.title +
-                        '<span class="pull-right"><span class="fa fa-clock-o fa-lg"></span> ' +
-                        hint.delay +
-                        '</span></h4></div>' +
-                        '<div class="panel-body">' +
-                        '<div class="text-base">' +
-                        hint.text +
-                        '</div></div></div></div>'
-                );
-            });
+            $("#hints").html(hints);
+            var wrong_keys = data["wrong_keys"];
+            $("#wrong_keys").html(wrong_keys);
+            var completed_missions = data["completed_missions"];
+            $("#completed_missions").html(completed_missions);
+            var hide_form = data["hide_form"];
+            if (hide_form) {
+                $("#form").empty();
+            }
             start_countdown(data["delay"]);
         }
     });
 }
 
 function start_countdown(time) {
-    $('#countdown').countdown('destroy');
+    var countdown = $('#countdown');
+    countdown.countdown('destroy');
     if (time != null) {
-        $('#countdown').countdown({
+        countdown.countdown({
             until: +time, compact: true,
             layout: 'До следующей подсказки осталось: <b>{mnn}{sep}{snn}</b>.' +
             ' Если подсказка не отобразилась, обновите страницу вручную!',

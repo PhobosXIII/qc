@@ -12,7 +12,9 @@
 
     {% include 'coordination/quests/_nav.html' %}
     <br>
-    {% include 'coordination/messages/_list.html' %}
+    <div id="messages">
+        {% include 'coordination/messages/_list.html' %}
+    </div>
 
     <h4>Добавить сообщение</h4>
     <form class="col-md-6 col-md-offset-3" action="" method="post">
