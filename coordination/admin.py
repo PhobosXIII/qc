@@ -21,8 +21,8 @@ class MyUserAdmin(UserAdmin):
 
 
 class QuestAdmin(admin.ModelAdmin):
-    fields = [('title', 'is_published', 'status'), 'organizer', 'start', 'description', 'players']
-    list_display = ('title', 'organizer', 'start')
+    fields = [('title', 'is_published', 'status'), 'type', 'organizer', 'start', 'description', 'players']
+    list_display = ('title', 'organizer', 'start', 'type')
     formfield_overrides = {models.ManyToManyField: {'widget': SelectMultiple(attrs={'size': '10'})}, }
     ordering = ['-start']
 
