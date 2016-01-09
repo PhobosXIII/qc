@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.forms import SelectMultiple
 from coordination.models import Quest, Mission, Hint, CurrentMission, Keylog, Message
+from qc import settings
 
 
 def user_str(self):
@@ -34,7 +35,10 @@ class HintInline(admin.TabularInline):
 
 
 class MissionAdmin(admin.ModelAdmin):
-    fields = ('quest', ('name', 'order_number', 'is_finish'), 'name_in_table', 'text', 'key')
+    if settings.QC_UPLOAD:
+        fields = ('quest', ('name', 'order_number', 'is_finish'), 'name_in_table', 'text', 'picture', 'key')
+    else:
+        fields = ('quest', ('name', 'order_number', 'is_finish'), 'name_in_table', 'text', 'key')
     inlines = [HintInline]
     list_display = ('__str__', 'quest', )
     list_filter = ('quest', )

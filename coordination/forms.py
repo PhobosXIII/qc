@@ -5,6 +5,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.forms import ModelForm, Form, ValidationError
 from django.forms.fields import CharField
 from coordination.models import Quest, Mission, Hint, Message
+from qc import settings
 
 
 def clean_key(key):
@@ -32,6 +33,8 @@ class MissionForm(ModelForm):
     class Meta:
         model = Mission
         fields = ['name', 'name_in_table', 'text', 'key', 'order_number']
+        if settings.QC_UPLOAD:
+            fields.append('picture')
 
     def __init__(self, *args, **kwargs):
         next_number = kwargs.pop('next_number', None)
@@ -46,6 +49,7 @@ class MissionForm(ModelForm):
         simple_layout = Layout(
             HTML("<h2>{{ form.instance }}</h2>"),
             'text',
+            'picture',
             Field('order_number', type="hidden"),
         )
         simple_fields = ['text', 'order_number']
@@ -56,6 +60,7 @@ class MissionForm(ModelForm):
                     HTML("<h2>{{ form.instance }}</h2>"),
                     'key',
                     'text',
+                    'picture',
                     Field('order_number', type="hidden"),
                 )
             elif quest.line_nonlinear:
@@ -72,6 +77,7 @@ class MissionForm(ModelForm):
                     'name',
                     'key',
                     'text',
+                    'picture',
                     Field('order_number', type="hidden"),
                 )
         else:
@@ -84,6 +90,7 @@ class MissionForm(ModelForm):
                 'name',
                 'name_in_table',
                 'text',
+                'picture'
             )
 
     def clean_key(self):
