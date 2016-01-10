@@ -87,8 +87,8 @@ if ENV_ROLE == 'prod' or ENV_ROLE == 'stage':
         MIDDLEWARE_CLASSES = (
             'opbeat.contrib.django.middleware.OpbeatAPMMiddleware',
         ) + BASE_MIDDLEWARE_CLASSES
-
-    MIDDLEWARE_CLASSES = BASE_MIDDLEWARE_CLASSES
+    else:
+        MIDDLEWARE_CLASSES = BASE_MIDDLEWARE_CLASSES
 
     if QC_UPLOAD:
         SENDFILE_BACKEND = 'sendfile.backends.nginx'
