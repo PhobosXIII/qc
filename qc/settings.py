@@ -41,6 +41,17 @@ INSTALLED_APPS = (
     'ckeditor',
 )
 
+BASE_MIDDLEWARE_CLASSES = (
+        'django.contrib.sessions.middleware.SessionMiddleware',
+        'django.middleware.common.CommonMiddleware',
+        'django.middleware.csrf.CsrfViewMiddleware',
+        'django.contrib.auth.middleware.AuthenticationMiddleware',
+        'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
+        'django.contrib.messages.middleware.MessageMiddleware',
+        'django.middleware.clickjacking.XFrameOptionsMiddleware',
+        'django.middleware.security.SecurityMiddleware',
+    )
+
 MEDIA_ROOT = os.path.join(BASE_DIR, 'mediafiles')
 MEDIA_URL = '/media/'
 
@@ -58,41 +69,26 @@ if ENV_ROLE == 'dev':
     if QC_UPLOAD:
         SENDFILE_BACKEND = 'sendfile.backends.development'
 
-    MIDDLEWARE_CLASSES = (
-        'django.contrib.sessions.middleware.SessionMiddleware',
-        'django.middleware.common.CommonMiddleware',
-        'django.middleware.csrf.CsrfViewMiddleware',
-        'django.contrib.auth.middleware.AuthenticationMiddleware',
-        'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
-        'django.contrib.messages.middleware.MessageMiddleware',
-        'django.middleware.clickjacking.XFrameOptionsMiddleware',
-        'django.middleware.security.SecurityMiddleware',
-    )
+    MIDDLEWARE_CLASSES = BASE_MIDDLEWARE_CLASSES
 
 if ENV_ROLE == 'prod' or ENV_ROLE == 'stage':
     DEBUG = False
 
-    INSTALLED_APPS += (
-        'opbeat.contrib.django',
-    )
+    QC_OPBEAT = get_env_variable('QC_OPBEAT') == 'True'
+    if QC_OPBEAT:
+        INSTALLED_APPS += (
+            'opbeat.contrib.django',
+        )
+        OPBEAT = {
+            'ORGANIZATION_ID': get_env_variable('OPBEAT_ORG_ID'),
+            'APP_ID': get_env_variable('OPBEAT_APP_ID'),
+            'SECRET_TOKEN': get_env_variable('OPBEAT_SECRET'),
+        }
+        MIDDLEWARE_CLASSES = (
+            'opbeat.contrib.django.middleware.OpbeatAPMMiddleware',
+        ) + BASE_MIDDLEWARE_CLASSES
 
-    OPBEAT = {
-        'ORGANIZATION_ID': get_env_variable('OPBEAT_ORG_ID'),
-        'APP_ID': get_env_variable('OPBEAT_APP_ID'),
-        'SECRET_TOKEN': get_env_variable('OPBEAT_SECRET'),
-    }
-
-    MIDDLEWARE_CLASSES = (
-        'opbeat.contrib.django.middleware.OpbeatAPMMiddleware',
-        'django.contrib.sessions.middleware.SessionMiddleware',
-        'django.middleware.common.CommonMiddleware',
-        'django.middleware.csrf.CsrfViewMiddleware',
-        'django.contrib.auth.middleware.AuthenticationMiddleware',
-        'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
-        'django.contrib.messages.middleware.MessageMiddleware',
-        'django.middleware.clickjacking.XFrameOptionsMiddleware',
-        'django.middleware.security.SecurityMiddleware',
-    )
+    MIDDLEWARE_CLASSES = BASE_MIDDLEWARE_CLASSES
 
     if QC_UPLOAD:
         SENDFILE_BACKEND = 'sendfile.backends.nginx'
