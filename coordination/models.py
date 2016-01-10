@@ -198,6 +198,10 @@ class Mission(models.Model):
         keylog = Keylog.objects.filter(mission=self, player=player, is_right=True).first()
         return keylog is not None
 
+    def is_current(self, player):
+        current_mission = CurrentMission.objects.filter(mission=self, player=player).first()
+        return current_mission is not None
+
     def as_json(self):
         return {
             "name": self.short_name,

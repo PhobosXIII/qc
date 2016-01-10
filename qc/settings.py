@@ -41,10 +41,22 @@ INSTALLED_APPS = (
     'ckeditor',
 )
 
+MEDIA_ROOT = os.path.join(BASE_DIR, 'mediafiles')
+MEDIA_URL = '/media/'
+
+if QC_UPLOAD:
+    INSTALLED_APPS += (
+        'sendfile',
+    )
+    SENDFILE_ROOT = os.path.join(MEDIA_ROOT, 'missions')
+    SENDFILE_URL = '/missions'
+
 if ENV_ROLE == 'dev':
     DEBUG = True
     ALLOWED_HOSTS = []
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+    if QC_UPLOAD:
+        SENDFILE_BACKEND = 'sendfile.backends.development'
 
     MIDDLEWARE_CLASSES = (
         'django.contrib.sessions.middleware.SessionMiddleware',
@@ -81,6 +93,9 @@ if ENV_ROLE == 'prod' or ENV_ROLE == 'stage':
         'django.middleware.clickjacking.XFrameOptionsMiddleware',
         'django.middleware.security.SecurityMiddleware',
     )
+
+    if QC_UPLOAD:
+        SENDFILE_BACKEND = 'sendfile.backends.nginx'
 
     if ENV_ROLE == 'stage':
         PROJECT_VERSION = PROJECT_VERSION_BASE + '-beta'
@@ -144,9 +159,6 @@ DATABASES = {'default': dj_database_url.config()}
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
-MEDIA_ROOT = os.path.join(BASE_DIR, 'mediafiles')
-MEDIA_URL = '/media/'
-
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATIC_URL = '/static/'
 

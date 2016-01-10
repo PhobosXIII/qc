@@ -20,8 +20,10 @@
     <div id="text" class="text-base">{{ mission.text|safe }}</div>
 
     {% if mission.picture %}
-        <a href="{{ mission.picture.url }}" target="_blank"><img src="{{ mission.picture.url }}" class="img-responsive"></a>
+        {% url 'coordination:mission_picture' mission.id as picture_url %}
+        <a href="{{ picture_url }}" target="_blank"><img src="{{ picture_url }}" class="img-responsive"></a>
     {% endif %}
+    <br>
 
     <div class="text-base" id="countdown"></div>
 

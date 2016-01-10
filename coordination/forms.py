@@ -2,14 +2,22 @@ from crispy_forms.bootstrap import StrictButton, PrependedText
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Field, HTML, Div, Row
 from django.core.exceptions import ObjectDoesNotExist
-from django.forms import ModelForm, Form, ValidationError
+from django.forms import ModelForm, Form, ValidationError, ClearableFileInput
 from django.forms.fields import CharField
+
 from coordination.models import Quest, Mission, Hint, Message
 from qc import settings
 
 
 def clean_key(key):
     return key.replace(" ", "").lower()
+
+
+class CustomClearableFileInput(ClearableFileInput):
+    template_with_initial = (
+        '%(initial_text)s картинка уже загружена. '
+        '%(clear_template)s<br />%(input_text)s: %(input)s'
+    )
 
 
 class QuestForm(ModelForm):
@@ -35,6 +43,9 @@ class MissionForm(ModelForm):
         fields = ['name', 'name_in_table', 'text', 'key', 'order_number']
         if settings.QC_UPLOAD:
             fields.append('picture')
+            widgets ={
+                'picture': CustomClearableFileInput,
+            }
 
     def __init__(self, *args, **kwargs):
         next_number = kwargs.pop('next_number', None)

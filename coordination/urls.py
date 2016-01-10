@@ -56,6 +56,7 @@ mission_patterns = [
         url(r'^$', views.detail_mission, name='mission_detail'),
         url(r'^edit/$', views.edit_mission, name='mission_edit'),
         url(r'^delete/$', views.delete_mission, name='mission_delete'),
+        url(r'^picture/$', views.picture_mission, name='mission_picture'),
     ])),
 ]
 

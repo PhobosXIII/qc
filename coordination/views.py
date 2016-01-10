@@ -1,10 +1,12 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.http.response import JsonResponse
+from django.http.response import JsonResponse, Http404
 from django.shortcuts import render, get_object_or_404, redirect
 from django.template.loader import render_to_string
 from django.utils import timezone
+from sendfile import sendfile
+
 from coordination.forms import QuestForm, MissionForm, HintForm, PlayerForm, KeyForm, MessageForm
 from coordination.models import Quest, Mission, Hint, CurrentMission, Keylog, Message
 from coordination.utils import is_quest_organizer, is_quest_player, is_organizer, generate_random_username, \
@@ -453,6 +455,21 @@ def delete_mission(request, mission_id):
             mission.delete()
             Mission.update_finish_number(quest)
     return redirect('coordination:quest_missions', quest_id=quest.pk)
+
+
+def picture_mission(request, mission_id):
+    mission = get_object_or_404(Mission, pk=mission_id)
+    if mission.picture:
+        quest = mission.quest
+        player = request.user
+        can_user_view = quest.is_published and \
+                        (quest.ended or (player.is_authenticated() and mission.is_completed(player))
+                         or (player.is_authenticated() and mission.is_current(player)))
+        if not can_user_view:
+            request = is_quest_organizer(request, quest)
+        return sendfile(request, mission.picture.path)
+    else:
+        raise Http404
 
 
 # Hints
