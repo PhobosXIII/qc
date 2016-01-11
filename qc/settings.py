@@ -96,6 +96,8 @@ if ENV_ROLE == 'prod' or ENV_ROLE == 'stage':
     if ENV_ROLE == 'stage':
         PROJECT_VERSION = PROJECT_VERSION_BASE + '-beta'
         ALLOWED_HOSTS = [
+            '127.0.0.1',
+            'localhost',
             '.quect.ru',
             '.quect.herokuapp.com',
         ]
