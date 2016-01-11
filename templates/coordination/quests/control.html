@@ -67,7 +67,7 @@
                 {% for cm in current_missions %}
                     <tr {% if cm.mission.is_finish %}class="success"{% endif %}>
                         <td>{{ cm.player.first_name }}
-                            {% if not cm.mission.is_finish and quest.is_published and quest.started %}
+                            {% if not cm.mission.is_finish and quest.linear and quest.is_published and quest.started %}
                                 <br>
                                 <button data-href="{% url 'coordination:next_mission' quest.id cm.player.id %}"
                                         data-toggle="modal" data-target="#confirm" class="btn btn-sm btn-primary">

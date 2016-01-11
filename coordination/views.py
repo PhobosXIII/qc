@@ -160,7 +160,7 @@ def clear_quest(request, quest_id):
 def next_mission(request, quest_id, user_id):
     quest = get_object_or_404(Quest, pk=quest_id)
     is_quest_organizer(request, quest)
-    if quest.started:
+    if quest.linear and quest.started:
         player = get_object_or_404(User, pk=user_id)
         cm = get_object_or_404(CurrentMission, mission__quest=quest, player=player)
         if not cm.mission.is_finish:
