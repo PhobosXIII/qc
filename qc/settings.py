@@ -59,8 +59,8 @@ if QC_UPLOAD:
     INSTALLED_APPS += (
         'sendfile',
     )
-    SENDFILE_ROOT = os.path.join(MEDIA_ROOT, 'missions')
-    SENDFILE_URL = '/missions'
+    SENDFILE_ROOT = os.path.join(MEDIA_ROOT, 'mission_imgs')
+    SENDFILE_URL = '/mission_imgs'
 
 if ENV_ROLE == 'dev':
     DEBUG = True
