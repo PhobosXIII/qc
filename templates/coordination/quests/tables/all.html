@@ -1,4 +1,10 @@
-{% extends 'base.html' %}
+{% extends 'base_table.html' %}
+{% load staticfiles %}
+
+{% block styles %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static "assets/css/bootstrap-table-fixed-columns.css" %}">
+{% endblock styles %}
 
 {% block title %}{{ quest.title }} - Табличка для всех заданий{% endblock %}
 
@@ -12,32 +18,42 @@
     {% include 'coordination/quests/tables/_nav.html' %}
     <br>
 
-    <div class="table-responsive">
-        <table class="table table-bordered table-striped">
-            <thead>
-                <tr>
-                    <th>Игрок</th>
-                    {% for mission in missions %}
-                        <th>{{ mission.table_name }}</th>
+    <table data-toggle="table" data-fixed-columns="true" data-fixed-number="1" data-height="500"
+            {% if not quest.line_nonlinear %} data-classes="table" data-striped="true" {% endif %}>
+        <thead>
+            <tr>
+                <th>Игрок</th>
+                {% for mission in missions %}
+                        {% if quest.line_nonlinear %}
+                            <th class="{% ifchanged mission.order_number %}{% cycle 'bg-success' 'bg-warning' as color%}{% else %}{{ color }}{% endifchanged %}">
+                                {{ mission.medium_name }}
+                            </th>
+                        {% else %}
+                            <th>{{ mission.table_name }}</th>
+                        {% endif %}
                     {% endfor %}
-                </tr>
-            </thead>
-            <tbody>
-            {% for player in players %}
-                <tr>
-                    <td>{{ player.first_name }}</td>
-                    {% for mission in missions %}
-                        <td>
-                            {% for keylog in keylogs %}
-                                {% if keylog.player == player and keylog.mission == mission %}
-                                    {{ keylog.fix_time|date:"H:i:s" }}
-                                {% endif %}
-                            {% endfor %}
-                        </td>
-                    {% endfor %}
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
-    </div>
+            </tr>
+        </thead>
+        <tbody>
+        {% for player in players %}
+            <tr>
+                <td>{{ player.first_name }}</td>
+                {% for mission in missions %}
+                    <td>
+                        {% for keylog in keylogs %}
+                            {% if keylog.player == player and keylog.mission == mission %}
+                                {{ keylog.fix_time|date:"H:i:s" }}
+                            {% endif %}
+                        {% endfor %}
+                    </td>
+                {% endfor %}
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
 {% endblock content %}
+
+{% block scripts %}
+    {{ block.super }}
+    <script type="text/javascript" src="{% static "assets/js/bootstrap-table-fixed-columns.js" %}"></script>
+{% endblock scripts %}

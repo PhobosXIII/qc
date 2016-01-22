@@ -2,6 +2,11 @@
 {% load staticfiles %}
 {% load coordination_extras %}
 
+{% block styles %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static "assets/css/bootstrap-table-fixed-columns.css" %}">
+{% endblock styles %}
+
 {% block title %}{{ quest.title }} - Итоги{% endblock %}
 
 {% block content %}
@@ -13,19 +18,28 @@
 
     {% if quest.ended %}
         <br>
-        <table data-toggle="table" {% if user|is_organizer:quest or user.is_superuser %}
-               data-show-export="true" data-export-types="['excel']"
-               data-export-options='{
-                    "fileName": "{{ quest.title }} - Итоги",
-                    "worksheetName": "Квест"
-               }'
-        {% endif %}>
+        <table data-toggle="table" data-fixed-columns="true" data-fixed-number="2" data-height="500"
+                {% if not quest.line_nonlinear %} data-classes="table" data-striped="true" {% endif %}
+                {% if user|is_organizer:quest or user.is_superuser %}
+                   data-show-export="true" data-export-types="['excel']"
+                   data-export-options='{
+                        "fileName": "{{ quest.title }} - Итоги",
+                        "worksheetName": "Квест"
+                   }'
+                {% endif %}>
             <thead>
                 <tr>
-                    <th>Место</th>
+                    <th>№</th>
                     <th>Игрок</th>
                     {% for mission in missions %}
-                        <th><a href="{% url 'coordination:mission_detail' mission.id %}">{{ mission.table_name }}</a></th>
+                        {% url 'coordination:mission_detail' mission.id as mission_url%}
+                        {% if quest.line_nonlinear %}
+                            <th class="{% ifchanged mission.order_number %}{% cycle 'bg-success' 'bg-warning' as color%}{% else %}{{ color }}{% endifchanged %}">
+                                <a href="{{ mission_url }}">{{ mission.medium_name }}</a>
+                            </th>
+                        {% else %}
+                            <th><a href="{{ mission_url }}">{{ mission.table_name }}</a></th>
+                        {% endif %}
                     {% endfor %}
                 </tr>
             </thead>
@@ -47,6 +61,7 @@
             {% endfor %}
             </tbody>
         </table>
+        <br>
     {% else %}
         <p class="lead text-center">Чтобы просмотреть итоговую табличку, дождитесь окончания игры!</p>
     {% endif %}
@@ -56,4 +71,5 @@
     {{ block.super }}
     <script type="text/javascript" src="{% static "assets/js/bootstrap-table-export.min.js" %}"></script>
     <script type="text/javascript" src="{% static "assets/js/tableExport.min.js" %}"></script>
+    <script type="text/javascript" src="{% static "assets/js/bootstrap-table-fixed-columns.js" %}"></script>
 {% endblock scripts %}
