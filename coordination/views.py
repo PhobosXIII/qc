@@ -1,6 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.core.urlresolvers import reverse
 from django.http.response import JsonResponse, Http404
 from django.shortcuts import render, get_object_or_404, redirect
 from django.template.loader import render_to_string
@@ -290,16 +291,22 @@ def coordination_quest(request, quest_id):
 def keylog_quest(request, quest_id):
     quest = get_object_or_404(Quest, pk=quest_id)
     request = is_quest_organizer(request, quest)
-    keylog_list = Keylog.objects.filter(mission__quest=quest).order_by('mission', 'player', 'fix_time')
-    paginator = Paginator(keylog_list, 60)
-    page = request.GET.get('page')
-    try:
-        keylogs = paginator.page(page)
-    except PageNotAnInteger:
-        keylogs = paginator.page(1)
-    except EmptyPage:
-        keylogs = paginator.page(paginator.num_pages)
-    context = {'quest': quest, 'keylogs': keylogs}
+    mission = request.GET.get('mission', None)
+    player = request.GET.get('player', None)
+    missions = quest.missions().exclude(is_finish=True)
+    if not mission and not player:
+        url = reverse('coordination:quest_keylog', args=[quest.id])
+        return redirect('{0}?mission={1}'.format(url, missions.first().id))
+    keylogs = None
+    players = quest.players.all().order_by('first_name')
+    if mission:
+        keylogs = Keylog.objects.filter(mission__id=mission)
+        mission = int(mission)
+    if player:
+        keylogs = Keylog.objects.filter(player__id=player)
+        player = int(player)
+    context = {'quest': quest, 'keylogs': keylogs, 'players': players, 'missions': missions,
+               'cur_mission': mission, 'cur_player': player}
     return render(request, 'coordination/quests/keylog.html', context)
 
 

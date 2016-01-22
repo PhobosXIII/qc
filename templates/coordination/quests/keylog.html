@@ -13,42 +13,69 @@
 
     <br>
 
-    <div id="toolbar">
-        {% csrf_token %}
-        <button id="remove" class="btn btn-danger" disabled data-toggle="modal" data-target="#confirm">
-            <span class="fa fa-trash"></span> Удалить
-        </button>
+    <div class="row">
+        <div class="col-sm-4 col-md-3">
+        {% url 'coordination:quest_keylog' quest.id as keylog_url %}
+            <h3>Задания</h3>
+            <div class="list-group">
+                {% for mission in missions %}
+                    <a href="{{ keylog_url }}?mission={{ mission.id }}"
+                       class="list-group-item{% if mission.id == cur_mission %} active{% endif %}">
+                        {{ mission.medium_name }}
+                    </a>
+                {% endfor %}
+            </div>
+
+            {% if players %}
+                <h3>Игроки</h3>
+                <div class="list-group">
+                    {% for player in players %}
+                        <a href="{{ keylog_url }}?player={{ player.id }}"
+                           class="list-group-item{% if player.id == cur_player %} active{% endif %}">
+                            {{ player.first_name }}
+                        </a>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="col-sm-8 col-md-9">
+            <div id="toolbar">
+                {% csrf_token %}
+                <button id="remove" class="btn btn-danger" disabled data-toggle="modal" data-target="#confirm">
+                    <span class="fa fa-trash"></span> Удалить
+                </button>
+            </div>
+
+            <table id="table" data-toggle="table" data-toolbar="#toolbar">
+                <thead>
+                    <tr>
+                        <th data-field="state" data-checkbox="true"></th>
+                        <th data-field="id" class="hidden"></th>
+                        <th data-sortable="true">Игрок</th>
+                        <th data-sortable="true">Задание</th>
+                        <th data-sortable="true">Время ключа</th>
+                        <th data-sortable="true">Ключ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for keylog in keylogs %}
+                    <tr>
+                        <td></td>
+                        <td class="hidden">{{ keylog.id }}</td>
+                        <td>{{ keylog.player.first_name }}</td>
+                        <td><span class="hidden">{{ keylog.mission.order_number }}</span> {{ keylog.mission.medium_name }}</td>
+                        <td>{{ keylog.fix_time|date:"d E Y H:i:s" }}</td>
+                        <td>
+                            <span class="fa {% if keylog.is_right %}fa-check-circle text-success{% else %}fa-minus-circle
+                            text-danger{% endif %}"></span> {{ keylog.key }}
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
-
-    <table id="table" data-toggle="table" data-toolbar="#toolbar">
-        <thead>
-            <tr>
-                <th data-field="state" data-checkbox="true"></th>
-                <th data-field="id" class="hidden"></th>
-                <th data-sortable="true">Игрок</th>
-                <th data-sortable="true">Задание</th>
-                <th data-sortable="true">Время ключа</th>
-                <th data-sortable="true">Ключ</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for keylog in keylogs %}
-            <tr>
-                <td></td>
-                <td class="hidden">{{ keylog.id }}</td>
-                <td>{{ keylog.player.first_name }}</td>
-                <td><span class="hidden">{{ keylog.mission.order_number }}</span> {{ keylog.mission.medium_name }}</td>
-                <td>{{ keylog.fix_time|date:"d E Y H:i:s" }}</td>
-                <td>
-                    <span class="fa {% if keylog.is_right %}fa-check-circle text-success{% else %}fa-minus-circle
-                    text-danger{% endif %}"></span> {{ keylog.key }}
-                </td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
-
-    {% include 'coordination/_pagination.html' with p=keylogs %}
 {% endblock content %}
 
 {% block scripts %}
