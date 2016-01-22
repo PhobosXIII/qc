@@ -299,7 +299,7 @@ class CurrentMission(models.Model):
     class Meta:
         verbose_name = 'текущее задание'
         verbose_name_plural = 'текущие задания'
-        ordering = ['-mission', 'start_time']
+        ordering = ['-mission__order_number', 'start_time']
 
 
 class Keylog(models.Model):
