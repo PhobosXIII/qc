@@ -8,6 +8,7 @@ quest_patterns = [
         url(r'^$', views.create_quest, name='quest_new'),
         url(r'^nl/$', views.create_quest, {'type': 'NL'}, name='quest_new_nl'),
         url(r'^lnl/$', views.create_quest, {'type': 'LNL'}, name='quest_new_lnl'),
+        url(r'^type/$', views.type_quest, name='quest_new_type'),
     ])),
     url(r'^quests/(?P<quest_id>[0-9]+)/', include([
         url(r'^$', views.detail_quest, name='quest_detail'),

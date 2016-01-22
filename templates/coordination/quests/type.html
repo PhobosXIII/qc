@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% load main_extras %}
+
+{% block content %}
+    <div class="page-header">
+        <h1>{% block title %}Новый квест{% endblock %}</h1>
+    </div>
+
+    <p class="text-base text-center">Выберите тип квеста:</p>
+
+    <p class="row-margin text-center">
+        <a href="{% url 'coordination:quest_new' %}" class="btn btn-success">
+            <span class="fa fa-long-arrow-up fa-lg"></span> Линейный квест
+        </a>
+    </p>
+    <p class="row-margin text-center">
+        <a href="{% url 'coordination:quest_new_lnl' %}" class="btn btn-success">
+            <span class="fa fa-exchange fa-lg"></span> Линейно-нелинейный квест
+        </a>
+    </p>
+    <p class="row-margin text-center">
+        <a href="{% url 'coordination:quest_new_nl' %}" class="btn btn-success disabled">
+            <span class="fa fa-arrows fa-lg"></span> Нелинейный квест
+        </a>
+    </p>
+{% endblock content %}

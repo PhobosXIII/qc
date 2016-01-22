@@ -19,7 +19,11 @@
                             {% endif %}
                         </div>
                         <div class="col-xs-12 col-sm-4">
-                             <h4>{{ quest.title }}</h4>
+                             <h4>
+                                 {% if quest.line_nonlinear %}<span class="fa fa-exchange"></span>{% endif %}
+                                 {% if quest.nonlinear %}<span class="fa fa-arrows"></span>{% endif %}
+                                 {{ quest.title }}
+                             </h4>
                         </div>
                         <div class="col-sm-5">
                             <h4>

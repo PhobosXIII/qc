@@ -8,20 +8,12 @@
 
     <p class=" text-center">
         {% if user|in_group:'organizers' %}
-            <a href="{% url 'coordination:quest_new' %}" class="btn btn-success">
+            <a href="{% url 'coordination:quest_new_type' %}" class="btn btn-success">
                 <span class="fa fa-plus fa-lg"></span> Создать квест
             </a>
         {% else %}
             <a href="{% url 'auth_login' %}?next={{request.path}}" class="btn btn-warning btn-responsive">
                 <span class="fa fa-info"></span> Войдите в систему как организатор, чтобы создать квест!
-            </a>
-        {% endif %}
-        {% if user|in_group:'organizers_features' %}
-            <a href="{% url 'coordination:quest_new_lnl' %}" class="btn btn-success">
-                <span class="fa fa-exchange fa-lg"></span> Создать линейно-нелинейный квест
-            </a>
-            <a href="{% url 'coordination:quest_new_nl' %}" class="btn btn-success disabled">
-                <span class="fa fa-arrows fa-lg"></span> Создать нелинейный квест
             </a>
         {% endif %}
     </p>

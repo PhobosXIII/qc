@@ -50,5 +50,10 @@
 
     <h3>Организатор: <span class="label label-primary">{{ quest.organizer|nice_name }}</span></h3>
 
+    <h3>
+        {% if quest.line_nonlinear %}<span class="fa fa-exchange"></span> Линейно-нелинейный квест{% endif %}
+        {% if quest.nonlinear %}<span class="fa fa-arrows"></span> Нелинейный квест{% endif %}
+    </h3>
+
     <div class="text-base">{{ quest.description|default:"Подробности позже."|safe }}</div>
 {% endblock content %}

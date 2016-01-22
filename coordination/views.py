@@ -37,8 +37,14 @@ def detail_quest(request, quest_id):
 
 
 @login_required()
+def type_quest(request):
+    request = is_organizer(request)
+    return render(request, 'coordination/quests/type.html')
+
+
+@login_required()
 def create_quest(request, type='L'):
-    if type != 'L':
+    if type == 'NL':
         request = is_organizer_features(request)
     request = is_organizer(request)
     if request.method == 'POST':

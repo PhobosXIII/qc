@@ -9,7 +9,7 @@
             <h1>Привет, квестер!</h1>
             <p>Создай квест. Играй в квест. Координация в помощь.</p>
             {% if user|in_group:'organizers' %}
-                <p><a class="btn btn-success btn-lg" href="{% url 'coordination:quest_new' %}">
+                <p><a class="btn btn-success btn-lg" href="{% url 'coordination:quest_new_type' %}">
                     <span class="fa fa-plus fa-lg"></span> Создать квест</a></p>
             {% elif quest %}
                 <p><a class="btn btn-success btn-lg {% if not quest.is_published %}disabled{% endif %}"
