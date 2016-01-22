@@ -4,7 +4,7 @@ html {
 }
 
 body {
-    margin-bottom: 170px;
+    margin-bottom: 180px;
 }
 
 .text-base {
@@ -25,6 +25,7 @@ body {
     text-align: center;
     padding-top: 10px;
     padding-bottom: 5px;
+    margin-top: 10px;
 }
 
 body > .container {
