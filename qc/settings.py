@@ -26,7 +26,7 @@ SECRET_KEY = get_env_variable('QC_SECRET_KEY')
 
 PROJECT_NAME = 'QC'
 FULL_PROJECT_NAME = 'QuestCoordination'
-PROJECT_VERSION_BASE = 'v3.1'
+PROJECT_VERSION_BASE = 'v3.2'
 
 INSTALLED_APPS = (
     'django.contrib.admin',
