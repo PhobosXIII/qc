@@ -2,6 +2,8 @@ from crispy_forms.bootstrap import StrictButton
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Field
 from django import forms
+from django.contrib.auth import authenticate
+from django.contrib.auth.forms import AuthenticationForm
 from django.forms.widgets import Textarea
 
 
@@ -36,3 +38,23 @@ class ContactForm(forms.Form):
                 'message',
                 StrictButton('Отправить', type='submit', css_class='btn-primary')
             )
+
+
+class AuthForm(AuthenticationForm):
+    def clean(self):
+        username = self.cleaned_data.get('username').strip()
+        password = self.cleaned_data.get('password').strip()
+
+        if username and password:
+            self.user_cache = authenticate(username=username,
+                                           password=password)
+            if self.user_cache is None:
+                raise forms.ValidationError(
+                    self.error_messages['invalid_login'],
+                    code='invalid_login',
+                    params={'username': self.username_field.verbose_name},
+                )
+            else:
+                self.confirm_login_allowed(self.user_cache)
+
+        return self.cleaned_data
