@@ -94,7 +94,7 @@ class Quest(models.Model):
 
     @staticmethod
     def coming_quests():
-        now = timezone.now()
+        now = timezone.now() - timedelta(hours=6)
         return Quest.objects.filter(is_published=True, start__gte=now)
 
     @staticmethod
