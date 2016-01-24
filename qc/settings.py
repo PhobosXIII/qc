@@ -50,6 +50,8 @@ BASE_MIDDLEWARE_CLASSES = (
         'django.contrib.messages.middleware.MessageMiddleware',
         'django.middleware.clickjacking.XFrameOptionsMiddleware',
         'django.middleware.security.SecurityMiddleware',
+        'htmlmin.middleware.HtmlMinifyMiddleware',
+        'htmlmin.middleware.MarkRequestMiddleware',
     )
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'mediafiles')
@@ -242,3 +244,5 @@ CKEDITOR_CONFIGS = {
         'format_tags': 'p;div',
     },
 }
+
+HTML_MINIFY = False

@@ -6,6 +6,7 @@ from django.http.response import JsonResponse, Http404
 from django.shortcuts import render, get_object_or_404, redirect
 from django.template.loader import render_to_string
 from django.utils import timezone
+from htmlmin.decorators import minified_response
 from sendfile import sendfile
 
 from coordination.forms import QuestForm, MissionForm, HintForm, PlayerForm, KeyForm, MessageForm
@@ -93,6 +94,7 @@ def publish_quest(request, quest_id):
     return redirect('coordination:quest_detail', quest_id=quest_id)
 
 
+@minified_response
 def results_quest(request, quest_id):
     quest = get_object_or_404(Quest, pk=quest_id)
     missions = quest.missions().exclude(is_finish=True)
@@ -108,6 +110,7 @@ def tables_quest(request, quest_id):
 
 
 @login_required
+@minified_response
 def tables_quest_all(request, quest_id):
     quest = get_object_or_404(Quest, pk=quest_id)
     is_quest_organizer(request, quest)
@@ -119,6 +122,7 @@ def tables_quest_all(request, quest_id):
 
 
 @login_required
+@minified_response
 def tables_quest_current(request, quest_id):
     quest = get_object_or_404(Quest, pk=quest_id)
     is_quest_organizer(request, quest)
@@ -288,6 +292,7 @@ def coordination_quest(request, quest_id):
 
 
 @login_required
+@minified_response
 def keylog_quest(request, quest_id):
     quest = get_object_or_404(Quest, pk=quest_id)
     request = is_quest_organizer(request, quest)
