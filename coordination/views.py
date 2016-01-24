@@ -269,26 +269,48 @@ def coordination_quest(request, quest_id):
         wrong_keys = Keylog.wrong_keylogs(player, mission)
         wrong_keys_str = ', '.join(str(i) for i in wrong_keys)
     if request.method == 'GET':
-        if request.is_ajax():
-            json_mission = mission.as_json()
-            html_hints = render_to_string('coordination/hints/_list.html', {'hints': hints})
-            html_messages = render_to_string('coordination/messages/_list.html', {'messages': messages})
-            html_wrong_keys = render_to_string('coordination/quests/_wrong_keys.html',
-                                               {'wrong_keys': wrong_keys_str})
-            html_completed_missions = render_to_string('coordination/quests/_completed_missions.html',
-                                                       {'completed_missions': completed_missions})
-            hide_form = form is None
-            data = {'mission': json_mission, 'hints': html_hints, 'delay': delay, 'messages': html_messages,
-                    'wrong_keys': html_wrong_keys, 'completed_missions': html_completed_missions,
-                    'hide_form': hide_form}
-            return JsonResponse(data)
-        else:
-            context = {'quest': quest, 'mission': mission, 'hints': hints, 'form': form,
-                       'wrong_keys': wrong_keys_str, 'delay': delay, 'completed_missions': completed_missions,
-                       'messages': messages}
-            return render(request, 'coordination/quests/coordination.html', context)
+        context = {'quest': quest, 'mission': mission, 'hints': hints, 'form': form,
+                   'wrong_keys': wrong_keys_str, 'delay': delay, 'completed_missions': completed_missions,
+                   'messages': messages}
+        return render(request, 'coordination/quests/coordination.html', context)
     if request.method == 'POST':
         return redirect('coordination:quest_coordination', quest_id=quest_id)
+
+
+@login_required
+def coordination_quest_ajax(request, quest_id):
+    if request.is_ajax():
+        quest = get_object_or_404(Quest, pk=quest_id)
+        request = is_quest_player(request, quest)
+        player = request.user
+        current_mission = get_object_or_404(CurrentMission, mission__quest=quest, player=player)
+        mission = current_mission.mission
+        hints = Hint.display_hints(current_mission)
+        next_hint_time = Hint.next_hint_time(current_mission)
+        delay = None
+        if next_hint_time:
+            delay = get_timedelta(next_hint_time)
+        completed_missions = Mission.completed_missions(quest, player)
+        messages = quest.messages().filter(is_show=True)
+        wrong_keys_str = None
+        if quest.started and not mission.is_finish:
+            wrong_keys = Keylog.wrong_keylogs(player, mission)
+            wrong_keys_str = ', '.join(str(i) for i in wrong_keys)
+        json_mission = mission.as_json()
+        html_picture = render_to_string('coordination/quests/_picture.html', {'mission': mission})
+        html_hints = render_to_string('coordination/hints/_list.html', {'hints': hints})
+        html_messages = render_to_string('coordination/messages/_list.html', {'messages': messages})
+        html_wrong_keys = render_to_string('coordination/quests/_wrong_keys.html',
+                                           {'wrong_keys': wrong_keys_str})
+        html_completed_missions = render_to_string('coordination/quests/_completed_missions.html',
+                                                   {'completed_missions': completed_missions})
+        hide_form = not quest.started or mission.is_finish
+        data = {'mission': json_mission, 'hints': html_hints, 'delay': delay, 'messages': html_messages,
+                'wrong_keys': html_wrong_keys, 'completed_missions': html_completed_missions,
+                'hide_form': hide_form, 'picture': html_picture}
+        return JsonResponse(data)
+    else:
+        raise Http404
 
 
 @login_required

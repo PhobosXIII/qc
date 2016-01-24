@@ -19,11 +19,7 @@
 
     <div id="text" class="text-base">{{ mission.text|safe }}</div>
 
-    {% if mission.picture %}
-        {% url 'coordination:mission_picture' mission.id as picture_url %}
-        <a href="{{ picture_url }}" target="_blank"><img src="{{ picture_url }}" class="img-responsive"></a>
-    {% endif %}
-    <br>
+    <div id="picture" class="row-margin">{% include 'coordination/quests/_picture.html' %}</div>
 
     <div class="text-base" id="countdown"></div>
 
@@ -48,7 +44,7 @@
     <script type="text/javascript" src="{% static "assets/js/jquery.plugin.min.js" %}"></script>
     <script type="text/javascript" src="{% static "assets/js/jquery.countdown.min.js" %}"></script>
     <script type="text/javascript">
-        var url = "{% url 'coordination:quest_coordination' quest.id %}";
+        var url = "{% url 'coordination:quest_coordination_ajax' quest.id %}";
         $(function () {
             start_countdown({{ delay }});
         });

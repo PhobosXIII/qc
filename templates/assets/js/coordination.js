@@ -6,6 +6,8 @@ function update_coordination() {
             var mission = data["mission"];
             $("#mission_name").text(mission["name"]);
             $("#text").html(mission["text"]);
+            var picture = data["picture"];
+            $("#picture").html(picture);
             var messages = data["messages"];
             $("#messages").html(messages);
             var hints = data["hints"];
