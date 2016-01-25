@@ -355,6 +355,7 @@ def delete_keylogs(request, quest_id):
     return redirect('coordination:quest_keylog', quest_id=quest_id)
 
 
+@login_required
 def messages_quest(request, quest_id):
     quest = get_object_or_404(Quest, pk=quest_id)
     request = is_quest_organizer(request, quest)

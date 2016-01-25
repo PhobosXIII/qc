@@ -45,10 +45,7 @@
 
     <div class="text-base">{{ mission.text|safe }}</div>
 
-    {% if mission.picture %}
-        {% url 'coordination:mission_picture' mission.id as picture_url %}
-        <a href="{{ picture_url }}" target="_blank"><img src="{{ picture_url }}" class="img-responsive"></a>
-    {% endif %}
+    {% include 'coordination/quests/_picture.html' %}
 
     {% if quest.linear and not mission.is_finish or quest.line_nonlinear and not mission.is_start%}
         <br>

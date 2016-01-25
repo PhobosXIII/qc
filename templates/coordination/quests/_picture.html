@@ -1,4 +1,4 @@
 {% if mission.picture %}
     {% url 'coordination:mission_picture' mission.id as picture_url %}
-    <a href="{{ picture_url }}" target="_blank"><img src="{{ picture_url }}" class="img-responsive"></a>
+    <a href="{{ picture_url }}" target="_blank"><img src="{{ picture_url }}" class="img-responsive row-margin"></a>
 {% endif %}
