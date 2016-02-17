@@ -155,7 +155,7 @@ USE_L10N = True
 USE_TZ = True
 
 # Parse database configuration from $DATABASE_URL
-DATABASES = {'default': dj_database_url.config()}
+DATABASES = {'default': dj_database_url.config(conn_max_age=500)}
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
@@ -226,8 +226,8 @@ CKEDITOR_CONFIGS = {
             {'name': 'clipboard', 'items': ['Undo', 'Redo', 'Maximize']},
             {'name': 'links', 'items': ['Link', 'Unlink', 'SpecialChar']},
             {'name': 'paragraph',
-             'items': ['NumberedList', 'BulletedList', 'Outdent', 'Indent', 'Blockquote','JustifyLeft',
-                       'JustifyCenter', 'JustifyRight', 'JustifyBlock', 'TextColor', 'BGColor',]},
+             'items': ['NumberedList', 'BulletedList', 'Outdent', 'Indent', 'Blockquote', 'JustifyLeft',
+                       'JustifyCenter', 'JustifyRight', 'JustifyBlock', 'TextColor', 'BGColor']},
             {'name': 'basicstyles',
              'items': ['Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', 'RemoveFormat']},
             {'name': 'styles', 'items': ['Format', 'Font', 'FontSize']},
