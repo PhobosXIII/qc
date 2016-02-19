@@ -187,6 +187,11 @@ def next_mission(request, quest_id, user_id):
 
 
 @login_required
+def members_quest(request, quest_id):
+    return redirect('coordination:quest_players', quest_id=quest_id)
+
+
+@login_required
 def players_quest(request, quest_id):
     quest = get_object_or_404(Quest, pk=quest_id)
     request = is_quest_organizer(request, quest)
@@ -202,7 +207,7 @@ def players_quest(request, quest_id):
         CurrentMission.objects.create(player=user, mission=start_mission)
         return redirect('coordination:quest_players', quest_id=quest_id)
     context = {'quest': quest, 'form': form, 'players': players}
-    return render(request, 'coordination/quests/players.html', context)
+    return render(request, 'coordination/quests/members/players.html', context)
 
 
 @login_required
@@ -211,14 +216,35 @@ def players_quest_print(request, quest_id):
     request = is_quest_organizer(request, quest)
     players = quest.players()
     context = {'quest': quest, 'players': players}
-    return render(request, 'coordination/quests/players_print.html', context)
+    return render(request, 'coordination/quests/members/players_print.html', context)
+
+
+@login_required()
+def organizers_quest(request, quest_id):
+    quest = get_object_or_404(Quest, pk=quest_id)
+    request = is_quest_organizer(request, quest)
+    organizers = quest.organizers()
+    context = {'quest': quest, 'organizers': organizers}
+    return render(request, 'coordination/quests/members/organizers.html', context)
 
 
 @login_required
-def delete_player(request, quest_id, player_id):
+def delete_organizer(request, quest_id, user_id):
     quest = get_object_or_404(Quest, pk=quest_id)
     is_quest_organizer(request, quest)
-    user = get_object_or_404(User, pk=player_id)
+    user = get_object_or_404(User, pk=user_id)
+    if quest.creator != user or request.user != user:
+        member = get_object_or_404(Membership, quest=quest, user=user)
+        if member.organizer:
+            member.delete()
+    return redirect('coordination:quest_organizers', quest_id=quest_id)
+
+
+@login_required
+def delete_player(request, quest_id, user_id):
+    quest = get_object_or_404(Quest, pk=quest_id)
+    is_quest_organizer(request, quest)
+    user = get_object_or_404(User, pk=user_id)
     member = get_object_or_404(Membership, quest=quest, user=user)
     if member.player:
         user.delete()

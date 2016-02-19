@@ -23,11 +23,18 @@ quest_patterns = [
             url(r'^clear/$', views.clear_quest, name='clear_quest'),
             url(r'^next_mission/(?P<user_id>[0-9]+)/$', views.next_mission, name='next_mission'),
         ])),
-        url(r'^players/', include([
-            url(r'^$', views.players_quest, name='quest_players'),
-            url(r'^print/$', views.players_quest_print, name='quest_players_print'),
-            url(r'^delete/$', views.delete_players, name='players_delete'),
-            url(r'^delete/(?P<player_id>[0-9]+)/$', views.delete_player, name='player_delete'),
+        url(r'^members/', include([
+            url(r'^$', views.members_quest, name='quest_members'),
+            url(r'^players/', include([
+                url(r'^$', views.players_quest, name='quest_players'),
+                url(r'^print/$', views.players_quest_print, name='quest_players_print'),
+                url(r'^delete/$', views.delete_players, name='players_delete'),
+                url(r'^delete/(?P<user_id>[0-9]+)/$', views.delete_player, name='player_delete'),
+            ])),
+            url(r'^organizers/', include([
+                url(r'^$', views.organizers_quest, name='quest_organizers'),
+                url(r'^delete/(?P<user_id>[0-9]+)/$', views.delete_organizer, name='organizer_delete'),
+            ])),
         ])),
         url(r'^coordination/$', views.coordination_quest, name='quest_coordination'),
         url(r'^coordination_ajax/$', views.coordination_quest_ajax, name='quest_coordination_ajax'),

@@ -1,0 +1,9 @@
+{% load main_extras %}
+{% load coordination_extras %}
+
+<ul class="nav nav-pills">
+    {% if user|is_organizer:quest or user.is_superuser %}
+       {% menu_item 'Игроки' 'coordination:quest_players' quest.id %}
+       {% menu_item 'Организаторы' 'coordination:quest_organizers' quest.id %}
+    {% endif %}
+</ul>
