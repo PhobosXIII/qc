@@ -25,15 +25,15 @@ class Quest(models.Model):
         ('STR', 'Запущен'),
         ('END', 'Завершен'),
     )
-    organizer = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name='организатор', related_name='organizer')
     title = models.CharField('название', max_length=255)
     start = models.DateTimeField('старт', null=True, blank=True)
     description = RichTextField('описание', blank=True)
     type = models.CharField('тип', max_length=3, choices=TYPES, default='L')
     status = models.CharField('статус', max_length=3, choices=STATUSES, default='NTS')
     is_published = models.BooleanField('опубликован', default=False)
-    players = models.ManyToManyField(settings.AUTH_USER_MODEL, verbose_name='игроки', related_name='players',
-                                     blank=True)
+    creator = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name='создатель',
+                                related_name='creator', null=True)
+    members = models.ManyToManyField(settings.AUTH_USER_MODEL, through='Membership', related_name='members')
 
     class Meta:
         verbose_name = 'квест'
@@ -71,6 +71,7 @@ class Quest(models.Model):
         is_create = not self.pk
         super(Quest, self).save(*args, **kwargs)
         if is_create:
+            Membership.objects.create(quest=self, user=self.creator, role='O')
             Mission.objects.create(quest=self, name_in_table='Старт', order_number=0)
             Mission.objects.create(quest=self, name_in_table='Финиш', order_number=1, is_finish=True)
 
@@ -92,15 +93,6 @@ class Quest(models.Model):
         self.is_published = not self.is_published
         self.save()
 
-    @staticmethod
-    def coming_quests():
-        now = timezone.now() - timedelta(hours=6)
-        return Quest.objects.filter(is_published=True, start__gte=now)
-
-    @staticmethod
-    def my_quests(organizer):
-        return Quest.objects.filter(organizer=organizer)
-
     def missions(self):
         return Mission.objects.filter(quest=self)
 
@@ -115,6 +107,71 @@ class Quest(models.Model):
 
     def messages(self):
         return Message.objects.filter(quest=self)
+
+    def organizers(self):
+        return self.members.filter(membership__role='O')
+
+    def players(self):
+        return self.members.filter(membership__role='P').order_by('first_name')
+
+    def agents(self):
+        return self.members.filter(membership__role='A')
+
+    @staticmethod
+    def coming_quests():
+        now = timezone.now() - timedelta(hours=6)
+        return Quest.objects.filter(is_published=True, start__gte=now)
+
+    @staticmethod
+    def my_quests(user):
+        return Quest.objects.filter(membership__user=user)
+
+
+class OrganizerManager(models.Manager):
+    def get_queryset(self):
+        return super(OrganizerManager, self).get_queryset().filter(role='O')
+
+
+class PlayerManager(models.Manager):
+    def get_queryset(self):
+        return super(PlayerManager, self).get_queryset().filter(role='P')
+
+
+class AgentManager(models.Manager):
+    def get_queryset(self):
+        return super(AgentManager, self).get_queryset().filter(role='A')
+
+
+class Membership(models.Model):
+    ROLES = (
+        ('O', 'Организатор'),
+        ('P', 'Игрок'),
+        ('A', 'Агент'),
+    )
+    quest = models.ForeignKey(Quest, verbose_name='квест', on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name='пользователь', on_delete=models.CASCADE)
+    role = models.CharField('роль', max_length=1, choices=ROLES, default='P')
+    objects = models.Manager()
+    organizers = OrganizerManager()
+    players = PlayerManager()
+    agents = AgentManager()
+
+    class Meta:
+        verbose_name = 'Участник квеста'
+        verbose_name_plural = 'Участники квеста'
+        unique_together = ('quest', 'user')
+
+    @property
+    def organizer(self):
+        return self.role == 'O'
+
+    @property
+    def player(self):
+        return self.role == 'P'
+
+    @property
+    def agent(self):
+        return self.role == 'A'
 
 
 class Mission(models.Model):

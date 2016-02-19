@@ -1,33 +1,8 @@
 from string import digits
-from django.core.exceptions import PermissionDenied
 from django.contrib.auth.models import User
 from django.utils import timezone
 from django.utils.crypto import get_random_string
 from slugify import slugify_ru
-
-
-def is_organizer(request):
-    if bool(request.user.groups.filter(name='organizers').values('name')):
-        return request
-    raise PermissionDenied
-
-
-def is_organizer_features(request):
-    if bool(request.user.groups.filter(name='organizers_features').values('name')):
-        return request
-    raise PermissionDenied
-
-
-def is_quest_organizer(request, quest):
-    if request.user == quest.organizer or request.user.is_superuser:
-        return request
-    raise PermissionDenied
-
-
-def is_quest_player(request, quest):
-    if quest.is_published and request.user in quest.players.all():
-        return request
-    raise PermissionDenied
 
 
 def generate_random_username(name, length=4, chars='abcdefghjkmnpqrstuvwxyz''23456789'):

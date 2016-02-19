@@ -3,7 +3,7 @@ from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
 from django.db import models
 from django.forms import SelectMultiple
-from coordination.models import Quest, Mission, Hint, CurrentMission, Keylog, Message
+from coordination.models import Quest, Mission, Hint, CurrentMission, Keylog, Message, Membership
 from qc import settings
 
 
@@ -18,13 +18,24 @@ User.__str__ = user_str
 
 
 class MyUserAdmin(UserAdmin):
-    list_display = ('username', 'first_name', 'get_quest')
+    list_display = ('username', 'first_name')
+
+
+class MemberInline(admin.TabularInline):
+    model = Membership
+    extra = 3
+
+
+class MemberAdmin(admin.ModelAdmin):
+    list_display = ('user', 'quest', 'role')
+    list_filter = ('quest', 'role')
+    ordering = ['quest', 'role']
 
 
 class QuestAdmin(admin.ModelAdmin):
-    fields = [('title', 'is_published', 'status'), 'type', 'organizer', 'start', 'description', 'players']
-    list_display = ('title', 'organizer', 'start', 'type')
-    formfield_overrides = {models.ManyToManyField: {'widget': SelectMultiple(attrs={'size': '10'})}, }
+    fields = [('title', 'is_published', 'status'), 'type', 'creator', 'start', 'description']
+    list_display = ('title', 'creator', 'start', 'type')
+    inlines = [MemberInline]
     ordering = ['-start']
 
 
@@ -70,15 +81,8 @@ CurrentMissionAdmin.get_quest = get_quest
 KeylogAdmin.get_quest = get_quest
 
 
-def get_player_quest(self, obj):
-    return Quest.objects.filter(players=obj).first()
-get_player_quest.short_description = 'квест'
-
-
-MyUserAdmin.get_quest = get_player_quest
-
-
 admin.site.register(Quest, QuestAdmin)
+admin.site.register(Membership, MemberAdmin)
 admin.site.register(Mission, MissionAdmin)
 admin.site.register(CurrentMission, CurrentMissionAdmin)
 admin.site.register(Keylog, KeylogAdmin)

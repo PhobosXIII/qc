@@ -10,9 +10,9 @@ from htmlmin.decorators import minified_response
 from sendfile import sendfile
 
 from coordination.forms import QuestForm, MissionForm, HintForm, PlayerForm, KeyForm, MessageForm
-from coordination.models import Quest, Mission, Hint, CurrentMission, Keylog, Message
-from coordination.utils import is_quest_organizer, is_quest_player, is_organizer, generate_random_username, \
-    generate_random_password, is_organizer_features, get_timedelta
+from coordination.models import Quest, Mission, Hint, CurrentMission, Keylog, Message, Membership
+from coordination.permission_utils import is_quest_organizer, is_quest_player, is_organizer, is_organizer_features
+from coordination.utils import generate_random_username, generate_random_password, get_timedelta
 
 
 # Quests
@@ -53,7 +53,7 @@ def create_quest(request, type='L'):
         form = QuestForm(request.POST)
         if form.is_valid():
             quest = form.save(commit=False)
-            quest.organizer = request.user
+            quest.creator = request.user
             quest.type = type
             quest.save()
             return redirect('coordination:quest_detail', quest_id=quest.pk)
@@ -97,6 +97,8 @@ def publish_quest(request, quest_id):
 @minified_response
 def results_quest(request, quest_id):
     quest = get_object_or_404(Quest, pk=quest_id)
+    if not quest.is_published:
+        request = is_quest_organizer(request, quest)
     missions = quest.missions().exclude(is_finish=True)
     keylogs = Keylog.right_keylogs(missions)
     current_missions = quest.current_missions()
@@ -113,8 +115,8 @@ def tables_quest(request, quest_id):
 @minified_response
 def tables_quest_all(request, quest_id):
     quest = get_object_or_404(Quest, pk=quest_id)
-    is_quest_organizer(request, quest)
-    players = quest.players.all().order_by('first_name')
+    request = is_quest_organizer(request, quest)
+    players = quest.players()
     missions = quest.missions().exclude(is_finish=True)
     keylogs = Keylog.right_keylogs(missions)
     context = {'quest': quest, 'players': players, 'missions': missions, 'keylogs': keylogs}
@@ -125,7 +127,7 @@ def tables_quest_all(request, quest_id):
 @minified_response
 def tables_quest_current(request, quest_id):
     quest = get_object_or_404(Quest, pk=quest_id)
-    is_quest_organizer(request, quest)
+    request = is_quest_organizer(request, quest)
     current_missions = quest.current_missions()
     context = {'quest': quest, 'current_missions': current_missions}
     return render(request, 'coordination/quests/tables/current.html', context)
@@ -134,7 +136,7 @@ def tables_quest_current(request, quest_id):
 @login_required
 def control_quest(request, quest_id):
     quest = get_object_or_404(Quest, pk=quest_id)
-    is_quest_organizer(request, quest)
+    request = is_quest_organizer(request, quest)
     current_missions = quest.current_missions()
     context = {'quest': quest, 'current_missions': current_missions}
     return render(request, 'coordination/quests/control.html', context)
@@ -187,15 +189,15 @@ def next_mission(request, quest_id, user_id):
 @login_required
 def players_quest(request, quest_id):
     quest = get_object_or_404(Quest, pk=quest_id)
-    is_quest_organizer(request, quest)
-    players = quest.players.all().order_by('first_name')
+    request = is_quest_organizer(request, quest)
+    players = quest.players()
     form = PlayerForm(request.POST or None)
     if form.is_valid():
         name = form.cleaned_data["name"]
         username = generate_random_username(name)
         password = generate_random_password()
         user = User.objects.create_user(username=username, password=password, first_name=name, last_name=password)
-        quest.players.add(user)
+        Membership.objects.create(quest=quest, user=user, role='P')
         start_mission = quest.start_mission()
         CurrentMission.objects.create(player=user, mission=start_mission)
         return redirect('coordination:quest_players', quest_id=quest_id)
@@ -206,8 +208,8 @@ def players_quest(request, quest_id):
 @login_required
 def players_quest_print(request, quest_id):
     quest = get_object_or_404(Quest, pk=quest_id)
-    is_quest_organizer(request, quest)
-    players = quest.players.all().order_by('first_name')
+    request = is_quest_organizer(request, quest)
+    players = quest.players()
     context = {'quest': quest, 'players': players}
     return render(request, 'coordination/quests/players_print.html', context)
 
@@ -216,9 +218,10 @@ def players_quest_print(request, quest_id):
 def delete_player(request, quest_id, player_id):
     quest = get_object_or_404(Quest, pk=quest_id)
     is_quest_organizer(request, quest)
-    player = get_object_or_404(User, pk=player_id)
-    quest.players.remove(player)
-    player.delete()
+    user = get_object_or_404(User, pk=player_id)
+    member = get_object_or_404(Membership, quest=quest, user=user)
+    if member.player:
+        user.delete()
     return redirect('coordination:quest_players', quest_id=quest_id)
 
 
@@ -227,7 +230,11 @@ def delete_players(request, quest_id):
     quest = get_object_or_404(Quest, pk=quest_id)
     is_quest_organizer(request, quest)
     player_ids = request.POST.getlist('delete_ids[]')
-    User.objects.filter(id__in=player_ids).delete()
+    users = User.objects.filter(id__in=player_ids)
+    for user in users:
+        member = Membership.players.filter(quest=quest, user=user).first()
+        if member and member.player:
+            user.delete()
     return redirect('coordination:quest_players', quest_id=quest_id)
 
 
@@ -325,7 +332,7 @@ def keylog_quest(request, quest_id):
         url = reverse('coordination:quest_keylog', args=[quest.id])
         return redirect('{0}?mission={1}'.format(url, missions.first().id))
     keylogs = None
-    players = quest.players.all().order_by('first_name')
+    players = quest.players()
     if mission:
         keylogs = Keylog.objects.filter(mission__id=mission)
         mission = int(mission)
@@ -341,7 +348,7 @@ def keylog_quest(request, quest_id):
 def delete_keylog(request, quest_id, keylog_id):
     quest = get_object_or_404(Quest, pk=quest_id)
     is_quest_organizer(request, quest)
-    keylog = get_object_or_404(Keylog, pk=keylog_id)
+    keylog = get_object_or_404(Keylog, pk=keylog_id, mission__quest=quest)
     keylog.delete()
     return redirect('coordination:quest_keylog', quest_id=quest_id)
 
@@ -351,7 +358,7 @@ def delete_keylogs(request, quest_id):
     quest = get_object_or_404(Quest, pk=quest_id)
     is_quest_organizer(request, quest)
     keylog_ids = request.POST.getlist('delete_ids[]')
-    Keylog.objects.filter(id__in=keylog_ids).delete()
+    Keylog.objects.filter(mission__quest=quest, id__in=keylog_ids).delete()
     return redirect('coordination:quest_keylog', quest_id=quest_id)
 
 
@@ -377,7 +384,7 @@ def messages_quest(request, quest_id):
 def show_message(request, quest_id, message_id):
     quest = get_object_or_404(Quest, pk=quest_id)
     is_quest_organizer(request, quest)
-    message = get_object_or_404(Message, pk=message_id)
+    message = get_object_or_404(Message, pk=message_id, quest=quest)
     message.show()
     return redirect('coordination:quest_messages', quest_id=quest_id)
 
@@ -402,7 +409,7 @@ def edit_message(request, quest_id, message_id):
 def delete_message(request, quest_id, message_id):
     quest = get_object_or_404(Quest, pk=quest_id)
     is_quest_organizer(request, quest)
-    message = get_object_or_404(Message, pk=message_id)
+    message = get_object_or_404(Message, pk=message_id, quest=quest)
     message.delete()
     return redirect('coordination:quest_messages', quest_id=quest_id)
 

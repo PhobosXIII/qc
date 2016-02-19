@@ -16,7 +16,7 @@
 
     {% include 'coordination/quests/_nav.html' %}
 
-    {% if quest.ended %}
+    {% if quest.ended or user|is_organizer:quest or user.is_superuser %}
         <br>
         <table data-toggle="table" data-fixed-columns="true" data-fixed-number="2" data-height="500"
                 {% if not quest.line_nonlinear %} data-classes="table" data-striped="true" {% endif %}

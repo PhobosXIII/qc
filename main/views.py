@@ -2,8 +2,8 @@ from django.core.mail import send_mail, BadHeaderError
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
-from coordination.models import Quest
-from coordination.utils import is_organizer
+from coordination.models import Quest, Membership
+from coordination.permission_utils import is_organizer
 from main.forms import ContactForm
 from main.models import News, HelpCategory, Faq
 from qc import settings
@@ -14,7 +14,7 @@ def home(request):
     coming_quests = Quest.coming_quests()[:3]
     quest = None
     if request.user.is_authenticated():
-        quest = Quest.objects.filter(players=request.user).first()
+        quest = Membership.players.filter(user=request.user).first()
     context = {'coming_quests': coming_quests, 'quest': quest, 'last_news': last_news}
     return render(request, 'home.html', context)
 
