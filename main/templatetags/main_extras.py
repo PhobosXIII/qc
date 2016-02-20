@@ -23,11 +23,6 @@ def menu_item(context, link_text, named_url=None, *args, **kwargs):
 
 
 @register.filter
-def nice_name(user):
-    return user.first_name or user.username
-
-
-@register.filter
 def in_group(user, groups):
     if user.is_authenticated():
         group_list = force_text(groups).split(',')

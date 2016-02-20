@@ -1,11 +1,10 @@
 {% extends 'base.html' %}
-{% load main_extras %}
 
 {% block title %}Профиль организатора{% endblock %}
 
 {% block content %}
     <div class="page-header">
-            <h1><span class="fa fa-user-secret"></span> {{ user|nice_name }}</h1>
+            <h1><span class="fa fa-user-secret"></span> {{ user }}</h1>
     </div>
 
     <p class=" text-center">

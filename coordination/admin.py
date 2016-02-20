@@ -23,6 +23,7 @@ class MyUserAdmin(UserAdmin):
 class MemberInline(admin.TabularInline):
     model = Membership
     extra = 3
+    ordering = ('role', 'user__first_name')
 
 
 class MemberAdmin(admin.ModelAdmin):

@@ -9,7 +9,7 @@ from django.utils import timezone
 from htmlmin.decorators import minified_response
 from sendfile import sendfile
 
-from coordination.forms import QuestForm, MissionForm, HintForm, PlayerForm, KeyForm, MessageForm
+from coordination.forms import QuestForm, MissionForm, HintForm, PlayerForm, KeyForm, MessageForm, OrganizerForm
 from coordination.models import Quest, Mission, Hint, CurrentMission, Keylog, Message, Membership
 from coordination.permission_utils import is_quest_organizer, is_quest_player, is_organizer, is_organizer_features
 from coordination.utils import generate_random_username, generate_random_password, get_timedelta
@@ -34,7 +34,8 @@ def detail_quest(request, quest_id):
     quest = get_object_or_404(Quest, pk=quest_id)
     if not quest.is_published:
         request = is_quest_organizer(request, quest)
-    context = {'quest': quest}
+    organizers = quest.organizers()
+    context = {'quest': quest, 'organizers': organizers}
     return render(request, 'coordination/quests/detail.html', context)
 
 
@@ -224,7 +225,16 @@ def organizers_quest(request, quest_id):
     quest = get_object_or_404(Quest, pk=quest_id)
     request = is_quest_organizer(request, quest)
     organizers = quest.organizers()
-    context = {'quest': quest, 'organizers': organizers}
+    all_orgs = User.objects.filter(groups__name='organizers').exclude(id__in=organizers)
+    if request.method == 'POST':
+        form = OrganizerForm(request.POST, organizers=all_orgs)
+        if form.is_valid():
+            organizer = form.cleaned_data["organizer"]
+            Membership.objects.create(quest=quest, user=organizer, role='O')
+            return redirect('coordination:quest_organizers', quest_id=quest_id)
+    else:
+        form = OrganizerForm(organizers=all_orgs)
+    context = {'quest': quest, 'organizers': organizers, 'form': form}
     return render(request, 'coordination/quests/members/organizers.html', context)
 
 

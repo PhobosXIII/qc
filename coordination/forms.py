@@ -2,7 +2,7 @@ from crispy_forms.bootstrap import StrictButton, PrependedText
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Field, HTML, Div, Row
 from django.core.exceptions import ObjectDoesNotExist
-from django.forms import ModelForm, Form, ValidationError, ClearableFileInput
+from django.forms import ModelForm, Form, ValidationError, ClearableFileInput, ModelChoiceField
 from django.forms.fields import CharField
 
 from coordination.models import Quest, Mission, Hint, Message
@@ -43,7 +43,7 @@ class MissionForm(ModelForm):
         fields = ['name', 'name_in_table', 'text', 'key', 'order_number']
         if settings.QC_UPLOAD:
             fields.append('picture')
-            widgets ={
+            widgets = {
                 'picture': CustomClearableFileInput,
             }
 
@@ -181,4 +181,22 @@ class MessageForm(ModelForm):
         self.helper.html5_required = True
         self.helper.layout = Layout(
             'text',
+        )
+
+
+class OrganizerForm(Form):
+    organizer = ModelChoiceField(queryset=None, empty_label='Выберите организатора', required=True)
+
+    def __init__(self, *args, **kwargs):
+        organizers = kwargs.pop('organizers')
+        super(OrganizerForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.form_method = 'post'
+        self.helper.html5_required = True
+        self.helper.form_show_labels = False
+        self.helper.form_class = 'form-inline col-md-8 col-md-offset-4'
+        self.fields['organizer'].queryset = organizers
+        self.helper.layout = Layout(
+            Field('organizer', autofocus=True, placeholder='Выберете организатора'),
+            StrictButton('Добавить', type='submit', css_class='btn-success')
         )

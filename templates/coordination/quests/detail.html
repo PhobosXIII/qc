@@ -1,5 +1,4 @@
 {% extends 'base.html' %}
-{% load main_extras %}
 {% load coordination_extras %}
 
 
@@ -48,7 +47,11 @@
         </span>
     </h3>
 
-    <h3>Организатор: <span class="label label-primary">{{ quest.creator|nice_name }}</span></h3>
+    <h3 class="orgs">{{ organizers|length_is:'1'|yesno:'Организатор, Организаторы' }}:
+        {% for org in organizers %}
+            <span class="label label-primary">{{ org }}</span>
+        {% endfor %}
+    </h3>
 
     <h3>
         {% if quest.line_nonlinear %}<span class="fa fa-exchange"></span> Линейно-нелинейный квест{% endif %}

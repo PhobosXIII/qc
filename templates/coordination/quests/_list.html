@@ -1,5 +1,4 @@
 {% load coordination_extras %}
-{% load main_extras %}
 
 <div class="list-group">
     {% for quest in quests %}
@@ -14,8 +13,10 @@
                                     <span class="pull-left-sm label label-warning">Не опубликован</span>
                                 </h4>
                             {% else  %}
-                                <h4>
-                                    <span class="pull-left-sm label label-primary">{{ quest.creator|nice_name }}</span>
+                                <h4 class="pull-left-sm orgs">
+                                    {% for org in quest.organizers %}
+                                        <span class="label label-primary">{{ org }}</span>
+                                    {% endfor %}
                                 </h4>
                             {% endif %}
                         </div>

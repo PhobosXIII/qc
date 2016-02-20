@@ -31,12 +31,12 @@
                 {% if user.is_authenticated %}
                     {% if user|in_group:'organizers' %}
                         <li><a href="{% url 'my_profile' %}">
-                            <span class="fa fa-user-secret fa-lg"></span> {{ user|nice_name }}
+                            <span class="fa fa-user-secret fa-lg"></span> {{ user }}
                         </a></li>
                     {% elif user.is_superuser %}
-                        <li class="navbar-text"><span class="fa fa-hand-spock-o fa-lg"></span> {{ user|nice_name }}</li>
+                        <li class="navbar-text"><span class="fa fa-hand-spock-o fa-lg"></span> {{ user }}</li>
                     {% else %}
-                       <li class="navbar-text"><span class="fa fa-user fa-lg"></span> {{ user|nice_name }}</li>
+                       <li class="navbar-text"><span class="fa fa-user fa-lg"></span> {{ user }}</li>
                     {% endif %}
                     <li><p class="navbar-btn"><a href="{% url 'auth_logout' %}" class="btn btn-danger">
                         <span class="fa fa-sign-out fa-lg"></span> Выход</a></p></li>

@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load main_extras %}
+{% load crispy_forms_tags %}
 
 {% block title %}{{ quest.title }} - Организаторы{% endblock %}
 
@@ -14,13 +14,15 @@
     <br>
     {% include 'coordination/quests/members/_nav.html' %}
 
-    <div class="row-margin">
+    <div class="row row-margin">{% crispy form %}</div>
+
+    <div class="row row-margin">
         <div class="col-sm-8 col-sm-offset-2 col-md-6 col-md-offset-3">
             <ul class="list-group">
                 {% for org in organizers %}
                     <li class="list-group-item text-base clearfix{% if org == quest.creator %} active{% endif %}">
-                        <span class="fa fa-user-secret fa-lg"></span> {{ org|nice_name }}
-                        {% if org != quest.creator or user != org %}
+                        <span class="fa fa-user-secret fa-lg"></span> {{ org }}
+                        {% if org != quest.creator and user != org %}
                         <button data-href="{% url 'coordination:organizer_delete' quest.id org.id %}" data-toggle="modal"
                                 data-target="#confirm" class="btn btn-danger pull-right">
                             <span class="fa fa-trash fa-lg"></span> Удалить
