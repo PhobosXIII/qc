@@ -5,6 +5,8 @@ from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.utils import timezone
+from django.utils.html import strip_tags
+
 from coordination.utils import get_timedelta_with_now, time_in_minutes
 
 
@@ -392,8 +394,8 @@ class Message(models.Model):
         verbose_name = 'сообщение'
         verbose_name_plural = 'сообщения'
 
-    def __str__(self):
-        return self.text
+    def strip_text(self):
+        return strip_tags(self.text)
 
     def show(self):
         self.is_show = not self.is_show

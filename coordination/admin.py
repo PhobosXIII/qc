@@ -1,17 +1,16 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
-from django.db import models
-from django.forms import SelectMultiple
 from coordination.models import Quest, Mission, Hint, CurrentMission, Keylog, Message, Membership
 from qc import settings
+from qc.admin import admin_site
 
 
 def user_str(self):
     if self.first_name:
-        return '%s' % self.first_name
+        return self.first_name
     else:
-        return '%s' % self.username
+        return self.username
 
 
 User.__str__ = user_str
@@ -68,7 +67,7 @@ class KeylogAdmin(admin.ModelAdmin):
 
 
 class MessageAdmin(admin.ModelAdmin):
-    list_display = ('text', 'is_show')
+    list_display = ('strip_text', 'is_show')
     list_filter = ('quest', )
 
 
@@ -81,11 +80,10 @@ CurrentMissionAdmin.get_quest = get_quest
 KeylogAdmin.get_quest = get_quest
 
 
-admin.site.register(Quest, QuestAdmin)
-admin.site.register(Membership, MemberAdmin)
-admin.site.register(Mission, MissionAdmin)
-admin.site.register(CurrentMission, CurrentMissionAdmin)
-admin.site.register(Keylog, KeylogAdmin)
-admin.site.register(Message, MessageAdmin)
-admin.site.unregister(User)
-admin.site.register(User, MyUserAdmin)
+admin_site.register(Quest, QuestAdmin)
+admin_site.register(Membership, MemberAdmin)
+admin_site.register(Mission, MissionAdmin)
+admin_site.register(CurrentMission, CurrentMissionAdmin)
+admin_site.register(Keylog, KeylogAdmin)
+admin_site.register(Message, MessageAdmin)
+admin_site.register(User, MyUserAdmin)

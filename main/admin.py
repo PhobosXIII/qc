@@ -1,6 +1,7 @@
 from django.contrib import admin
 
 from main.models import News, HelpCategory, Faq
+from qc.admin import admin_site
 
 
 class NewsAdmin(admin.ModelAdmin):
@@ -15,6 +16,6 @@ class FaqAdmin(admin.ModelAdmin):
     list_display = ('question', 'category')
     list_filter = ('category', )
 
-admin.site.register(News, NewsAdmin)
-admin.site.register(HelpCategory, HelpCategoryAdmin)
-admin.site.register(Faq, FaqAdmin)
+admin_site.register(News, NewsAdmin)
+admin_site.register(HelpCategory, HelpCategoryAdmin)
+admin_site.register(Faq, FaqAdmin)

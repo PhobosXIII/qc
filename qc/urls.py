@@ -1,13 +1,13 @@
 from django.conf.urls import include, url
 from django.conf.urls.static import static
-from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from main import views as main_views
 from main.forms import AuthForm
 from qc import settings
+from qc.admin import admin_site
 
 urlpatterns = [
-    url(r'^{}/'.format(settings.ADMIN_URL_PATH), include(admin.site.urls)),
+    url(r'^{}/'.format(settings.ADMIN_URL_PATH), include(admin_site.urls)),
     url(r'^login/$', auth_views.login, {'authentication_form': AuthForm}, name='auth_login'),
     url(r'^logout/$', auth_views.logout, {'next_page': 'auth_login'}, name='auth_logout'),
     url(r'^$', main_views.home, name='home'),
