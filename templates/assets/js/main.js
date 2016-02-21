@@ -26,3 +26,11 @@ $.ajaxSetup({
         }
     }
 });
+
+function start_countup(time) {
+    var since = new Date(time.getFullYear(), time.getMonth(), time.getDate(), 0, 0, 0);
+    $('#countup').countdown({
+        since: since, compact: true,
+        layout: '<b>Время сервера: {hnn}{sep}{mnn}{sep}{snn}</b>.'
+    });
+}

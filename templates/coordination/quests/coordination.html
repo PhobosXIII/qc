@@ -13,6 +13,8 @@
 
     <h2 id="mission_name">{{ mission.short_name }}</h2>
 
+    <div class="row-margin text-base" id="countup"></div>
+
     <div id="messages">
         {% include 'coordination/messages/_list.html' %}
     </div>
@@ -46,7 +48,13 @@
     <script type="text/javascript">
         var url = "{% url 'coordination:quest_coordination_ajax' quest.id %}";
         $(function () {
-            start_countdown({{ delay }});
+            {% if delay %}
+                start_countdown({{ delay }});
+            {% endif %}
+
+            {% now "U" as t %}
+            var time = new Date({{ t }});
+            start_countup(time)
         });
 
         setInterval(function () {
