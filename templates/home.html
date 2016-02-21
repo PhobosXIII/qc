@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load main_extras %}
+{% load coordination_extras %}
 
 {% block title %}Главная{% endblock %}
 
@@ -11,6 +12,10 @@
             {% if user|in_group:'organizers' %}
                 <p><a class="btn btn-success btn-lg" href="{% url 'coordination:quest_new_type' %}">
                     <span class="fa fa-plus fa-lg"></span> Создать квест</a></p>
+            {% elif quest and user|is_agent:quest %}
+                <p><a class="btn btn-success btn-lg {% if not quest.is_published %}disabled{% endif %}"
+                      href="{% url 'coordination:quest_detail' quest.id %}">
+                    <span class="fa fa-user fa-lg"></span> К агентской игре</a></p>
             {% elif quest %}
                 <p><a class="btn btn-success btn-lg {% if not quest.is_published %}disabled{% endif %}"
                       href="{% url 'coordination:quest_coordination' quest.id %}">

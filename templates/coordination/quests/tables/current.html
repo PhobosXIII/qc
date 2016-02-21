@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load coordination_extras %}
 
 {% block title %}{{ quest.title }} - Табличка для текущих заданий{% endblock %}
 
@@ -36,6 +37,10 @@
             </table>
         </div>
     {% else %}
-        <p class="lead text-center">Ни один игрок еще не добавлен к квесту. Перейдите во вкладку Игроки.</p>
+        <p class="lead text-center">Ни один игрок еще не добавлен к квесту.
+            {% if user|is_organizer:quest or user.is_superuser %}
+                Перейдите во вкладку Участники -> Игроки.
+            {% endif %}
+        </p>
     {% endif %}
 {% endblock content %}

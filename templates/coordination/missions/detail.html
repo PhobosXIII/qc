@@ -9,7 +9,7 @@
 
     <div class="page-header">
         <h1>{{ quest.title }}.
-            {% if user|is_organizer:quest or user.is_superuser %}
+            {% if user|is_organizer:quest or user.is_superuser or user|is_agent:quest %}
                 {{ mission }}
             {% else %}
                 {{ mission.short_name }}

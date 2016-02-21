@@ -11,7 +11,8 @@ from sendfile import sendfile
 
 from coordination.forms import QuestForm, MissionForm, HintForm, PlayerForm, KeyForm, MessageForm, OrganizerForm
 from coordination.models import Quest, Mission, Hint, CurrentMission, Keylog, Message, Membership
-from coordination.permission_utils import is_quest_organizer, is_quest_player, is_organizer, is_organizer_features
+from coordination.permission_utils import is_quest_organizer, is_quest_player, is_organizer, is_organizer_features, \
+    is_quest_organizer_or_agent
 from coordination.utils import generate_random_username, generate_random_password, get_timedelta
 
 
@@ -116,7 +117,7 @@ def tables_quest(request, quest_id):
 @minified_response
 def tables_quest_all(request, quest_id):
     quest = get_object_or_404(Quest, pk=quest_id)
-    request = is_quest_organizer(request, quest)
+    request = is_quest_organizer_or_agent(request, quest)
     players = quest.players()
     missions = quest.missions().exclude(is_finish=True)
     keylogs = Keylog.right_keylogs(missions)
@@ -128,7 +129,7 @@ def tables_quest_all(request, quest_id):
 @minified_response
 def tables_quest_current(request, quest_id):
     quest = get_object_or_404(Quest, pk=quest_id)
-    request = is_quest_organizer(request, quest)
+    request = is_quest_organizer_or_agent(request, quest)
     current_missions = quest.current_missions()
     context = {'quest': quest, 'current_missions': current_missions}
     return render(request, 'coordination/quests/tables/current.html', context)
@@ -234,7 +235,8 @@ def organizers_quest(request, quest_id):
             return redirect('coordination:quest_organizers', quest_id=quest_id)
     else:
         form = OrganizerForm(organizers=all_orgs)
-    context = {'quest': quest, 'organizers': organizers, 'form': form}
+    agent = quest.agents().first()
+    context = {'quest': quest, 'organizers': organizers, 'form': form, 'agent': agent}
     return render(request, 'coordination/quests/members/organizers.html', context)
 
 
@@ -454,7 +456,7 @@ def delete_message(request, quest_id, message_id):
 def quest_missions(request, quest_id):
     quest = get_object_or_404(Quest, pk=quest_id)
     if not quest.is_published or not quest.ended:
-        request = is_quest_organizer(request, quest)
+        request = is_quest_organizer_or_agent(request, quest)
     missions = quest.missions()
     context = {'quest': quest, 'missions': missions}
     return render(request, 'coordination/missions/all.html', context)
@@ -466,7 +468,7 @@ def detail_mission(request, mission_id):
     can_user_view = quest.is_published and \
                     (quest.ended or (request.user.is_authenticated() and mission.is_completed(request.user)))
     if not can_user_view:
-        request = is_quest_organizer(request, quest)
+        request = is_quest_organizer_or_agent(request, quest)
     hints = None
     hint_form = None
     if not mission.is_start and not mission.is_finish:

@@ -4,13 +4,20 @@
 <ul class="nav nav-pills">
     {% menu_item 'Об игре' 'coordination:quest_detail' quest.id %}
 
-    {% if quest.ended or user|is_organizer:quest or user.is_superuser %}
+    {% if quest.ended or user|is_organizer:quest or user.is_superuser or user|is_agent:quest %}
         {% menu_item 'Задания' 'coordination:quest_missions' quest.id %}
-        {% menu_item 'Итоги' 'coordination:quest_results' quest.id %}
     {% endif %}
 
     {% if user|is_player:quest %}
         {% menu_item 'Координация' 'coordination:quest_coordination' quest.id %}
+    {% endif %}
+
+    {% if quest.ended or user|is_organizer:quest or user.is_superuser %}
+        {% menu_item 'Итоги' 'coordination:quest_results' quest.id %}
+    {% endif %}
+
+    {% if user|is_agent:quest %}
+        {% menu_item 'Таблички' 'coordination:quest_tables' quest.id contains=True %}
     {% endif %}
 
     {% if user|is_organizer:quest or user.is_superuser %}

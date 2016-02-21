@@ -31,6 +31,26 @@
                     </li>
                 {% endfor %}
             </ul>
+
+            {% if agent %}
+                <h3>Агенты</h3>
+                <div class="table-responsive">
+                    <table class="table table-bordered text-center">
+                        <thead>
+                            <tr>
+                                <th>Логин</th>
+                                <th>Пароль</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>{{ agent.username }}</td>
+                                <td>{{ agent.last_name}}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
         </div>
     </div>
 {% endblock content %}

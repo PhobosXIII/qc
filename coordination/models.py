@@ -2,12 +2,14 @@ from datetime import timedelta
 
 from ckeditor.fields import RichTextField
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.utils import timezone
 from django.utils.html import strip_tags
 
-from coordination.utils import get_timedelta_with_now, time_in_minutes
+from coordination.utils import get_timedelta_with_now, time_in_minutes, generate_random_username, \
+    generate_random_password
 
 
 def mission_file_name(instance, filename):
@@ -74,6 +76,11 @@ class Quest(models.Model):
         super(Quest, self).save(*args, **kwargs)
         if is_create:
             Membership.objects.create(quest=self, user=self.creator, role='O')
+            name = 'agent{0}'.format(self.pk)
+            username = generate_random_username(name)
+            password = generate_random_password()
+            user = User.objects.create_user(username=username, password=password, first_name=name, last_name=password)
+            Membership.objects.create(quest=self, user=user, role='A')
             Mission.objects.create(quest=self, name_in_table='Старт', order_number=0)
             Mission.objects.create(quest=self, name_in_table='Финиш', order_number=1, is_finish=True)
 
