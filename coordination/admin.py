@@ -1,23 +1,7 @@
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin
-from django.contrib.auth.models import User
 from coordination.models import Quest, Mission, Hint, CurrentMission, Keylog, Message, Membership
 from qc import settings
 from qc.admin import admin_site
-
-
-def user_str(self):
-    if self.first_name:
-        return self.first_name
-    else:
-        return self.username
-
-
-User.__str__ = user_str
-
-
-class MyUserAdmin(UserAdmin):
-    list_display = ('username', 'first_name')
 
 
 class MemberInline(admin.TabularInline):
@@ -87,4 +71,3 @@ admin_site.register(Mission, MissionAdmin)
 admin_site.register(CurrentMission, CurrentMissionAdmin)
 admin_site.register(Keylog, KeylogAdmin)
 admin_site.register(Message, MessageAdmin)
-admin_site.register(User, MyUserAdmin)
