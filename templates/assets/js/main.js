@@ -28,9 +28,9 @@ $.ajaxSetup({
 });
 
 function start_countup(time) {
-    var since = new Date(time.getFullYear(), time.getMonth(), time.getDate(), 0, 0, 0);
+    var tz = time.getTimezoneOffset() * 2;
     $('#countup').countdown({
-        since: since, compact: true,
+        since: -time, timezone: -tz, compact: true,
         layout: '<b>Время сервера: {hnn}{sep}{mnn}{sep}{snn}</b>.'
     });
 }
