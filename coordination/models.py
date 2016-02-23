@@ -14,8 +14,8 @@ from coordination.utils import get_timedelta_with_now, time_in_minutes, generate
 
 def mission_file_name(instance, filename):
     ext = filename.split('.')[-1].lower()
-    filename = "{0}.{1}".format(timezone.now().strftime("%d-%m-%Y-%H-%M-%S"), ext)
-    return '/'.join(['mission_imgs', str(instance.quest.organizer.pk), str(instance.quest.pk), filename])
+    filename = "{0}-{1}.{2}".format(instance.order_number, timezone.now().strftime("%d-%m-%Y-%H-%M-%S"), ext)
+    return '/'.join(['mission_imgs', str(instance.quest.creator.pk), str(instance.quest.pk), filename])
 
 
 class Quest(models.Model):
