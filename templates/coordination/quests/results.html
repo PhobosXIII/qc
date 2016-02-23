@@ -15,18 +15,16 @@
     </div>
 
     {% include 'coordination/quests/_nav.html' %}
+    <br>
 
     {% if quest.ended or user|is_organizer:quest or user.is_superuser %}
-        <br>
         <table data-toggle="table" data-fixed-columns="true" data-fixed-number="2" data-height="500"
                 {% if not quest.line_nonlinear %} data-classes="table" data-striped="true" {% endif %}
-                {% if user|is_organizer:quest or user.is_superuser %}
                    data-show-export="true" data-export-types="['excel']"
                    data-export-options='{
                         "fileName": "{{ quest.title }} - Итоги",
                         "worksheetName": "Квест"
-                   }'
-                {% endif %}>
+                   }'>
             <thead>
                 <tr>
                     <th>№</th>

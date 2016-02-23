@@ -455,7 +455,7 @@ def delete_message(request, quest_id, message_id):
 # Missions
 def quest_missions(request, quest_id):
     quest = get_object_or_404(Quest, pk=quest_id)
-    if not quest.is_published or not quest.ended:
+    if not quest.is_published:
         request = is_quest_organizer_or_agent(request, quest)
     missions = quest.missions()
     context = {'quest': quest, 'missions': missions}
