@@ -26,20 +26,11 @@
                 <span class="fa fa-edit fa-lg"></span> Редактировать
             </a>
 
-            {% if quest.linear %}
-                {% if not mission.is_start and not mission.is_finish %}
-                    <button data-href="{% url 'coordination:mission_delete' mission.id %}" data-toggle="modal"
-                            data-target="#confirm" class="btn btn-danger">
-                        <span class="fa fa-trash fa-lg"></span> Удалить
-                    </button>
-                {% endif %}
-            {% else %}
-                {% if not mission.is_start %}
-                    <button data-href="{% url 'coordination:mission_delete' mission.id %}" data-toggle="modal"
-                            data-target="#confirm" class="btn btn-danger">
-                        <span class="fa fa-trash fa-lg"></span> Удалить
-                    </button>
-                {% endif %}
+            {% if not quest.started and quest.line_nonlinear and not mission.is_start or not quest.line_nonlinear and not mission.is_start and not mission.is_finish %}
+                <button data-href="{% url 'coordination:mission_delete' mission.id %}" data-toggle="modal"
+                        data-target="#confirm" class="btn btn-danger">
+                    <span class="fa fa-trash fa-lg"></span> Удалить
+                </button>
             {% endif %}
     {% endif %}
 
@@ -47,9 +38,13 @@
 
     {% include 'coordination/quests/_picture.html' %}
 
-    {% if quest.linear and not mission.is_finish or quest.line_nonlinear and not mission.is_start%}
+    {% if quest.linear and not mission.is_finish or quest.line_nonlinear and not mission.is_start or quest.nonlinear and not mission.is_finish and not mission.is_start %}
         <br>
-        <p class="label label-info text-base"><span class="fa fa-key"></span> {{ mission.key|default:"Не указан" }}</p>
+        <p class="label label-info text-medium"><span class="fa fa-key"></span> {{ mission.key|default:"Не указан" }}</p>
+    {% endif %}
+
+    {% if quest.nonlinear and not mission.is_finish and not mission.is_start %}
+        <p class="label label-default text-medium"><span class="glyphicon glyphicon-piggy-bank"></span> {{ mission.points }}</p>
     {% endif %}
 
     {% if user|is_organizer:quest or user.is_superuser%}

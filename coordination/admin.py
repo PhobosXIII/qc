@@ -1,4 +1,5 @@
 from django.contrib import admin
+
 from coordination.models import Quest, Mission, Hint, CurrentMission, Keylog, Message, Membership
 from qc import settings
 from qc.admin import admin_site
@@ -17,7 +18,7 @@ class MemberAdmin(admin.ModelAdmin):
 
 
 class QuestAdmin(admin.ModelAdmin):
-    fields = [('title', 'is_published', 'status'), 'type', 'creator', 'start', 'description']
+    fields = [('title', 'is_published', 'status'), 'type', 'creator', 'start', 'game_over', 'description']
     list_display = ('title', 'creator', 'start', 'type')
     inlines = [MemberInline]
     ordering = ['-start']
@@ -30,11 +31,11 @@ class HintInline(admin.TabularInline):
 
 
 class MissionAdmin(admin.ModelAdmin):
-    fields = ('quest', ('name', 'order_number', 'is_finish'), 'name_in_table', 'text', 'key', )
+    fields = ['quest', ('name', 'order_number', 'is_finish'), 'name_in_table', 'text', ('key', 'points'), ]
     if settings.QC_UPLOAD:
         fields += ('picture',)
     inlines = [HintInline]
-    list_display = ('__str__', 'quest', )
+    list_display = ('__str__', 'quest', 'points', )
     list_filter = ('quest', )
     ordering = ('quest', 'order_number')
 
@@ -46,7 +47,7 @@ class CurrentMissionAdmin(admin.ModelAdmin):
 
 
 class KeylogAdmin(admin.ModelAdmin):
-    list_display = ('player', 'get_quest', 'mission', 'key', 'fix_time', 'is_right')
+    list_display = ('player', 'get_quest', 'mission', 'key', 'fix_time', 'is_right', 'points')
     ordering = ['fix_time']
     list_filter = ('is_right', 'player', 'mission', 'mission__quest')
 

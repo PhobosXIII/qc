@@ -12,7 +12,7 @@
     {% include 'coordination/quests/_nav.html' %}
     <br>
 
-    {% if user|is_organizer:quest or user.is_superuser %}
+    {% if quest.not_started and user|is_organizer:quest or user.is_superuser %}
         <p class=" text-center">
             <a href="{% url 'coordination:mission_new' quest.id %}" class="btn btn-success">
                 <span class="fa fa-plus fa-lg"></span> Добавить задание

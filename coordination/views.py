@@ -48,8 +48,6 @@ def type_quest(request):
 
 @login_required()
 def create_quest(request, type='L'):
-    if type == 'NL':
-        request = is_organizer_features(request)
     request = is_organizer(request)
     if request.method == 'POST':
         form = QuestForm(request.POST)
@@ -60,7 +58,7 @@ def create_quest(request, type='L'):
             quest.save()
             return redirect('coordination:quest_detail', quest_id=quest.pk)
     else:
-        form = QuestForm()
+        form = QuestForm(type=type)
     context = {'form': form}
     return render(request, 'coordination/quests/form.html', context)
 
@@ -489,27 +487,31 @@ def detail_mission(request, mission_id):
 @login_required()
 def create_mission(request, quest_id):
     quest = get_object_or_404(Quest, pk=quest_id)
-    request = is_quest_organizer(request, quest)
-    if request.method == 'POST':
-        form = MissionForm(request.POST, request.FILES)
-        if form.is_valid():
-            mission = form.save(commit=False)
-            mission.quest = quest
-            mission.save()
-            return redirect('coordination:mission_detail', mission_id=mission.pk)
-    else:
-        form = MissionForm(next_number=quest.next_mission_number())
-    context = {'quest': quest, 'form': form}
-    return render(request, 'coordination/missions/form.html', context)
+    if quest.not_started:
+        request = is_quest_organizer(request, quest)
+        if request.method == 'POST':
+            form = MissionForm(request.POST, request.FILES, quest=quest)
+            if form.is_valid():
+                mission = form.save(commit=False)
+                mission.quest = quest
+                mission.save()
+                return redirect('coordination:mission_detail', mission_id=mission.pk)
+        else:
+            form = MissionForm(quest=quest)
+        context = {'quest': quest, 'form': form}
+        return render(request, 'coordination/missions/form.html', context)
+    return redirect('coordination:quest_missions', quest_id=quest.pk)
 
 
 @login_required()
 def create_finish_mission(request, quest_id):
     quest = get_object_or_404(Quest, pk=quest_id)
-    is_quest_organizer(request, quest)
-    finish = Mission.objects.create(quest=quest, name_in_table='Финиш', order_number=1, is_finish=True)
-    Mission.update_finish_number(quest)
-    return redirect('coordination:mission_detail', mission_id=finish.id)
+    if quest.not_started:
+        is_quest_organizer(request, quest)
+        finish = Mission.objects.create(quest=quest, name_in_table='Финиш', order_number=1, is_finish=True)
+        Mission.update_finish_number(quest)
+        return redirect('coordination:mission_detail', mission_id=finish.id)
+    return redirect('coordination:quest_missions', quest_id=quest.pk)
 
 
 @login_required()
@@ -531,15 +533,16 @@ def edit_mission(request, mission_id):
 def delete_mission(request, mission_id):
     mission = get_object_or_404(Mission, pk=mission_id)
     quest = mission.quest
-    is_quest_organizer(request, quest)
-    if quest.linear:
-        if not mission.is_start and not mission.is_finish:
-            mission.delete()
-            Mission.update_finish_number(quest)
-    else:
-        if not mission.is_start:
-            mission.delete()
-            Mission.update_finish_number(quest)
+    if not quest.started:
+        is_quest_organizer(request, quest)
+        if quest.linear or quest.nonlinear:
+            if not mission.is_start and not mission.is_finish:
+                mission.delete()
+                Mission.update_finish_number(quest)
+        else:
+            if not mission.is_start:
+                mission.delete()
+                Mission.update_finish_number(quest)
     return redirect('coordination:quest_missions', quest_id=quest.pk)
 
 

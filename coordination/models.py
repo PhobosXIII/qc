@@ -35,9 +35,9 @@ class Quest(models.Model):
     type = models.CharField('тип', max_length=3, choices=TYPES, default='L')
     status = models.CharField('статус', max_length=3, choices=STATUSES, default='NTS')
     is_published = models.BooleanField('опубликован', default=False)
-    creator = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name='создатель',
-                                related_name='creator', null=True)
+    creator = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name='создатель', related_name='creator')
     members = models.ManyToManyField(settings.AUTH_USER_MODEL, through='Membership', related_name='members')
+    game_over = models.DateTimeField('конец игры', null=True, blank=True)
 
     class Meta:
         verbose_name = 'квест'
@@ -67,6 +67,10 @@ class Quest(models.Model):
     @property
     def line_nonlinear(self):
         return self.type == 'LNL'
+
+    @property
+    def is_game_over(self):
+        return timezone.now() >= self.game_over
 
     def __str__(self):
         return self.title
@@ -125,6 +129,14 @@ class Quest(models.Model):
 
     def agents(self):
         return self.members.filter(membership__role='A')
+
+    def players_ext(self):
+        players = self.members.filter(membership__role='P')
+        for player in players:
+            player.last_time = Keylog.last_time(self, player)
+            player.num_missions = len(Mission.completed_missions(self, player))
+            player.points = Keylog.total_points(self, player)
+        return players
 
     @staticmethod
     def coming_quests():
@@ -196,6 +208,7 @@ class Mission(models.Model):
     order_number = models.PositiveSmallIntegerField('номер задания',
                                                     validators=[MinValueValidator(0), MaxValueValidator(99)])
     is_finish = models.BooleanField(u'финиш', default=False)
+    points = models.PositiveSmallIntegerField('баллы', default=0)
 
     class Meta:
         verbose_name = 'задание'
@@ -374,6 +387,7 @@ class Keylog(models.Model):
     key = models.CharField('ключ', max_length=30)
     fix_time = models.DateTimeField('время ключа')
     is_right = models.BooleanField('правильный ключ', default=False)
+    points = models.PositiveSmallIntegerField('баллы', default=0)
 
     class Meta:
         verbose_name = 'история ключей'
@@ -390,6 +404,23 @@ class Keylog(models.Model):
     @staticmethod
     def wrong_keylogs(player, mission):
         return Keylog.objects.filter(player=player, mission=mission, is_right=False)
+
+    @staticmethod
+    def total_points(quest, player):
+        keylogs = Keylog.objects.filter(mission__quest=quest, player=player, is_right=True)
+        keylogs = keylogs.order_by('mission__id').distinct('mission__id')
+        total_points = 0
+        for keylog in keylogs:
+            total_points += keylog.points
+        return total_points
+
+    @staticmethod
+    def last_time(quest, player):
+        keylog = None
+        keylogs = Keylog.objects.filter(mission__quest=quest, player=player, is_right=True)
+        if keylogs:
+            keylog = keylogs.order_by('-fix_time').first()
+        return keylog.fix_time if keylog else timezone.now()
 
 
 class Message(models.Model):

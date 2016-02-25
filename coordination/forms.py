@@ -23,24 +23,36 @@ class CustomClearableFileInput(ClearableFileInput):
 class QuestForm(ModelForm):
     class Meta:
         model = Quest
-        fields = ['title', 'start', 'description']
+        fields = ['title', 'start', 'description', 'game_over']
 
     def __init__(self, *args, **kwargs):
+        type = kwargs.pop('type', None)
         super(QuestForm, self).__init__(*args, **kwargs)
         self.helper = FormHelper()
         self.helper.form_tag = False
         self.helper.html5_required = True
-        self.helper.layout = Layout(
-            Field('title', autofocus=True),
-            'start',
-            'description'
-        )
+        if type:
+            self.instance.type = type
+        if self.instance.nonlinear:
+            self.helper.layout = Layout(
+                Field('title', autofocus=True),
+                'start',
+                'game_over',
+                'description'
+            )
+        else:
+            self.Meta.fields = ['title', 'start', 'description']
+            self.helper.layout = Layout(
+                Field('title', autofocus=True),
+                'start',
+                'description'
+            )
 
 
 class MissionForm(ModelForm):
     class Meta:
         model = Mission
-        fields = ['name', 'name_in_table', 'text', 'key', 'order_number']
+        fields = ['name', 'name_in_table', 'text', 'key', 'order_number', 'points']
         if settings.QC_UPLOAD:
             fields.append('picture')
             widgets = {
@@ -48,7 +60,7 @@ class MissionForm(ModelForm):
             }
 
     def __init__(self, *args, **kwargs):
-        next_number = kwargs.pop('next_number', None)
+        quest_arg = kwargs.pop('quest', None)
         super(MissionForm, self).__init__(*args, **kwargs)
         self.helper = FormHelper()
         self.helper.form_tag = False
@@ -56,12 +68,14 @@ class MissionForm(ModelForm):
         try:
             quest = self.instance.quest
         except ObjectDoesNotExist:
-            quest = None
+            quest = quest_arg
+
         simple_layout = Layout(
             HTML("<h2>{{ form.instance }}</h2>"),
             'text',
             'picture',
             Field('order_number', type="hidden"),
+            Field('points', type="hidden"),
         )
         simple_fields = ['text', 'order_number']
         if self.instance.is_start:
@@ -73,8 +87,9 @@ class MissionForm(ModelForm):
                     'text',
                     'picture',
                     Field('order_number', type="hidden"),
+                    Field('points', type="hidden"),
                 )
-            elif quest.line_nonlinear:
+            else:
                 self.Meta.fields = simple_fields
                 self.helper.layout = simple_layout
         elif self.instance.is_finish:
@@ -90,19 +105,39 @@ class MissionForm(ModelForm):
                     'text',
                     'picture',
                     Field('order_number', type="hidden"),
+                    Field('points', type="hidden"),
                 )
+            elif quest.nonlinear:
+                self.Meta.fields = simple_fields
+                self.helper.layout = simple_layout
         else:
-            self.helper.layout = Layout(
-                Row(
-                    Div(Field('order_number', value=next_number),
-                        css_class='col-xs-8 col-sm-3 col-md-4'),
-                    Div('key', css_class='col-xs-12 col-sm-9 col-md-8')
-                ),
-                'name',
-                'name_in_table',
-                'text',
-                'picture'
-            )
+            next_number = quest.next_mission_number()
+            if quest.nonlinear:
+                self.helper.layout = Layout(
+                    Row(
+                        Div(Field('order_number', value=next_number),
+                            css_class='col-xs-7 col-sm-3 col-md-4'),
+                        Div('points', css_class='col-xs-5 col-sm-3 col-md-3'),
+                        Div('key', css_class='col-xs-12 col-sm-6 col-md-5')
+                    ),
+                    'name',
+                    'name_in_table',
+                    'text',
+                    'picture'
+                )
+            else:
+                self.helper.layout = Layout(
+                    Row(
+                        Div(Field('order_number', value=next_number),
+                            css_class='col-xs-8 col-sm-3 col-md-4'),
+                        Div('key', css_class='col-xs-12 col-sm-9 col-md-8')
+                    ),
+                    'name',
+                    'name_in_table',
+                    'text',
+                    'picture',
+                    Field('points', type="hidden"),
+                )
 
     def clean_key(self):
         key = self.cleaned_data["key"]

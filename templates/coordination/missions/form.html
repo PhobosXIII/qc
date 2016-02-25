@@ -15,7 +15,7 @@
         {% if form.instance.pk %}
             {% url 'coordination:mission_detail' form.instance.pk %}
         {% else %}
-            {% url 'coordination:quest_detail' quest.id%}
+            {% url 'coordination:quest_missions' quest.id %}
         {% endif %}
         " class="btn btn-default"><span class="fa fa-close"></span> Отмена</a>
     </form>
