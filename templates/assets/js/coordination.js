@@ -33,8 +33,27 @@ function start_countdown(time) {
             until: +time, compact: true,
             layout: 'До следующей подсказки осталось: <b>{mnn}{sep}{snn}</b>.' +
             ' Если подсказка не отобразилась, обновите страницу вручную!',
+            onTick: highlightLastSeconds,
             onExpiry: refresh
         });
+    }
+}
+
+function start_game_over_countdown(time) {
+    var countdown = $('#countdown');
+    countdown.countdown('destroy');
+    if (time != null) {
+        countdown.countdown({
+            until: +time, compact: true,
+            layout: 'До конца игры: <b>{hnn}{sep}{mnn}{sep}{snn}</b>',
+            onTick: highlightLastSeconds
+        });
+    }
+}
+
+function highlightLastSeconds(periods) {
+    if ($.countdown.periodsToSeconds(periods) === 10) {
+        $(this).addClass('text-danger');
     }
 }
 

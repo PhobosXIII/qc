@@ -20,7 +20,7 @@
     <div class="row-margin text-base" id="countup"></div>
 
     <table data-toggle="table" data-fixed-columns="true" data-fixed-number="1" data-height="500"
-            {% if not quest.line_nonlinear %} data-classes="table" data-striped="true" {% endif %}>
+            {% if quest.linear %} data-classes="table" data-striped="true" {% endif %}>
         <thead>
             <tr>
                 <th>Игрок</th>

@@ -1,0 +1,18 @@
+<table data-toggle="table" data-detail-view="true" data-detail-formatter="missionFormatter">
+    <thead>
+        <tr>
+            <th>Задание</th>
+            <th>Взято</th>
+            <th class="hidden">Игроки</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for mission in missions %}
+            <tr>
+                <td>{{ mission.table_name }}</td>
+                <td>{{ mission.num_players }}</td>
+                <td class="hidden">{{ mission.players }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>

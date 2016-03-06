@@ -31,6 +31,6 @@ function start_countup(time) {
     var tz = time.getTimezoneOffset() * 2;
     $('#countup').countdown({
         since: -time, timezone: -tz, compact: true,
-        layout: '<b>Время сервера: {hnn}{sep}{mnn}{sep}{snn}</b>.'
+        layout: '<b>Время сервера: {hnn}{sep}{mnn}{sep}{snn}</b>'
     });
 }

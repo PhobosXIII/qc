@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.urlresolvers import reverse
 from django.http.response import JsonResponse, Http404
-from django.shortcuts import render, get_object_or_404, redirect
+from django.shortcuts import render, get_object_or_404, redirect, resolve_url
 from django.template.loader import render_to_string
 from django.utils import timezone
 from htmlmin.decorators import minified_response
@@ -99,22 +99,38 @@ def results_quest(request, quest_id):
     quest = get_object_or_404(Quest, pk=quest_id)
     if not quest.is_published:
         request = is_quest_organizer(request, quest)
-    missions = quest.missions().exclude(is_finish=True)
-    keylogs = Keylog.right_keylogs(missions)
-    current_missions = quest.current_missions()
-    context = {'quest': quest, 'missions': missions, 'keylogs': keylogs, 'current_missions': current_missions}
+    context = {'quest': quest, }
+    if quest.nonlinear:
+        players = quest.players_ext()
+        context.update({'players': players})
+    else:
+        missions = quest.missions().exclude(is_finish=True)
+        keylogs = Keylog.right_keylogs(missions)
+        current_missions = quest.current_missions()
+        context.update({'missions': missions, 'keylogs': keylogs, 'current_missions': current_missions})
     return render(request, 'coordination/quests/results.html', context)
 
 
 @login_required
 def tables_quest(request, quest_id):
-    return redirect('coordination:quest_tables_current', quest_id=quest_id)
+    quest = get_object_or_404(Quest, pk=quest_id)
+    if quest.nonlinear:
+        request = is_quest_organizer_or_agent(request, quest)
+        rest_quest = 0
+        if quest.started:
+            rest_quest = get_timedelta(quest.game_over)
+        players = quest.players_ext()
+        missions = quest.missions_ext()
+        context = {'quest': quest, 'players': players, 'missions': missions, 'rest_quest': rest_quest}
+        return render(request, 'coordination/quests/tables/nonlinear.html', context)
+    else:
+        return redirect('coordination:quest_tables_current', quest_id=quest_id)
 
 
 @login_required
 @minified_response
 def tables_quest_all(request, quest_id):
-    quest = get_object_or_404(Quest, pk=quest_id)
+    quest = get_object_or_404(Quest, pk=quest_id, type__in=('L', 'LNL'))
     request = is_quest_organizer_or_agent(request, quest)
     players = quest.players()
     missions = quest.missions().exclude(is_finish=True)
@@ -126,7 +142,7 @@ def tables_quest_all(request, quest_id):
 @login_required
 @minified_response
 def tables_quest_current(request, quest_id):
-    quest = get_object_or_404(Quest, pk=quest_id)
+    quest = get_object_or_404(Quest, pk=quest_id, type__in=('L', 'LNL'))
     request = is_quest_organizer_or_agent(request, quest)
     current_missions = quest.current_missions()
     context = {'quest': quest, 'current_missions': current_missions}
@@ -137,8 +153,15 @@ def tables_quest_current(request, quest_id):
 def control_quest(request, quest_id):
     quest = get_object_or_404(Quest, pk=quest_id)
     request = is_quest_organizer(request, quest)
-    current_missions = quest.current_missions()
-    context = {'quest': quest, 'current_missions': current_missions}
+    context = {'quest': quest, }
+    if quest.nonlinear:
+        rest_quest = 0
+        if quest.started:
+            rest_quest = get_timedelta(quest.game_over)
+        context.update({'rest_quest': rest_quest})
+    else:
+        current_missions = quest.current_missions()
+        context.update({'current_missions': current_missions})
     return render(request, 'coordination/quests/control.html', context)
 
 
@@ -203,8 +226,9 @@ def players_quest(request, quest_id):
         password = generate_random_password()
         user = User.objects.create_user(username=username, password=password, first_name=name, last_name=password)
         Membership.objects.create(quest=quest, user=user, role='P')
-        start_mission = quest.start_mission()
-        CurrentMission.objects.create(player=user, mission=start_mission)
+        if not quest.nonlinear:
+            start_mission = quest.start_mission()
+            CurrentMission.objects.create(player=user, mission=start_mission)
         return redirect('coordination:quest_players', quest_id=quest_id)
     context = {'quest': quest, 'form': form, 'players': players}
     return render(request, 'coordination/quests/members/players.html', context)
@@ -279,45 +303,94 @@ def coordination_quest(request, quest_id):
     quest = get_object_or_404(Quest, pk=quest_id)
     request = is_quest_player(request, quest)
     player = request.user
-    current_mission = get_object_or_404(CurrentMission, mission__quest=quest, player=player)
-    mission = current_mission.mission
-    hints = Hint.display_hints(current_mission)
-    next_hint_time = Hint.next_hint_time(current_mission)
-    delay = None
-    if next_hint_time:
-        delay = get_timedelta(next_hint_time)
-    completed_missions = Mission.completed_missions(quest, player)
     messages = quest.messages().filter(is_show=True)
-    form = None
-    wrong_keys_str = None
-    if quest.started and not mission.is_finish:
-        form = KeyForm(request.POST or None)
-        if form.is_valid():
-            key = form.cleaned_data["key"]
-            next_missions = Mission.objects.filter(quest=quest, order_number=mission.order_number + 1)
-            if quest.linear:
-                right_key = mission.key
-                next_mission = next_missions.first()
-                is_right = len(right_key) > 0 and right_key == key
-            else:
-                next_mission = next_missions.filter(key=key).first()
-                is_right = next_mission is not None
-            keylog = Keylog(key=key, fix_time=timezone.now(), player=player, mission=mission)
-            if is_right:
-                keylog.is_right = True
-                current_mission.mission = next_mission
-                current_mission.start_time = keylog.fix_time
-                current_mission.save()
-            keylog.save()
-        wrong_keys = Keylog.wrong_keylogs(player, mission)
-        wrong_keys_str = ', '.join(str(i) for i in wrong_keys)
-    if request.method == 'GET':
-        context = {'quest': quest, 'mission': mission, 'hints': hints, 'form': form,
-                   'wrong_keys': wrong_keys_str, 'delay': delay, 'completed_missions': completed_missions,
-                   'messages': messages}
-        return render(request, 'coordination/quests/coordination.html', context)
-    if request.method == 'POST':
-        return redirect('coordination:quest_coordination', quest_id=quest_id)
+    if quest.nonlinear:
+        rest_quest = 0
+        missions = None
+        mission_start = None
+        mission_finish = None
+        display_hints = None
+        rest_hints = None
+        form = None
+        if quest.not_started:
+            mission_start = quest.start_mission()
+        else:
+            if quest.started and not quest.is_game_over:
+                rest_quest = get_timedelta(quest.game_over)
+                if request.method == 'POST':
+                    mission = get_object_or_404(Mission, pk=request.POST['mission_id'])
+                    if not mission.is_completed(player):
+                        form = KeyForm(request.POST, quest=quest)
+                        if form.is_valid():
+                            key = form.cleaned_data["key"]
+                            right_key = mission.key
+                            is_right = len(right_key) > 0 and right_key == key
+                            keylog = Keylog(key=key, fix_time=timezone.now(), player=player,
+                                            mission=mission, is_right=is_right)
+                            if is_right:
+                                keylog.points = mission.points
+                            keylog.save()
+                    if mission.order_number > 1:
+                        url = '{0}#m{1}'.format(resolve_url('coordination:quest_coordination', quest_id=quest_id),
+                                                mission.order_number - 1)
+                    else:
+                        url = resolve_url('coordination:quest_coordination', quest_id=quest_id)
+                    return redirect(url)
+            form = KeyForm(quest=quest)
+            count = 0
+            missions = quest.missions().filter(order_number__gt=0, is_finish=False)
+            for mission in missions:
+                mission.wrong_keys = Keylog.wrong_keylogs_format(player, mission)
+                is_completed = mission.is_completed(request.user)
+                mission.is_completed = is_completed
+                if not is_completed:
+                    count += 1
+            if missions and count == 0 or quest.is_game_over or quest.ended:
+                mission_finish = quest.finish_mission()
+            display_hints, rest_hints = Mission.hints_in_nl(quest, missions)
+        points = Keylog.total_points(quest, player)
+        if request.method == 'GET':
+            context = {'quest': quest, 'messages': messages, 'missions': missions, 'mission_finish': mission_finish,
+                       'mission_start': mission_start, 'rest_quest': rest_quest, 'points': points, 'form': form,
+                       'display_hints': display_hints, 'rest_hints': rest_hints}
+            return render(request, 'coordination/quests/coordination/nonlinear.html', context)
+    else:
+        current_mission = get_object_or_404(CurrentMission, mission__quest=quest, player=player)
+        mission = current_mission.mission
+        hints = current_mission.display_hints()
+        next_hint_time = current_mission.next_hint_time()
+        delay = None
+        if next_hint_time:
+            delay = get_timedelta(next_hint_time)
+        completed_missions = Mission.completed_missions(quest, player)
+        form = None
+        wrong_keys_str = None
+        if quest.started and not mission.is_finish:
+            form = KeyForm(request.POST, quest=quest or None)
+            if form.is_valid():
+                key = form.cleaned_data["key"]
+                next_missions = Mission.objects.filter(quest=quest, order_number=mission.order_number + 1)
+                if quest.linear:
+                    right_key = mission.key
+                    next_mission = next_missions.first()
+                    is_right = len(right_key) > 0 and right_key == key
+                else:
+                    next_mission = next_missions.filter(key=key).first()
+                    is_right = next_mission is not None
+                keylog = Keylog(key=key, fix_time=timezone.now(), player=player, mission=mission, is_right=is_right)
+                keylog.save()
+                if is_right:
+                    current_mission.mission = next_mission
+                    current_mission.start_time = keylog.fix_time
+                    current_mission.save()
+            wrong_keys_str = Keylog.wrong_keylogs_format(player, mission)
+        if request.method == 'GET':
+            context = {'quest': quest, 'mission': mission, 'hints': hints, 'form': form,
+                       'wrong_keys': wrong_keys_str, 'delay': delay, 'completed_missions': completed_missions,
+                       'messages': messages}
+            return render(request, 'coordination/quests/coordination/general.html', context)
+        if request.method == 'POST':
+            return redirect('coordination:quest_coordination', quest_id=quest_id)
 
 
 @login_required
@@ -328,8 +401,8 @@ def coordination_quest_ajax(request, quest_id):
         player = request.user
         current_mission = get_object_or_404(CurrentMission, mission__quest=quest, player=player)
         mission = current_mission.mission
-        hints = Hint.display_hints(current_mission)
-        next_hint_time = Hint.next_hint_time(current_mission)
+        hints = current_mission.display_hints()
+        next_hint_time = current_mission.next_hint_time()
         delay = None
         if next_hint_time:
             delay = get_timedelta(next_hint_time)
@@ -337,8 +410,7 @@ def coordination_quest_ajax(request, quest_id):
         messages = quest.messages().filter(is_show=True)
         wrong_keys_str = None
         if quest.started and not mission.is_finish:
-            wrong_keys = Keylog.wrong_keylogs(player, mission)
-            wrong_keys_str = ', '.join(str(i) for i in wrong_keys)
+            wrong_keys_str = Keylog.wrong_keylogs_format(player, mission)
         json_mission = mission.as_json()
         html_picture = render_to_string('coordination/quests/_picture.html', {'mission': mission})
         html_hints = render_to_string('coordination/hints/_list.html', {'hints': hints})
@@ -555,7 +627,7 @@ def picture_mission(request, mission_id):
                         (quest.ended or (player.is_authenticated() and mission.is_completed(player))
                          or (player.is_authenticated() and mission.is_current(player)))
         if not can_user_view:
-            request = is_quest_organizer(request, quest)
+            request = is_quest_organizer_or_agent(request, quest)
         return sendfile(request, mission.picture.path)
     else:
         raise Http404

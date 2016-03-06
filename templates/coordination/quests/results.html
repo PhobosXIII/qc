@@ -18,47 +18,51 @@
     <br>
 
     {% if quest.ended or user|is_organizer:quest or user.is_superuser %}
-        <table data-toggle="table" data-fixed-columns="true" data-fixed-number="2" data-height="500"
-                {% if not quest.line_nonlinear %} data-classes="table" data-striped="true" {% endif %}
-                   data-show-export="true" data-export-types="['excel']"
-                   data-export-options='{
-                        "fileName": "{{ quest.title }} - Итоги",
-                        "worksheetName": "Квест"
-                   }'>
-            <thead>
-                <tr>
-                    <th>№</th>
-                    <th>Игрок</th>
-                    {% for mission in missions %}
-                        {% url 'coordination:mission_detail' mission.id as mission_url%}
-                        {% if quest.line_nonlinear %}
-                            <th class="{% ifchanged mission.order_number %}{% cycle 'bg-success' 'bg-warning' as color%}{% else %}{{ color }}{% endifchanged %}">
-                                <a href="{{ mission_url }}">{{ mission.medium_name }}</a>
-                            </th>
-                        {% else %}
-                            <th><a href="{{ mission_url }}">{{ mission.table_name }}</a></th>
-                        {% endif %}
-                    {% endfor %}
-                </tr>
-            </thead>
-            <tbody>
-            {% for cm in current_missions %}
-                <tr>
-                    <td>{{ forloop.counter }}</td>
-                    <td>{{ cm.player.first_name }}</td>
-                    {% for mission in missions %}
-                        <td>
-                            {% for keylog in keylogs %}
-                                {% if keylog.player == cm.player and keylog.mission == mission%}
-                                    {{ keylog.fix_time|date:"H:i:s" }}
-                                {% endif %}
-                            {% endfor %}
-                        </td>
-                    {% endfor %}
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
+        {% if quest.nonlinear %}
+            {% include 'coordination/quests/tables/_players.html' %}
+        {% else %}
+            <table data-toggle="table" data-fixed-columns="true" data-fixed-number="2" data-height="500"
+                    {% if quest.linear %} data-classes="table" data-striped="true" {% endif %}
+                       data-show-export="true" data-export-types="['excel']"
+                       data-export-options='{
+                            "fileName": "{{ quest.title }} - Итоги",
+                            "worksheetName": "Квест"
+                       }'>
+                <thead>
+                    <tr>
+                        <th>№</th>
+                        <th>Игрок</th>
+                        {% for mission in missions %}
+                            {% url 'coordination:mission_detail' mission.id as mission_url%}
+                            {% if quest.line_nonlinear %}
+                                <th class="{% ifchanged mission.order_number %}{% cycle 'bg-success' 'bg-warning' as color%}{% else %}{{ color }}{% endifchanged %}">
+                                    <a href="{{ mission_url }}">{{ mission.medium_name }}</a>
+                                </th>
+                            {% else %}
+                                <th><a href="{{ mission_url }}">{{ mission.table_name }}</a></th>
+                            {% endif %}
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                {% for cm in current_missions %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ cm.player.first_name }}</td>
+                        {% for mission in missions %}
+                            <td>
+                                {% for keylog in keylogs %}
+                                    {% if keylog.player == cm.player and keylog.mission == mission%}
+                                        {{ keylog.fix_time|date:"H:i:s" }}
+                                    {% endif %}
+                                {% endfor %}
+                            </td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
     {% else %}
         <p class="lead text-center">Чтобы просмотреть итоговую табличку, дождитесь окончания игры!</p>
     {% endif %}
@@ -69,4 +73,5 @@
     <script type="text/javascript" src="{% static "assets/js/bootstrap-table-export.min.js" %}"></script>
     <script type="text/javascript" src="{% static "assets/js/tableExport.min.js" %}"></script>
     <script type="text/javascript" src="{% static "assets/js/bootstrap-table-fixed-columns.js" %}"></script>
+    {% if quest.nonlinear %}<script type="text/javascript" src="{% static "assets/js/tables.js" %}"></script>{% endif %}
 {% endblock scripts %}

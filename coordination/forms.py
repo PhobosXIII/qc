@@ -1,4 +1,4 @@
-from crispy_forms.bootstrap import StrictButton, PrependedText
+from crispy_forms.bootstrap import StrictButton, PrependedText, FieldWithButtons
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Field, HTML, Div, Row
 from django.core.exceptions import ObjectDoesNotExist
@@ -109,7 +109,12 @@ class MissionForm(ModelForm):
                 )
             elif quest.nonlinear:
                 self.Meta.fields = simple_fields
-                self.helper.layout = simple_layout
+                self.helper.layout = Layout(
+                    HTML("<h2>{{ form.instance }}</h2>"),
+                    'text',
+                    Field('order_number', type="hidden"),
+                    Field('points', type="hidden"),
+                )
         else:
             next_number = quest.next_mission_number()
             if quest.nonlinear:
@@ -185,16 +190,24 @@ class KeyForm(Form):
     key = CharField(max_length=30, required=True)
 
     def __init__(self, *args, **kwargs):
+        quest = kwargs.pop('quest', None)
         super(KeyForm, self).__init__(*args, **kwargs)
         self.helper = FormHelper()
         self.helper.form_method = 'post'
         self.helper.html5_required = True
         self.helper.form_show_labels = False
         self.helper.form_class = 'form-inline'
-        self.helper.layout = Layout(
-            PrependedText('key', '<span class="fa fa-key"></span>', placeholder='ключ', size='30'),
-            StrictButton('Отправить', type='submit', css_class='btn-primary')
-        )
+        if quest.nonlinear:
+            self.helper.form_tag = False
+            self.helper.layout = Layout(
+                FieldWithButtons(Field('key', placeholder='ключ', size='30'),
+                                 StrictButton('OK', type='submit', css_class='btn-primary')),
+            )
+        else:
+            self.helper.layout = Layout(
+                PrependedText('key', '<span class="fa fa-key"></span>', placeholder='ключ', size='30'),
+                StrictButton('Отправить', type='submit', css_class='btn-primary')
+            )
 
     def clean_key(self):
         key = self.cleaned_data["key"]

@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load staticfiles %}
+
+{% block title %}{{ quest.title }} - Координация{% endblock %}
+
+{% block content %}
+    <div class="page-header">
+        <h1>{{ quest.title }}</h1>
+    </div>
+
+    {% include 'coordination/quests/_nav.html' %}
+
+    <div class="row row-margin">
+        <div class="text-base col-xs-12 col-sm-4 col-md-3" id="countup"></div>
+        {% if quest.started and not quest.is_game_over %}
+            <div class="text-base col-sm-8 col-md-9" id="countdown"></div>
+        {% endif %}
+    </div>
+
+    {% if mission_finish %}
+        <div class="alert alert-success">{{ mission_finish.text|safe }}</div>
+    {% endif %}
+
+    <div>
+        <p class="lead text-center">Всего набрано <span class="badge text-medium"><span class="glyphicon glyphicon-piggy-bank"></span> {{ points }}</span></p>
+    </div>
+
+    <div id="messages">
+        {% include 'coordination/messages/_list.html' %}
+    </div>
+
+    {% for mission in missions %}
+        <div class="row row-margin{% if mission.is_completed %} bg-success{% endif %}">
+            <div class="col-sm-3 col-md-2">
+                <p class="text-base" id="m{{ mission.order_number }}">
+                    <span class="badge"><span class="glyphicon glyphicon-piggy-bank"></span> {{ mission.points }}</span> <b>{{ mission.short_name }}</b>
+                </p>
+            </div>
+            <div class="col-sm-5 col-md-6">
+                <div class="text-base"> {{ mission.text|safe }}</div>
+                {% if mission.picture %}
+                    <p><a href="{% url 'coordination:mission_picture' mission.id %}" target="_blank" class="label label-primary text-medium">Картинка</a></p>
+                {% endif %}
+                {% if not mission.is_completed %}
+                    {% for hint in display_hints %}
+                        {% if hint.mission == mission %}
+                            <div class="well well-sm">{{ hint }}:
+                            {{ hint.text|safe }}</div>
+                        {% endif %}
+                    {% endfor %}
+                    {% for hint in rest_hints %}
+                        {% if hint.mission == mission %}
+                            <p class="well well-sm">{{ hint }}: будет доступна в {{ hint.time_in_nl|date:"H:i" }}</p>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            </div>
+            <div class="col-xs-8 col-sm-4">
+                {% if mission.is_completed or mission_finish %}
+                    <p class="text-medium badge">{{ mission.name_in_table }}</p>
+                {% elif not mission_finish %}
+                    <form action="" method="post" class="form-inline">
+                        {% crispy form %}
+                        <input type="hidden" name="mission_id" value="{{ mission.id }}" />
+                    </form>
+                    {% if mission.wrong_keys %}
+                        <p class="text-danger">{{ mission.wrong_keys }}</p>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    {% empty %}
+        {% if quest.started %}
+            <p class="lead">В игре нет заданий!</p>
+        {% endif %}
+        {% if quest.not_started and mission_start %}
+            <div id="text" class="text-base">{{ mission_start.text|safe }}</div>
+            <div id="picture">{% include 'coordination/quests/_picture.html' with mission=mission_start %}</div>
+        {% endif %}
+    {% endfor %}
+{% endblock content %}
+
+{% block scripts %}
+    {{ block.super }}
+    <script type="text/javascript" src="{% static "assets/js/jquery.plugin.min.js" %}"></script>
+    <script type="text/javascript" src="{% static "assets/js/jquery.countdown.min.js" %}"></script>
+    <script type="text/javascript">
+{#        var url = "{% url 'coordination:quest_coordination_ajax' quest.id %}";#}
+        $(function () {
+            start_game_over_countdown({{ rest_quest }});
+
+            {% now "U" as t %}
+            var time = new Date({{ t }});
+            start_countup(time)
+        });
+
+{#        setInterval(function () {#}
+{#            update_coordination()#}
+{#        }, 103000);#}
+    </script>
+    <script type="text/javascript" src="{% static "assets/js/coordination.js" %}"></script>
+{% endblock scripts %}

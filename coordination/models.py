@@ -118,6 +118,9 @@ class Quest(models.Model):
     def start_mission(self):
         return Mission.objects.get(quest=self, order_number=0)
 
+    def finish_mission(self):
+        return Mission.objects.filter(quest=self, is_finish=True).first()
+
     def messages(self):
         return Message.objects.filter(quest=self)
 
@@ -134,9 +137,19 @@ class Quest(models.Model):
         players = self.members.filter(membership__role='P')
         for player in players:
             player.last_time = Keylog.last_time(self, player)
-            player.num_missions = len(Mission.completed_missions(self, player))
             player.points = Keylog.total_points(self, player)
+            missions = Mission.completed_missions(self, player)
+            player.missions = ', '.join(str(i.table_name) for i in missions)
+            player.num_missions = len(missions)
         return players
+
+    def missions_ext(self):
+        missions = self.missions().filter(order_number__gt=0, is_finish=False)
+        for mission in missions:
+            keylogs = mission.right_keylogs()
+            mission.players = ', '.join(str(i.player) for i in keylogs)
+            mission.num_players = len(keylogs)
+        return missions
 
     @staticmethod
     def coming_quests():
@@ -270,6 +283,21 @@ class Mission(models.Model):
     def hints(self):
         return Hint.objects.filter(mission=self)
 
+    @staticmethod
+    def hints_in_nl(quest, missions):
+        display_hints = []
+        rest_hints = []
+        if quest.nonlinear:
+            minutes = time_in_minutes(get_timedelta_with_now(quest.start))
+            for mission in missions:
+                hints = mission.hints()
+                for hint in hints:
+                    if hint.abs_delay <= minutes:
+                        display_hints.append(hint)
+                    else:
+                        rest_hints.append(hint)
+        return display_hints, rest_hints
+
     def next_hint_number(self):
         return len(self.hints()) + 1
 
@@ -278,8 +306,18 @@ class Mission(models.Model):
         return keylog is not None
 
     def is_current(self, player):
-        current_mission = CurrentMission.objects.filter(mission=self, player=player).first()
-        return current_mission is not None
+        quest = self.quest
+        if quest.nonlinear:
+            member = quest.membership_set.filter(user=player).first()
+            result = member and member.player
+        else:
+            current_mission = CurrentMission.objects.filter(mission=self, player=player).first()
+            result = current_mission is not None
+        return result
+
+    def right_keylogs(self):
+        keylogs = Keylog.objects.filter(mission=self, is_right=True)
+        return keylogs.order_by('player', 'mission__order_number').distinct('player', 'mission__order_number')
 
     def as_json(self):
         return {
@@ -323,6 +361,14 @@ class Hint(models.Model):
         aggregation = hints.aggregate(abs_delay=models.Sum('delay'))
         return aggregation.get('abs_delay', self.delay)
 
+    @property
+    def time_in_nl(self):
+        time = None
+        quest = self.mission.quest
+        if quest.nonlinear:
+            time = quest.start + timedelta(minutes=self.abs_delay)
+        return time
+
     def as_json(self):
         return {
             "title": self.__str__(),
@@ -337,32 +383,16 @@ class Hint(models.Model):
             array.append(hint.as_json())
         return array
 
-    @staticmethod
-    def display_hints(current_mission):
-        display_hints = []
-        minutes = time_in_minutes(get_timedelta_with_now(current_mission.start_time))
-        hints = current_mission.mission.hints()
-        for hint in hints:
-            if hint.abs_delay <= minutes:
-                display_hints.append(hint)
-        return display_hints
-
-    @staticmethod
-    def next_hint_time(current_mission):
-        next_hint_time = None
-        minutes = time_in_minutes(get_timedelta_with_now(current_mission.start_time))
-        hints = current_mission.mission.hints()
-        for hint in hints:
-            if hint.abs_delay > minutes:
-                next_hint_time = current_mission.start_time + timedelta(minutes=hint.abs_delay)
-                break
-        return next_hint_time
-
 
 class CurrentMission(models.Model):
     player = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name='игрок')
     mission = models.ForeignKey(Mission, verbose_name='задание')
     start_time = models.DateTimeField('время начала задания', default=timezone.now)
+
+    class Meta:
+        verbose_name = 'текущее задание'
+        verbose_name_plural = 'текущие задания'
+        ordering = ['-mission__order_number', 'start_time']
 
     def __str__(self):
         return '{0} - {1}'.format(self.player, self.mission)
@@ -375,10 +405,24 @@ class CurrentMission(models.Model):
         threshold = self.mission.total_hints_time + 30
         return minutes >= threshold
 
-    class Meta:
-        verbose_name = 'текущее задание'
-        verbose_name_plural = 'текущие задания'
-        ordering = ['-mission__order_number', 'start_time']
+    def display_hints(self):
+        display_hints = []
+        minutes = time_in_minutes(get_timedelta_with_now(self.start_time))
+        hints = self.mission.hints()
+        for hint in hints:
+            if hint.abs_delay <= minutes:
+                display_hints.append(hint)
+        return display_hints
+
+    def next_hint_time(self):
+        next_hint_time = None
+        minutes = time_in_minutes(get_timedelta_with_now(self.start_time))
+        hints = self.mission.hints()
+        for hint in hints:
+            if hint.abs_delay > minutes:
+                next_hint_time = self.start_time + timedelta(minutes=hint.abs_delay)
+                break
+        return next_hint_time
 
 
 class Keylog(models.Model):
@@ -404,6 +448,11 @@ class Keylog(models.Model):
     @staticmethod
     def wrong_keylogs(player, mission):
         return Keylog.objects.filter(player=player, mission=mission, is_right=False)
+
+    @staticmethod
+    def wrong_keylogs_format(player, mission):
+        wrong_keys = Keylog.wrong_keylogs(player, mission)
+        return ', '.join(str(i) for i in wrong_keys)
 
     @staticmethod
     def total_points(quest, player):
