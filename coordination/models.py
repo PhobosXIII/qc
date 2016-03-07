@@ -343,7 +343,7 @@ class Hint(models.Model):
     mission = models.ForeignKey(Mission, verbose_name='задание')
     text = RichTextField('текст подсказки')
     delay = models.PositiveSmallIntegerField('время отправления',
-                                             validators=[MinValueValidator(1), MaxValueValidator(90)])
+                                             validators=[MinValueValidator(1), MaxValueValidator(360)])
     order_number = models.PositiveSmallIntegerField('номер подсказки',
                                                     validators=[MinValueValidator(1), MaxValueValidator(99)])
 
