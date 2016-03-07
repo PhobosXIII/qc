@@ -366,31 +366,32 @@ def coordination_quest(request, quest_id):
         form = None
         wrong_keys_str = None
         if quest.started and not mission.is_finish:
-            form = KeyForm(request.POST, quest=quest or None)
-            if form.is_valid():
-                key = form.cleaned_data["key"]
-                next_missions = Mission.objects.filter(quest=quest, order_number=mission.order_number + 1)
-                if quest.linear:
-                    right_key = mission.key
-                    next_mission = next_missions.first()
-                    is_right = len(right_key) > 0 and right_key == key
-                else:
-                    next_mission = next_missions.filter(key=key).first()
-                    is_right = next_mission is not None
-                keylog = Keylog(key=key, fix_time=timezone.now(), player=player, mission=mission, is_right=is_right)
-                keylog.save()
-                if is_right:
-                    current_mission.mission = next_mission
-                    current_mission.start_time = keylog.fix_time
-                    current_mission.save()
+            if request.method == 'POST':
+                form = KeyForm(request.POST, quest=quest)
+                if form.is_valid():
+                    key = form.cleaned_data["key"]
+                    next_missions = Mission.objects.filter(quest=quest, order_number=mission.order_number + 1)
+                    if quest.linear:
+                        right_key = mission.key
+                        next_mission = next_missions.first()
+                        is_right = len(right_key) > 0 and right_key == key
+                    else:
+                        next_mission = next_missions.filter(key=key).first()
+                        is_right = next_mission is not None
+                    keylog = Keylog(key=key, fix_time=timezone.now(), player=player, mission=mission, is_right=is_right)
+                    keylog.save()
+                    if is_right:
+                        current_mission.mission = next_mission
+                        current_mission.start_time = keylog.fix_time
+                        current_mission.save()
+                return redirect('coordination:quest_coordination', quest_id=quest_id)
+            form = KeyForm(quest=quest)
             wrong_keys_str = Keylog.wrong_keylogs_format(player, mission)
         if request.method == 'GET':
             context = {'quest': quest, 'mission': mission, 'hints': hints, 'form': form,
                        'wrong_keys': wrong_keys_str, 'delay': delay, 'completed_missions': completed_missions,
                        'messages': messages}
             return render(request, 'coordination/quests/coordination/general.html', context)
-        if request.method == 'POST':
-            return redirect('coordination:quest_coordination', quest_id=quest_id)
 
 
 @login_required
