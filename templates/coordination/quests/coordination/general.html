@@ -21,7 +21,7 @@
 
     <div id="text" class="text-base">{{ mission.text|safe }}</div>
 
-    <div id="picture">{% include 'coordination/quests/_picture.html' %}</div>
+    <div id="picture">{% include 'coordination/quests/coordination/_picture.html' %}</div>
 
     <div class="text-base" id="countdown"></div>
 
@@ -32,12 +32,12 @@
     <div id="form">
         {% if form %}
             <div class="row-margin">{% crispy form %}</div>
-            <div id="wrong_keys">{% include 'coordination/quests/_wrong_keys.html' %}</div>
+            <div id="wrong_keys">{% include 'coordination/quests/coordination/_wrong_keys.html' %}</div>
         {% endif %}
     </div>
 
     <div id="completed_missions" class="row-margin">
-        {% include 'coordination/quests/_completed_missions.html' %}
+        {% include 'coordination/quests/coordination/_completed_missions.html' %}
     </div>
 {% endblock content %}
 

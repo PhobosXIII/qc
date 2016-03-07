@@ -36,7 +36,7 @@
 
     <div class="text-base">{{ mission.text|safe }}</div>
 
-    {% include 'coordination/quests/_picture.html' %}
+    {% include 'coordination/quests/coordination/_picture.html' %}
 
     {% if quest.linear and not mission.is_finish or quest.line_nonlinear and not mission.is_start or quest.nonlinear and not mission.is_finish and not mission.is_start %}
         <br>

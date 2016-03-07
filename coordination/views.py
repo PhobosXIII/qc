@@ -305,7 +305,7 @@ def coordination_quest(request, quest_id):
     player = request.user
     messages = quest.messages().filter(is_show=True)
     if quest.nonlinear:
-        rest_quest = 0
+        rest_quest = None
         missions = None
         mission_start = None
         mission_finish = None
@@ -399,30 +399,48 @@ def coordination_quest_ajax(request, quest_id):
         quest = get_object_or_404(Quest, pk=quest_id)
         request = is_quest_player(request, quest)
         player = request.user
-        current_mission = get_object_or_404(CurrentMission, mission__quest=quest, player=player)
-        mission = current_mission.mission
-        hints = current_mission.display_hints()
-        next_hint_time = current_mission.next_hint_time()
-        delay = None
-        if next_hint_time:
-            delay = get_timedelta(next_hint_time)
-        completed_missions = Mission.completed_missions(quest, player)
         messages = quest.messages().filter(is_show=True)
-        wrong_keys_str = None
-        if quest.started and not mission.is_finish:
-            wrong_keys_str = Keylog.wrong_keylogs_format(player, mission)
-        json_mission = mission.as_json()
-        html_picture = render_to_string('coordination/quests/_picture.html', {'mission': mission})
-        html_hints = render_to_string('coordination/hints/_list.html', {'hints': hints})
         html_messages = render_to_string('coordination/messages/_list.html', {'messages': messages})
-        html_wrong_keys = render_to_string('coordination/quests/_wrong_keys.html',
-                                           {'wrong_keys': wrong_keys_str})
-        html_completed_missions = render_to_string('coordination/quests/_completed_missions.html',
-                                                   {'completed_missions': completed_missions})
-        hide_form = not quest.started or mission.is_finish
-        data = {'mission': json_mission, 'hints': html_hints, 'delay': delay, 'messages': html_messages,
-                'wrong_keys': html_wrong_keys, 'completed_missions': html_completed_missions,
-                'hide_form': hide_form, 'picture': html_picture}
+        data = {'messages': html_messages, }
+        if quest.nonlinear:
+            rest_quest = None
+            if quest.started and not quest.is_game_over:
+                rest_quest = get_timedelta(quest.game_over)
+            count = 0
+            missions = quest.missions().filter(order_number__gt=0, is_finish=False)
+            for mission in missions:
+                is_completed = mission.is_completed(request.user)
+                if not is_completed:
+                    count += 1
+            mission_finish = None
+            if missions and count == 0 or quest.is_game_over or quest.ended:
+                mission_finish = quest.finish_mission()
+            html_mission_finish = render_to_string('coordination/quests/coordination/_mission_finish.html',
+                                                   {'mission_finish': mission_finish})
+            data.update({'rest_quest': rest_quest, 'mission_finish': html_mission_finish})
+        else:
+            current_mission = get_object_or_404(CurrentMission, mission__quest=quest, player=player)
+            mission = current_mission.mission
+            hints = current_mission.display_hints()
+            next_hint_time = current_mission.next_hint_time()
+            delay = None
+            if next_hint_time:
+                delay = get_timedelta(next_hint_time)
+            completed_missions = Mission.completed_missions(quest, player)
+
+            wrong_keys_str = None
+            if quest.started and not mission.is_finish:
+                wrong_keys_str = Keylog.wrong_keylogs_format(player, mission)
+            json_mission = mission.as_json()
+            html_picture = render_to_string('coordination/quests/coordination/_picture.html', {'mission': mission})
+            html_hints = render_to_string('coordination/hints/_list.html', {'hints': hints})
+            html_wrong_keys = render_to_string('coordination/quests/coordination/_wrong_keys.html',
+                                               {'wrong_keys': wrong_keys_str})
+            html_completed_missions = render_to_string('coordination/quests/coordination/_completed_missions.html',
+                                                       {'completed_missions': completed_missions})
+            hide_form = not quest.started or mission.is_finish
+            data.update({'mission': json_mission, 'hints': html_hints, 'delay': delay, 'wrong_keys': html_wrong_keys,
+                         'completed_missions': html_completed_missions, 'hide_form': hide_form, 'picture': html_picture})
         return JsonResponse(data)
     else:
         raise Http404

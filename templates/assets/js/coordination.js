@@ -25,6 +25,20 @@ function update_coordination() {
     });
 }
 
+function update_coordination_nl() {
+    $.ajax({
+        type: "GET",
+        url: url,
+        success: function(data) {
+            var messages = data["messages"];
+            $("#messages").html(messages);
+            var mission_finish = data["mission_finish"];
+            $("#mission_finish").html(mission_finish);
+            start_game_over_countdown(data["rest_quest"]);
+        }
+    });
+}
+
 function start_countdown(time) {
     var countdown = $('#countdown');
     countdown.countdown('destroy');

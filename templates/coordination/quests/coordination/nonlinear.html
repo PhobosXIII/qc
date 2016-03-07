@@ -13,14 +13,12 @@
 
     <div class="row row-margin">
         <div class="text-base col-xs-12 col-sm-4 col-md-3" id="countup"></div>
-        {% if quest.started and not quest.is_game_over %}
-            <div class="text-base col-sm-8 col-md-9" id="countdown"></div>
-        {% endif %}
+        <div class="text-base col-sm-8 col-md-9" id="countdown"></div>
     </div>
 
-    {% if mission_finish %}
-        <div class="alert alert-success">{{ mission_finish.text|safe }}</div>
-    {% endif %}
+    <div id="mission_finish">
+        {% include 'coordination/quests/coordination/_mission_finish.html' %}
+    </div>
 
     <div>
         <p class="lead text-center">Всего набрано <span class="badge text-medium"><span class="glyphicon glyphicon-piggy-bank"></span> {{ points }}</span></p>
@@ -75,8 +73,8 @@
             <p class="lead">В игре нет заданий!</p>
         {% endif %}
         {% if quest.not_started and mission_start %}
-            <div id="text" class="text-base">{{ mission_start.text|safe }}</div>
-            <div id="picture">{% include 'coordination/quests/_picture.html' with mission=mission_start %}</div>
+            <div class="text-base">{{ mission_start.text|safe }}</div>
+            <div>{% include 'coordination/quests/coordination/_picture.html' with mission=mission_start %}</div>
         {% endif %}
     {% endfor %}
 {% endblock content %}
@@ -86,18 +84,20 @@
     <script type="text/javascript" src="{% static "assets/js/jquery.plugin.min.js" %}"></script>
     <script type="text/javascript" src="{% static "assets/js/jquery.countdown.min.js" %}"></script>
     <script type="text/javascript">
-{#        var url = "{% url 'coordination:quest_coordination_ajax' quest.id %}";#}
+        var url = "{% url 'coordination:quest_coordination_ajax' quest.id %}";
         $(function () {
-            start_game_over_countdown({{ rest_quest }});
+            {% if rest_quest %}
+                start_game_over_countdown({{ rest_quest }});
+            {% endif %}
 
             {% now "U" as t %}
             var time = new Date({{ t }});
             start_countup(time)
         });
 
-{#        setInterval(function () {#}
-{#            update_coordination()#}
-{#        }, 103000);#}
+        setInterval(function () {
+            update_coordination_nl()
+        }, 420000);
     </script>
     <script type="text/javascript" src="{% static "assets/js/coordination.js" %}"></script>
 {% endblock scripts %}
