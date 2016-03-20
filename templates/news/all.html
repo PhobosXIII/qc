@@ -6,9 +6,13 @@
     </div>
 
     <div class="row">
-        <div class="col-md-10 col-md-offset-1">
-            {% include 'news/_list.html' %}
-            {% include 'coordination/_pagination.html' with p=news_list %}
-        </div>
+        {% if news_list %}
+            <div class="col-md-10 col-md-offset-1">
+                {% include 'news/_list.html' %}
+                {% include 'coordination/_pagination.html' with p=news_list %}
+            </div>
+        {% else %}
+            <p class="lead text-center">Пока нет ни одной новости.</p>
+        {% endif %}
     </div>
 {% endblock content %}

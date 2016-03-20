@@ -19,9 +19,13 @@
     </p>
 
     <div class="row">
-        <div class="col-md-10 col-md-offset-1">
-            {% include 'coordination/quests/_list.html' %}
-            {% include 'coordination/_pagination.html' with p=quests %}
-        </div>
+        {% if quests %}
+            <div class="col-md-10 col-md-offset-1">
+                {% include 'coordination/quests/_list.html' %}
+                {% include 'coordination/_pagination.html' with p=quests %}
+            </div>
+        {% else %}
+            <p class="lead text-center">Пока нет ни одной игры.</p>
+        {% endif %}
     </div>
 {% endblock content %}

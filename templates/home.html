@@ -37,11 +37,11 @@
             <h2><span class="fa fa-calendar-check-o"></span> Ближайшие игры</h2>
             {% if coming_quests %}
                 {% include 'coordination/quests/_list.html' with quests=coming_quests %}
-                <p><a class="btn btn-default" href="{% url 'coordination:quests' %}">
-                    Больше игр <span class="fa fa-angle-double-right"></span></a></p>
             {% else %}
-                <p class="lead">Пока нет ни одной игры.</p>
+                <p class="lead text-center">Отсутствуют.</p>
             {% endif %}
+            <p><a class="btn btn-default" href="{% url 'coordination:quests' %}">
+                Больше игр <span class="fa fa-angle-double-right"></span></a></p>
         </div>
         <div class="col-lg-6">
             <h2><span class="fa fa-newspaper-o"></span> Новости проекта</h2>
@@ -50,7 +50,7 @@
                 <p><a class="btn btn-default" href="{% url 'news' %}">
                     Другие новости <span class="fa fa-angle-double-right"></span></a></p>
             {% else %}
-                <p class="lead">Пока нет ни одной новости.</p>
+                <p class="lead text-center">Отсутствуют.</p>
             {% endif %}
        </div>
     </div>
