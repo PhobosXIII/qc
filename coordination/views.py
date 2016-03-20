@@ -159,7 +159,7 @@ def control_quest(request, quest_id):
         if quest.started:
             rest_quest = get_timedelta(quest.game_over)
         context.update({'rest_quest': rest_quest})
-    else:
+    elif quest.linear:
         current_missions = quest.current_missions()
         context.update({'current_missions': current_missions})
     return render(request, 'coordination/quests/control.html', context)
