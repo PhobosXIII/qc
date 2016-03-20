@@ -19,21 +19,30 @@ def mission_file_name(instance, filename):
 
 
 class Quest(models.Model):
+    LINEAR = 'L'
+    NONLINEAR = 'NL'
+    LINE_NONLINEAR = 'LNL'
+    MULTILINEAR = 'ML'
+    NOT_STARTED = 'NTS'
+    STARTED = 'STR'
+    ENDED = 'END'
+
     TYPES = (
-        ('L', 'Линейный'),
-        ('NL', 'Нелинейный'),
-        ('LNL', 'Линейно-нелинейный'),
+        (LINEAR, 'Линейный'),
+        (NONLINEAR, 'Нелинейный'),
+        (LINE_NONLINEAR, 'Линейно-нелинейный'),
+        (MULTILINEAR, 'Многолинейный'),
     )
     STATUSES = (
-        ('NTS', 'Не запущен'),
-        ('STR', 'Запущен'),
-        ('END', 'Завершен'),
+        (NOT_STARTED, 'Не запущен'),
+        (STARTED, 'Запущен'),
+        (ENDED, 'Завершен'),
     )
     title = models.CharField('название', max_length=255)
     start = models.DateTimeField('старт', null=True, blank=True)
     description = RichTextField('описание', blank=True)
-    type = models.CharField('тип', max_length=3, choices=TYPES, default='L')
-    status = models.CharField('статус', max_length=3, choices=STATUSES, default='NTS')
+    type = models.CharField('тип', max_length=3, choices=TYPES, default=LINEAR)
+    status = models.CharField('статус', max_length=3, choices=STATUSES, default=NOT_STARTED)
     is_published = models.BooleanField('опубликован', default=False)
     creator = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name='создатель', related_name='creator')
     members = models.ManyToManyField(settings.AUTH_USER_MODEL, through='Membership', related_name='members')
@@ -46,27 +55,31 @@ class Quest(models.Model):
 
     @property
     def not_started(self):
-        return self.status == 'NTS'
+        return self.status == self.NOT_STARTED
 
     @property
     def started(self):
-        return self.status == 'STR'
+        return self.status == self.STARTED
 
     @property
     def ended(self):
-        return self.status == 'END'
+        return self.status == self.ENDED
 
     @property
     def linear(self):
-        return self.type == 'L'
+        return self.type == self.LINEAR
 
     @property
     def nonlinear(self):
-        return self.type == 'NL'
+        return self.type == self.NONLINEAR
 
     @property
     def line_nonlinear(self):
-        return self.type == 'LNL'
+        return self.type == self.LINE_NONLINEAR
+
+    @property
+    def multilinear(self):
+        return self.type == self.MULTILINEAR
 
     @property
     def is_game_over(self):
@@ -79,27 +92,27 @@ class Quest(models.Model):
         is_create = not self.pk
         super(Quest, self).save(*args, **kwargs)
         if is_create:
-            Membership.objects.create(quest=self, user=self.creator, role='O')
+            Membership.objects.create(quest=self, user=self.creator, role=Membership.ORGANIZER)
             name = 'agent{0}'.format(self.pk)
             username = generate_random_username(name)
             password = generate_random_password()
             user = User.objects.create_user(username=username, password=password, first_name=name, last_name=password)
-            Membership.objects.create(quest=self, user=user, role='A')
+            Membership.objects.create(quest=self, user=user, role=Membership.AGENT)
             Mission.objects.create(quest=self, name_in_table='Старт', order_number=0)
             Mission.objects.create(quest=self, name_in_table='Финиш', order_number=1, is_finish=True)
 
     def begin(self):
         if self.not_started:
-            self.status = 'STR'
+            self.status = self.STARTED
         elif self.started:
-            self.status = 'NTS'
+            self.status = self.NOT_STARTED
         self.save()
 
     def end(self):
         if self.started:
-            self.status = 'END'
+            self.status = self.ENDED
         elif self.ended:
-            self.status = 'STR'
+            self.status = self.STARTED
         self.save()
 
     def publish(self):
@@ -125,16 +138,16 @@ class Quest(models.Model):
         return Message.objects.filter(quest=self)
 
     def organizers(self):
-        return self.members.filter(membership__role='O')
+        return self.members.filter(membership__role=Membership.ORGANIZER)
 
     def players(self):
-        return self.members.filter(membership__role='P').order_by('first_name')
+        return self.members.filter(membership__role=Membership.PLAYER).order_by('first_name')
 
     def agents(self):
-        return self.members.filter(membership__role='A')
+        return self.members.filter(membership__role=Membership.AGENT)
 
     def players_ext(self):
-        players = self.members.filter(membership__role='P')
+        players = self.members.filter(membership__role=Membership.PLAYER)
         for player in players:
             player.last_time = Keylog.last_time(self, player)
             player.points = Keylog.total_points(self, player)
@@ -163,28 +176,32 @@ class Quest(models.Model):
 
 class OrganizerManager(models.Manager):
     def get_queryset(self):
-        return super(OrganizerManager, self).get_queryset().filter(role='O')
+        return super(OrganizerManager, self).get_queryset().filter(role=Membership.ORGANIZER)
 
 
 class PlayerManager(models.Manager):
     def get_queryset(self):
-        return super(PlayerManager, self).get_queryset().filter(role='P')
+        return super(PlayerManager, self).get_queryset().filter(role=Membership.PLAYER)
 
 
 class AgentManager(models.Manager):
     def get_queryset(self):
-        return super(AgentManager, self).get_queryset().filter(role='A')
+        return super(AgentManager, self).get_queryset().filter(role=Membership.AGENT)
 
 
 class Membership(models.Model):
+    ORGANIZER = 'O'
+    PLAYER = 'P'
+    AGENT = 'A'
+
     ROLES = (
-        ('O', 'Организатор'),
-        ('P', 'Игрок'),
-        ('A', 'Агент'),
+        (ORGANIZER, 'Организатор'),
+        (PLAYER, 'Игрок'),
+        (AGENT, 'Агент'),
     )
     quest = models.ForeignKey(Quest, verbose_name='квест', on_delete=models.CASCADE)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name='пользователь', on_delete=models.CASCADE)
-    role = models.CharField('роль', max_length=1, choices=ROLES, default='P')
+    role = models.CharField('роль', max_length=1, choices=ROLES, default=PLAYER)
     objects = models.Manager()
     organizers = OrganizerManager()
     players = PlayerManager()
@@ -197,15 +214,15 @@ class Membership(models.Model):
 
     @property
     def organizer(self):
-        return self.role == 'O'
+        return self.role == self.ORGANIZER
 
     @property
     def player(self):
-        return self.role == 'P'
+        return self.role == self.PLAYER
 
     @property
     def agent(self):
-        return self.role == 'A'
+        return self.role == self.AGENT
 
 
 class Mission(models.Model):

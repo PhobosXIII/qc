@@ -1,4 +1,6 @@
 from django.conf.urls import url, include
+
+from coordination.models import Quest
 from . import views
 
 
@@ -6,8 +8,9 @@ quest_patterns = [
     url(r'^quests/$', views.all_quests, name='quests'),
     url(r'^quests/new/', include([
         url(r'^$', views.create_quest, name='quest_new'),
-        url(r'^nl/$', views.create_quest, {'type': 'NL'}, name='quest_new_nl'),
-        url(r'^lnl/$', views.create_quest, {'type': 'LNL'}, name='quest_new_lnl'),
+        url(r'^nl/$', views.create_quest, {'type': Quest.NONLINEAR}, name='quest_new_nl'),
+        url(r'^lnl/$', views.create_quest, {'type': Quest.LINE_NONLINEAR}, name='quest_new_lnl'),
+        url(r'^ml/$', views.create_quest, {'type': Quest.MULTILINEAR}, name='quest_new_ml'),
         url(r'^type/$', views.type_quest, name='quest_new_type'),
     ])),
     url(r'^quests/(?P<quest_id>[0-9]+)/', include([

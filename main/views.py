@@ -14,7 +14,8 @@ def home(request):
     coming_quests = Quest.coming_quests()[:3]
     quest = None
     if request.user.is_authenticated():
-        quest = Quest.objects.filter(membership__user=request.user, membership__role__in=('P', 'A')).first()
+        quest = Quest.objects.filter(membership__user=request.user,
+                                     membership__role__in=(Membership.PLAYER, Membership.AGENT)).first()
     context = {'coming_quests': coming_quests, 'quest': quest, 'last_news': last_news}
     return render(request, 'home.html', context)
 

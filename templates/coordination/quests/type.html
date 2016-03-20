@@ -23,4 +23,11 @@
             <span class="fa fa-arrows fa-lg"></span> Нелинейный квест
         </a>
     </p>
+    {% if user|in_group:'organizers_features' %}
+        <p class="row-margin text-center">
+            <a href="{% url 'coordination:quest_new_ml' %}" class="btn btn-success">
+                <span class="fa fa-tasks fa-lg"></span> Многолинейный квест
+            </a>
+        </p>
+    {% endif %}
 {% endblock content %}

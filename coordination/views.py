@@ -47,7 +47,7 @@ def type_quest(request):
 
 
 @login_required()
-def create_quest(request, type='L'):
+def create_quest(request, type=Quest.LINEAR):
     request = is_organizer(request)
     if request.method == 'POST':
         form = QuestForm(request.POST)
@@ -130,7 +130,7 @@ def tables_quest(request, quest_id):
 @login_required
 @minified_response
 def tables_quest_all(request, quest_id):
-    quest = get_object_or_404(Quest, pk=quest_id, type__in=('L', 'LNL'))
+    quest = get_object_or_404(Quest, pk=quest_id, type__in=(Quest.LINEAR, Quest.LINE_NONLINEAR))
     request = is_quest_organizer_or_agent(request, quest)
     players = quest.players()
     missions = quest.missions().exclude(is_finish=True)
@@ -142,7 +142,7 @@ def tables_quest_all(request, quest_id):
 @login_required
 @minified_response
 def tables_quest_current(request, quest_id):
-    quest = get_object_or_404(Quest, pk=quest_id, type__in=('L', 'LNL'))
+    quest = get_object_or_404(Quest, pk=quest_id, type__in=(Quest.LINEAR, Quest.LINE_NONLINEAR))
     request = is_quest_organizer_or_agent(request, quest)
     current_missions = quest.current_missions()
     context = {'quest': quest, 'current_missions': current_missions}
@@ -225,7 +225,7 @@ def players_quest(request, quest_id):
         username = generate_random_username(name)
         password = generate_random_password()
         user = User.objects.create_user(username=username, password=password, first_name=name, last_name=password)
-        Membership.objects.create(quest=quest, user=user, role='P')
+        Membership.objects.create(quest=quest, user=user, role=Membership.PLAYER)
         if not quest.nonlinear:
             start_mission = quest.start_mission()
             CurrentMission.objects.create(player=user, mission=start_mission)
@@ -253,7 +253,7 @@ def organizers_quest(request, quest_id):
         form = OrganizerForm(request.POST, organizers=all_orgs)
         if form.is_valid():
             organizer = form.cleaned_data["organizer"]
-            Membership.objects.create(quest=quest, user=organizer, role='O')
+            Membership.objects.create(quest=quest, user=organizer, role=Membership.ORGANIZER)
             return redirect('coordination:quest_organizers', quest_id=quest_id)
     else:
         form = OrganizerForm(organizers=all_orgs)
