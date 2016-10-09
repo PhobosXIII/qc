@@ -21,6 +21,8 @@ def generate_random_password(length=6, chars=digits):
 
 
 def get_timedelta(time):
+    if not time:
+        return 0
     now = timezone.now()
     if time < now:
         return 0
@@ -29,6 +31,8 @@ def get_timedelta(time):
 
 
 def get_timedelta_with_now(time):
+    if not time:
+        return 0
     now = timezone.now()
     if now < time:
         return 0
@@ -37,4 +41,6 @@ def get_timedelta_with_now(time):
 
 
 def time_in_minutes(time):
+    if not time:
+        return 0
     return time // 60

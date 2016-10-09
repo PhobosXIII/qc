@@ -2,6 +2,7 @@ from crispy_forms.bootstrap import StrictButton, PrependedText, FieldWithButtons
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Field, HTML, Div, Row
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.mail.backends import console
 from django.forms import ModelForm, Form, ValidationError, ClearableFileInput, ModelChoiceField
 from django.forms.fields import CharField
 
@@ -27,26 +28,36 @@ class QuestForm(ModelForm):
 
     def __init__(self, *args, **kwargs):
         type = kwargs.pop('type', None)
+        parent = kwargs.pop('parent', None)
         super(QuestForm, self).__init__(*args, **kwargs)
         self.helper = FormHelper()
         self.helper.form_tag = False
         self.helper.html5_required = True
         if type:
             self.instance.type = type
-        if self.instance.nonlinear:
+        if parent:
+            self.instance.parent = parent
+        quest = self.instance
+        if quest.parent:
+            self.Meta.fields = ['title', ]
             self.helper.layout = Layout(
-                Field('title', autofocus=True),
-                'start',
-                'game_over',
-                'description'
-            )
+                    Field('title', autofocus=True),
+                )
         else:
-            self.Meta.fields = ['title', 'start', 'description']
-            self.helper.layout = Layout(
-                Field('title', autofocus=True),
-                'start',
-                'description'
-            )
+            if quest.nonlinear or quest.multilinear:
+                self.helper.layout = Layout(
+                    Field('title', autofocus=True),
+                    'start',
+                    'game_over',
+                    'description'
+                )
+            else:
+                self.Meta.fields = ['title', 'start', 'description']
+                self.helper.layout = Layout(
+                    Field('title', autofocus=True),
+                    'start',
+                    'description'
+                )
 
 
 class MissionForm(ModelForm):
@@ -65,8 +76,9 @@ class MissionForm(ModelForm):
         self.helper = FormHelper()
         self.helper.form_tag = False
         self.helper.html5_required = True
+        mission = self.instance
         try:
-            quest = self.instance.quest
+            quest = mission.quest
         except ObjectDoesNotExist:
             quest = quest_arg
 
@@ -78,7 +90,7 @@ class MissionForm(ModelForm):
             Field('points', type="hidden"),
         )
         simple_fields = ['text', 'order_number']
-        if self.instance.is_start:
+        if mission.is_start:
             if quest.linear:
                 self.Meta.fields = ['text', 'key', 'order_number']
                 self.helper.layout = Layout(
@@ -92,7 +104,7 @@ class MissionForm(ModelForm):
             else:
                 self.Meta.fields = simple_fields
                 self.helper.layout = simple_layout
-        elif self.instance.is_finish:
+        elif mission.is_finish:
             if quest.linear:
                 self.Meta.fields = simple_fields
                 self.helper.layout = simple_layout
@@ -107,7 +119,7 @@ class MissionForm(ModelForm):
                     Field('order_number', type="hidden"),
                     Field('points', type="hidden"),
                 )
-            elif quest.nonlinear:
+            elif quest.nonlinear or quest.multilinear:
                 self.Meta.fields = simple_fields
                 self.helper.layout = Layout(
                     HTML("<h2>{{ form.instance }}</h2>"),
@@ -117,7 +129,7 @@ class MissionForm(ModelForm):
                 )
         else:
             next_number = quest.next_mission_number()
-            if quest.nonlinear:
+            if quest.nonlinear or quest.parent:
                 self.helper.layout = Layout(
                     Row(
                         Div(Field('order_number', value=next_number),
@@ -204,6 +216,8 @@ class KeyForm(Form):
                                  StrictButton('OK', type='submit', css_class='btn-primary')),
             )
         else:
+            if quest.multilinear:
+                self.helper.form_tag = False
             self.helper.layout = Layout(
                 PrependedText('key', '<span class="fa fa-key"></span>', placeholder='ключ', size='30'),
                 StrictButton('Отправить', type='submit', css_class='btn-primary')

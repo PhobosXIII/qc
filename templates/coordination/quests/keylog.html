@@ -18,12 +18,25 @@
         {% url 'coordination:quest_keylog' quest.id as keylog_url %}
             <h3>Задания</h3>
             <div class="list-group">
+            {% if quest.multilinear %}
+                {% regroup missions by quest as mission_list %}
+                {% for quest in mission_list %}
+                    <p class="list-group-item list-group-item-info">{{ quest.grouper }}</p>
+                    {% for mission in quest.list %}
+                        <a href="{{ keylog_url }}?mission={{ mission.id }}"
+                           class="list-group-item{% if mission.id == cur_mission %} active{% endif %}">
+                            {{ mission.medium_name }}
+                        </a>
+                    {% endfor %}
+                {% endfor %}
+            {% else %}
                 {% for mission in missions %}
                     <a href="{{ keylog_url }}?mission={{ mission.id }}"
                        class="list-group-item{% if mission.id == cur_mission %} active{% endif %}">
                         {{ mission.medium_name }}
                     </a>
                 {% endfor %}
+            {% endif %}
             </div>
 
             {% if players %}

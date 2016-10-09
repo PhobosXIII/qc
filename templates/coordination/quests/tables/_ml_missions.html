@@ -1,0 +1,25 @@
+<table data-toggle="table" data-detail-view="true" data-detail-formatter="mlMissionFormatter">
+    <thead>
+        <tr>
+            <th>Задание</th>
+            <th>Взято</th>
+            <th class="hidden">Игроки</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% regroup missions by quest as mission_list %}
+        {% for quest in mission_list %}
+            <tr>
+                <td class="bg-info"><b>{{ quest.grouper }}</b></td>
+                <td class="bg-info"></td>
+            </tr>
+            {% for mission in quest.list %}
+                <tr>
+                    <td>{{ mission.table_name }}</td>
+                    <td>{{ mission.num_players }}</td>
+                    <td class="hidden">{{ mission.players }}</td>
+                </tr>
+            {% endfor %}
+        {% endfor %}
+    </tbody>
+</table>

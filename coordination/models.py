@@ -1,4 +1,6 @@
 from datetime import timedelta
+from itertools import groupby
+from operator import itemgetter
 
 from ckeditor.fields import RichTextField
 from django.conf import settings
@@ -47,6 +49,7 @@ class Quest(models.Model):
     creator = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name='создатель', related_name='creator')
     members = models.ManyToManyField(settings.AUTH_USER_MODEL, through='Membership', related_name='members')
     game_over = models.DateTimeField('конец игры', null=True, blank=True)
+    parent = models.ForeignKey('self', on_delete=models.CASCADE, editable=False, null=True, blank=True)
 
     class Meta:
         verbose_name = 'квест'
@@ -54,16 +57,32 @@ class Quest(models.Model):
         ordering = ['start']
 
     @property
+    def published(self):
+        quest = self
+        if self.parent:
+            quest = self.parent
+        return quest.is_published
+
+    @property
     def not_started(self):
-        return self.status == self.NOT_STARTED
+        quest = self
+        if self.parent:
+            quest = self.parent
+        return quest.status == Quest.NOT_STARTED
 
     @property
     def started(self):
-        return self.status == self.STARTED
+        quest = self
+        if self.parent:
+            quest = self.parent
+        return quest.status == Quest.STARTED
 
     @property
     def ended(self):
-        return self.status == self.ENDED
+        quest = self
+        if self.parent:
+            quest = self.parent
+        return quest.status == Quest.ENDED
 
     @property
     def linear(self):
@@ -83,7 +102,10 @@ class Quest(models.Model):
 
     @property
     def is_game_over(self):
-        return timezone.now() >= self.game_over
+        if self.game_over:
+            return timezone.now() >= self.game_over
+        else:
+            return False
 
     def __str__(self):
         return self.title
@@ -92,13 +114,14 @@ class Quest(models.Model):
         is_create = not self.pk
         super(Quest, self).save(*args, **kwargs)
         if is_create:
-            Membership.objects.create(quest=self, user=self.creator, role=Membership.ORGANIZER)
-            name = 'agent{0}'.format(self.pk)
-            username = generate_random_username(name)
-            password = generate_random_password()
-            user = User.objects.create_user(username=username, password=password, first_name=name, last_name=password)
-            Membership.objects.create(quest=self, user=user, role=Membership.AGENT)
-            Mission.objects.create(quest=self, name_in_table='Старт', order_number=0)
+            if not self.parent:
+                Membership.objects.create(quest=self, user=self.creator, role=Membership.ORGANIZER)
+                name = 'agent{0}'.format(self.pk)
+                username = generate_random_username(name)
+                password = generate_random_password()
+                agent = User.objects.create_user(username=username, password=password, first_name=name, last_name=password)
+                Membership.objects.create(quest=self, user=agent, role=Membership.AGENT)
+                Mission.objects.create(quest=self, name_in_table='Старт', order_number=0)
             Mission.objects.create(quest=self, name_in_table='Финиш', order_number=1, is_finish=True)
 
     def begin(self):
@@ -119,14 +142,23 @@ class Quest(models.Model):
         self.is_published = not self.is_published
         self.save()
 
+    def lines(self):
+        return Quest.objects.filter(parent=self).order_by('id')
+
     def missions(self):
-        return Mission.objects.filter(quest=self)
+        if self.multilinear:
+            return Mission.objects.filter(quest__in=self.lines())
+        else:
+            return Mission.objects.filter(quest=self)
 
     def current_missions(self):
         return CurrentMission.objects.filter(mission__quest=self)
 
     def next_mission_number(self):
-        return len(self.missions()) - 1
+        if self.parent:
+            return len(self.missions())
+        else:
+            return len(self.missions()) - 1
 
     def start_mission(self):
         return Mission.objects.get(quest=self, order_number=0)
@@ -152,8 +184,17 @@ class Quest(models.Model):
             player.last_time = Keylog.last_time(self, player)
             player.points = Keylog.total_points(self, player)
             missions = Mission.completed_missions(self, player)
-            player.missions = ', '.join(str(i.table_name) for i in missions)
             player.num_missions = len(missions)
+            if self.multilinear:
+                iter = groupby(missions, key=lambda x: x.quest)
+                missions_str = ''
+                line_format = "{0}: {1}; "
+                for quest, missions in iter:
+                    line_str = ', '.join(str(i.table_name) for i in missions)
+                    missions_str += line_format.format(quest.title, line_str)
+                player.missions = missions_str
+            else:
+                player.missions = ', '.join(str(i.table_name) for i in missions)
         return players
 
     def missions_ext(self):
@@ -167,11 +208,11 @@ class Quest(models.Model):
     @staticmethod
     def coming_quests():
         now = timezone.now() - timedelta(hours=6)
-        return Quest.objects.filter(is_published=True, start__gte=now)
+        return Quest.objects.filter(is_published=True, parent__isnull=True, start__gte=now)
 
     @staticmethod
     def my_quests(user):
-        return Quest.objects.filter(membership__user=user)
+        return Quest.objects.filter(membership__user=user, parent__isnull=True)
 
 
 class OrganizerManager(models.Manager):
@@ -243,7 +284,7 @@ class Mission(models.Model):
     class Meta:
         verbose_name = 'задание'
         verbose_name_plural = 'задания'
-        ordering = ['order_number', 'name']
+        ordering = ['quest__title', 'order_number', 'name']
 
     @property
     def is_start(self):
@@ -350,7 +391,7 @@ class Mission(models.Model):
 
     @staticmethod
     def completed_missions(quest, player):
-        keylogs = Keylog.objects.filter(mission__quest=quest, player=player, is_right=True)
+        keylogs = Keylog.get_keylogs(quest, player, True)
         keylogs = keylogs.order_by('mission__id').distinct('mission__id')
         missions = keylogs.values('mission__id')
         return Mission.objects.filter(pk__in=missions)
@@ -473,7 +514,7 @@ class Keylog(models.Model):
 
     @staticmethod
     def total_points(quest, player):
-        keylogs = Keylog.objects.filter(mission__quest=quest, player=player, is_right=True)
+        keylogs = Keylog.get_keylogs(quest, player, True)
         keylogs = keylogs.order_by('mission__id').distinct('mission__id')
         total_points = 0
         for keylog in keylogs:
@@ -483,11 +524,18 @@ class Keylog(models.Model):
     @staticmethod
     def last_time(quest, player):
         keylog = None
-        keylogs = Keylog.objects.filter(mission__quest=quest, player=player, is_right=True)
+        keylogs = Keylog.get_keylogs(quest, player, True)
         if keylogs:
             keylog = keylogs.order_by('-fix_time').first()
         return keylog.fix_time if keylog else timezone.now()
 
+    @staticmethod
+    def get_keylogs(quest, player, is_right):
+        if quest.multilinear:
+            keylogs = Keylog.objects.filter(mission__quest__in=quest.lines(), player=player, is_right=is_right)
+        else:
+            keylogs = Keylog.objects.filter(mission__quest=quest, player=player, is_right=is_right)
+        return keylogs
 
 class Message(models.Model):
     quest = models.ForeignKey(Quest, verbose_name='квест')

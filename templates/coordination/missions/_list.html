@@ -9,7 +9,7 @@
             {% else %}
                 {{ mission.short_name }}
             {% endif %}
-            {% if quest.nonlinear and not mission.is_finish and not mission.is_start %}
+            {% if quest.nonlinear or line.parent and not mission.is_finish and not mission.is_start %}
                 <span class="text-medium badge"><span class="glyphicon glyphicon-piggy-bank"></span> {{ mission.points }}</span>
             {% endif %}
         </a>

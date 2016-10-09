@@ -3,7 +3,11 @@
 
 <ul class="nav nav-pills">
     {% menu_item 'Об игре' 'coordination:quest_detail' quest.id %}
-    {% menu_item 'Задания' 'coordination:quest_missions' quest.id %}
+    {% if quest.multilinear %}
+        {% menu_item 'Задания' 'coordination:quest_lines' quest.id %}
+    {% else %}
+        {% menu_item 'Задания' 'coordination:quest_missions' quest.id %}
+    {% endif %}
 
     {% if user|is_player:quest %}
         {% menu_item 'Координация' 'coordination:quest_coordination' quest.id %}

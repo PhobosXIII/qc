@@ -19,7 +19,9 @@
 
     {% if quest.ended or user|is_organizer:quest or user.is_superuser %}
         {% if quest.nonlinear %}
-            {% include 'coordination/quests/tables/_players.html' %}
+            {% include 'coordination/quests/tables/_nl_players.html' %}
+        {% elif quest.multilinear %}
+            {% include 'coordination/quests/tables/_ml_players.html' %}
         {% else %}
             <table data-toggle="table" data-fixed-columns="true" data-fixed-number="2" data-height="500"
                     {% if quest.linear %} data-classes="table" data-striped="true" {% endif %}
@@ -73,5 +75,7 @@
     <script type="text/javascript" src="{% static "assets/js/bootstrap-table-export.min.js" %}"></script>
     <script type="text/javascript" src="{% static "assets/js/tableExport.min.js" %}"></script>
     <script type="text/javascript" src="{% static "assets/js/bootstrap-table-fixed-columns.js" %}"></script>
-    {% if quest.nonlinear %}<script type="text/javascript" src="{% static "assets/js/tables.js" %}"></script>{% endif %}
+    {% if quest.nonlinear or quest.multilinear %}
+        <script type="text/javascript" src="{% static "assets/js/tables.js" %}"></script>
+    {% endif %}
 {% endblock scripts %}

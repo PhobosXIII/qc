@@ -1,0 +1,15 @@
+{% load coordination_extras %}
+
+<div class="list-group">
+    <a href="{% url 'coordination:mission_detail' mission_start.id %}" class="list-group-item text-base text-left">
+        {{ mission_start }}
+    </a>
+    {% for line in lines %}
+        <a href="{% url 'coordination:line_detail' quest.id line.id %}" class="list-group-item text-base text-left">
+            {{ line }}
+        </a>
+    {% endfor %}
+    <a href="{% url 'coordination:mission_detail' mission_finish.id %}" class="list-group-item text-base text-left">
+        {{ mission_finish }}
+    </a>
+</div>

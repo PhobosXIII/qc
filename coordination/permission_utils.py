@@ -17,6 +17,8 @@ def is_organizer_features(request):
 
 def is_quest_organizer(request, quest):
     if request.user.is_authenticated():
+        if quest.parent:
+            quest = quest.parent
         member = quest.membership_set.filter(user=request.user).first()
         if (member and member.organizer) or request.user.is_superuser:
             return request
@@ -25,6 +27,8 @@ def is_quest_organizer(request, quest):
 
 def is_quest_organizer_or_agent(request, quest):
     if request.user.is_authenticated():
+        if quest.parent:
+            quest = quest.parent
         member = quest.membership_set.filter(user=request.user).first()
         if (member and (member.organizer or member.agent)) or request.user.is_superuser:
             return request
@@ -33,7 +37,9 @@ def is_quest_organizer_or_agent(request, quest):
 
 def is_quest_player(request, quest):
     if request.user.is_authenticated():
+        if quest.parent:
+            quest = quest.parent
         member = quest.membership_set.filter(user=request.user).first()
-        if quest.is_published and member and member.player:
+        if quest.published and member and member.player:
             return request
     raise PermissionDenied

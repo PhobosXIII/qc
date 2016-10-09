@@ -1,9 +1,10 @@
-<table data-toggle="table" data-detail-view="true" data-detail-formatter="playerFormatter">
+<table data-toggle="table" data-detail-view="true" data-detail-formatter="mlPlayerFormatter">
     <thead>
         <tr>
             <th>Место</th>
             <th>Игрок</th>
-            <th>Взято</th>
+            <th>Задания</th>
+            <th>Линии</th>
             <th>Баллы</th>
             <th>Последний ключ</th>
             <th class="hidden">Задания</th>
@@ -15,6 +16,7 @@
                 <td>{{ forloop.counter }}</td>
                 <td>{{ player.first_name }}</td>
                 <td>{{ player.num_missions }}</td>
+                <td>{{ player.num_lines }}</td>
                 <td>{{ player.points }}</td>
                 <td>
                     {% if player.num_missions > 0 %}

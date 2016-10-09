@@ -19,8 +19,9 @@ class MemberAdmin(admin.ModelAdmin):
 
 class QuestAdmin(admin.ModelAdmin):
     fields = [('title', 'is_published', 'status'), 'type', 'creator', 'start', 'game_over', 'description']
-    list_display = ('title', 'creator', 'start', 'type')
+    list_display = ('title', 'creator', 'start', 'type', 'parent')
     inlines = [MemberInline]
+    list_filter = ('parent', )
     ordering = ['-start']
 
 
@@ -60,8 +61,6 @@ class MessageAdmin(admin.ModelAdmin):
 def get_quest(self, obj):
     return obj.mission.quest
 get_quest.short_description = 'квест'
-
-
 CurrentMissionAdmin.get_quest = get_quest
 KeylogAdmin.get_quest = get_quest
 

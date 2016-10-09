@@ -18,7 +18,7 @@ from coordination.utils import generate_random_username, generate_random_passwor
 
 # Quests
 def all_quests(request):
-    quest_list = Quest.objects.all().order_by('-start')
+    quest_list = Quest.objects.filter(parent__isnull=True).order_by('-start')
     paginator = Paginator(quest_list, 15)
     page = request.GET.get('page')
     try:
@@ -32,8 +32,8 @@ def all_quests(request):
 
 
 def detail_quest(request, quest_id):
-    quest = get_object_or_404(Quest, pk=quest_id)
-    if not quest.is_published:
+    quest = get_object_or_404(Quest, pk=quest_id, parent__isnull=True)
+    if not quest.published:
         request = is_quest_organizer(request, quest)
     organizers = quest.organizers()
     context = {'quest': quest, 'organizers': organizers}
@@ -71,7 +71,10 @@ def edit_quest(request, quest_id):
         form = QuestForm(request.POST, instance=quest)
         if form.is_valid():
             form.save()
-            return redirect('coordination:quest_detail', quest_id=quest_id)
+            if quest.parent:
+                return redirect('coordination:line_detail', quest_id=quest.parent.id, line_id=quest.id)
+            else:
+                return redirect('coordination:quest_detail', quest_id=quest.id)
     else:
         form = QuestForm(instance=quest)
     context = {'form': form}
@@ -83,12 +86,15 @@ def delete_quest(request, quest_id):
     quest = get_object_or_404(Quest, pk=quest_id)
     is_quest_organizer(request, quest)
     quest.delete()
-    return redirect('coordination:quests')
+    if quest.parent:
+        return redirect('coordination:quest_lines', quest_id=quest.parent.id)
+    else:
+        return redirect('coordination:quests')
 
 
 @login_required
 def publish_quest(request, quest_id):
-    quest = get_object_or_404(Quest, pk=quest_id)
+    quest = get_object_or_404(Quest, pk=quest_id, parent__isnull=True)
     is_quest_organizer(request, quest)
     quest.publish()
     return redirect('coordination:quest_detail', quest_id=quest_id)
@@ -96,11 +102,11 @@ def publish_quest(request, quest_id):
 
 @minified_response
 def results_quest(request, quest_id):
-    quest = get_object_or_404(Quest, pk=quest_id)
-    if not quest.is_published:
+    quest = get_object_or_404(Quest, pk=quest_id, parent__isnull=True)
+    if not quest.published:
         request = is_quest_organizer(request, quest)
     context = {'quest': quest, }
-    if quest.nonlinear:
+    if quest.nonlinear or quest.multilinear:
         players = quest.players_ext()
         context.update({'players': players})
     else:
@@ -113,8 +119,8 @@ def results_quest(request, quest_id):
 
 @login_required
 def tables_quest(request, quest_id):
-    quest = get_object_or_404(Quest, pk=quest_id)
-    if quest.nonlinear:
+    quest = get_object_or_404(Quest, pk=quest_id, parent__isnull=True)
+    if quest.nonlinear or quest.multilinear:
         request = is_quest_organizer_or_agent(request, quest)
         rest_quest = 0
         if quest.started:
@@ -122,7 +128,10 @@ def tables_quest(request, quest_id):
         players = quest.players_ext()
         missions = quest.missions_ext()
         context = {'quest': quest, 'players': players, 'missions': missions, 'rest_quest': rest_quest}
-        return render(request, 'coordination/quests/tables/nonlinear.html', context)
+        if quest.nonlinear:
+            return render(request, 'coordination/quests/tables/nonlinear.html', context)
+        else:
+            return render(request, 'coordination/quests/tables/multilinear.html', context)
     else:
         return redirect('coordination:quest_tables_current', quest_id=quest_id)
 
@@ -130,7 +139,7 @@ def tables_quest(request, quest_id):
 @login_required
 @minified_response
 def tables_quest_all(request, quest_id):
-    quest = get_object_or_404(Quest, pk=quest_id, type__in=(Quest.LINEAR, Quest.LINE_NONLINEAR))
+    quest = get_object_or_404(Quest, pk=quest_id, type=Quest.LINEAR, parent__isnull=True)
     request = is_quest_organizer_or_agent(request, quest)
     players = quest.players()
     missions = quest.missions().exclude(is_finish=True)
@@ -142,7 +151,7 @@ def tables_quest_all(request, quest_id):
 @login_required
 @minified_response
 def tables_quest_current(request, quest_id):
-    quest = get_object_or_404(Quest, pk=quest_id, type__in=(Quest.LINEAR, Quest.LINE_NONLINEAR))
+    quest = get_object_or_404(Quest, pk=quest_id, type=Quest.LINEAR, parent__isnull=True)
     request = is_quest_organizer_or_agent(request, quest)
     current_missions = quest.current_missions()
     context = {'quest': quest, 'current_missions': current_missions}
@@ -151,7 +160,7 @@ def tables_quest_current(request, quest_id):
 
 @login_required
 def control_quest(request, quest_id):
-    quest = get_object_or_404(Quest, pk=quest_id)
+    quest = get_object_or_404(Quest, pk=quest_id, parent__isnull=True)
     request = is_quest_organizer(request, quest)
     context = {'quest': quest, }
     if quest.nonlinear:
@@ -167,15 +176,22 @@ def control_quest(request, quest_id):
 
 @login_required
 def begin_quest(request, quest_id):
-    quest = get_object_or_404(Quest, pk=quest_id)
+    quest = get_object_or_404(Quest, pk=quest_id, parent__isnull=True)
     is_quest_organizer(request, quest)
     quest.begin()
+    if quest.multilinear:
+        players = quest.players()
+        lines = quest.lines()
+        for line in lines:
+            first_mission = line.missions().first()
+            for player in players:
+                CurrentMission.objects.create(player=player, mission=first_mission)
     return redirect('coordination:quest_control', quest_id=quest_id)
 
 
 @login_required
 def end_quest(request, quest_id):
-    quest = get_object_or_404(Quest, pk=quest_id)
+    quest = get_object_or_404(Quest, pk=quest_id, parent__isnull=True)
     is_quest_organizer(request, quest)
     quest.end()
     return redirect('coordination:quest_control', quest_id=quest_id)
@@ -183,12 +199,17 @@ def end_quest(request, quest_id):
 
 @login_required
 def clear_quest(request, quest_id):
-    quest = get_object_or_404(Quest, pk=quest_id)
+    quest = get_object_or_404(Quest, pk=quest_id, parent__isnull=True)
     is_quest_organizer(request, quest)
     if quest.not_started:
-        start_mission = quest.start_mission()
-        CurrentMission.objects.filter(mission__quest=quest).update(mission=start_mission)
-        Keylog.objects.filter(mission__quest=quest).delete()
+        if quest.multilinear:
+            lines = quest.lines()
+            CurrentMission.objects.filter(mission__quest__in=lines).delete()
+            Keylog.objects.filter(mission__quest__in=lines).delete()
+        else:
+            start_mission = quest.start_mission()
+            CurrentMission.objects.filter(mission__quest=quest).update(mission=start_mission)
+            Keylog.objects.filter(mission__quest=quest).delete()
     return redirect('coordination:quest_control', quest_id=quest_id)
 
 
@@ -216,7 +237,7 @@ def members_quest(request, quest_id):
 
 @login_required
 def players_quest(request, quest_id):
-    quest = get_object_or_404(Quest, pk=quest_id)
+    quest = get_object_or_404(Quest, pk=quest_id, parent__isnull=True)
     request = is_quest_organizer(request, quest)
     players = quest.players()
     form = PlayerForm(request.POST or None)
@@ -226,7 +247,7 @@ def players_quest(request, quest_id):
         password = generate_random_password()
         user = User.objects.create_user(username=username, password=password, first_name=name, last_name=password)
         Membership.objects.create(quest=quest, user=user, role=Membership.PLAYER)
-        if not quest.nonlinear:
+        if quest.linear or quest.line_nonlinear:
             start_mission = quest.start_mission()
             CurrentMission.objects.create(player=user, mission=start_mission)
         return redirect('coordination:quest_players', quest_id=quest_id)
@@ -236,7 +257,7 @@ def players_quest(request, quest_id):
 
 @login_required
 def players_quest_print(request, quest_id):
-    quest = get_object_or_404(Quest, pk=quest_id)
+    quest = get_object_or_404(Quest, pk=quest_id, parent__isnull=True)
     request = is_quest_organizer(request, quest)
     players = quest.players()
     context = {'quest': quest, 'players': players}
@@ -245,7 +266,7 @@ def players_quest_print(request, quest_id):
 
 @login_required()
 def organizers_quest(request, quest_id):
-    quest = get_object_or_404(Quest, pk=quest_id)
+    quest = get_object_or_404(Quest, pk=quest_id, parent__isnull=True)
     request = is_quest_organizer(request, quest)
     organizers = quest.organizers()
     all_orgs = User.objects.filter(groups__name='organizers').exclude(id__in=organizers)
@@ -264,7 +285,7 @@ def organizers_quest(request, quest_id):
 
 @login_required
 def delete_organizer(request, quest_id, user_id):
-    quest = get_object_or_404(Quest, pk=quest_id)
+    quest = get_object_or_404(Quest, pk=quest_id, parent__isnull=True)
     is_quest_organizer(request, quest)
     user = get_object_or_404(User, pk=user_id)
     if quest.creator != user or request.user != user:
@@ -276,7 +297,7 @@ def delete_organizer(request, quest_id, user_id):
 
 @login_required
 def delete_player(request, quest_id, user_id):
-    quest = get_object_or_404(Quest, pk=quest_id)
+    quest = get_object_or_404(Quest, pk=quest_id, parent__isnull=True)
     is_quest_organizer(request, quest)
     user = get_object_or_404(User, pk=user_id)
     member = get_object_or_404(Membership, quest=quest, user=user)
@@ -287,7 +308,7 @@ def delete_player(request, quest_id, user_id):
 
 @login_required
 def delete_players(request, quest_id):
-    quest = get_object_or_404(Quest, pk=quest_id)
+    quest = get_object_or_404(Quest, pk=quest_id, parent__isnull=True)
     is_quest_organizer(request, quest)
     player_ids = request.POST.getlist('delete_ids[]')
     users = User.objects.filter(id__in=player_ids)
@@ -300,103 +321,161 @@ def delete_players(request, quest_id):
 
 @login_required
 def coordination_quest(request, quest_id):
-    quest = get_object_or_404(Quest, pk=quest_id)
+    quest = get_object_or_404(Quest, pk=quest_id, parent__isnull=True)
     request = is_quest_player(request, quest)
-    player = request.user
     if quest.nonlinear:
-        if request.method == 'POST':
-            mission = get_object_or_404(Mission, pk=request.POST['mission_id'])
-            if quest.started and not quest.is_game_over and not mission.is_completed(player):
-                form = KeyForm(request.POST, quest=quest)
-                if form.is_valid():
-                    key = form.cleaned_data["key"]
-                    right_key = mission.key
-                    is_right = len(right_key) > 0 and right_key == key
-                    keylog = Keylog(key=key, fix_time=timezone.now(), player=player,
-                                    mission=mission, is_right=is_right)
-                    if is_right:
-                        keylog.points = mission.points
-                    keylog.save()
-            if mission.order_number > 1:
-                url = '{0}#m{1}'.format(resolve_url('coordination:quest_coordination', quest_id=quest_id),
-                                        mission.order_number - 1)
-            else:
-                url = resolve_url('coordination:quest_coordination', quest_id=quest_id)
-            return redirect(url)
-        else:
-            rest_quest = None
-            missions = None
-            mission_start = None
-            mission_finish = None
-            display_hints = None
-            rest_hints = None
-            form = None
-            if quest.not_started:
-                mission_start = quest.start_mission()
-            else:
-                if quest.started and not quest.is_game_over:
-                    rest_quest = get_timedelta(quest.game_over)
-                form = KeyForm(quest=quest)
-                count = 0
-                missions = quest.missions().filter(order_number__gt=0, is_finish=False)
-                for mission in missions:
-                    mission.wrong_keys = Keylog.wrong_keylogs_format(player, mission)
-                    is_completed = mission.is_completed(request.user)
-                    mission.is_completed = is_completed
-                    if not is_completed:
-                        count += 1
-                if missions and count == 0 or quest.is_game_over or quest.ended:
-                    mission_finish = quest.finish_mission()
-                display_hints, rest_hints = Mission.hints_in_nl(quest, missions)
-            points = Keylog.total_points(quest, player)
-            messages = quest.messages().filter(is_show=True)
-            context = {'quest': quest, 'messages': messages, 'missions': missions, 'mission_finish': mission_finish,
-                       'mission_start': mission_start, 'rest_quest': rest_quest, 'points': points, 'form': form,
-                       'display_hints': display_hints, 'rest_hints': rest_hints}
-            return render(request, 'coordination/quests/coordination/nonlinear.html', context)
+        return nonlinear_coordination(request, quest)
+    elif quest.multilinear:
+        return multilinear_coordination(request, quest)
     else:
-        current_mission = get_object_or_404(CurrentMission, mission__quest=quest, player=player)
-        mission = current_mission.mission
-        if request.method == 'POST':
-            if quest.started and not mission.is_finish:
-                form = KeyForm(request.POST, quest=quest)
-                if form.is_valid():
-                    key = form.cleaned_data["key"]
-                    next_missions = Mission.objects.filter(quest=quest, order_number=mission.order_number + 1)
-                    if quest.linear:
-                        right_key = mission.key
-                        next_mission = next_missions.first()
-                        is_right = len(right_key) > 0 and right_key == key
-                    else:
-                        next_mission = next_missions.filter(key=key).first()
-                        is_right = next_mission is not None
-                    keylog = Keylog(key=key, fix_time=timezone.now(), player=player, mission=mission, is_right=is_right)
-                    keylog.save()
-                    if is_right:
-                        current_mission.mission = next_mission
-                        current_mission.start_time = keylog.fix_time
-                        current_mission.save()
-            return redirect('coordination:quest_coordination', quest_id=quest_id)
+        return linear_coordination(request, quest)
+
+
+def nonlinear_coordination(request, quest):
+    player = request.user
+    if request.method == 'POST':
+        mission = get_object_or_404(Mission, pk=request.POST['mission_id'])
+        if quest.started and not quest.is_game_over and not mission.is_completed(player):
+            form = KeyForm(request.POST, quest=quest)
+            if form.is_valid():
+                key = form.cleaned_data["key"]
+                right_key = mission.key
+                is_right = len(right_key) > 0 and right_key == key
+                keylog = Keylog(key=key, fix_time=timezone.now(), player=player,
+                                mission=mission, is_right=is_right)
+                if is_right:
+                    keylog.points = mission.points
+                keylog.save()
+        if mission.order_number > 1:
+            url = '{0}#m{1}'.format(resolve_url('coordination:quest_coordination', quest_id=quest.id),
+                                    mission.order_number - 1)
         else:
-            hints = current_mission.display_hints()
-            next_hint_time = current_mission.next_hint_time()
-            delay = get_timedelta(next_hint_time) if next_hint_time else None
-            completed_missions = Mission.completed_missions(quest, player)
-            form = None
-            wrong_keys_str = None
-            messages = quest.messages().filter(is_show=True)
-            if quest.started and not mission.is_finish:
-                form = KeyForm(quest=quest)
-                wrong_keys_str = Keylog.wrong_keylogs_format(player, mission)
-            context = {'quest': quest, 'mission': mission, 'hints': hints, 'form': form, 'messages': messages,
-                       'wrong_keys': wrong_keys_str, 'delay': delay, 'completed_missions': completed_missions}
-            return render(request, 'coordination/quests/coordination/general.html', context)
+            url = resolve_url('coordination:quest_coordination', quest_id=quest.id)
+        return redirect(url)
+    else:
+        rest_quest = None
+        missions = None
+        mission_start = None
+        mission_finish = None
+        display_hints = None
+        rest_hints = None
+        form = None
+        if quest.not_started:
+            mission_start = quest.start_mission()
+        else:
+            if quest.started and not quest.is_game_over:
+                rest_quest = get_timedelta(quest.game_over)
+            form = KeyForm(quest=quest)
+            count = 0
+            missions = quest.missions().filter(order_number__gt=0, is_finish=False)
+            for mission in missions:
+                mission.wrong_keys = Keylog.wrong_keylogs_format(player, mission)
+                is_completed = mission.is_completed(request.user)
+                mission.is_completed = is_completed
+                if not is_completed:
+                    count += 1
+            if missions and count == 0 or quest.is_game_over or quest.ended:
+                mission_finish = quest.finish_mission()
+            display_hints, rest_hints = Mission.hints_in_nl(quest, missions)
+        points = Keylog.total_points(quest, player)
+        messages = quest.messages().filter(is_show=True)
+        context = {'quest': quest, 'messages': messages, 'missions': missions, 'mission_finish': mission_finish,
+                   'mission_start': mission_start, 'rest_quest': rest_quest, 'points': points, 'form': form,
+                   'display_hints': display_hints, 'rest_hints': rest_hints}
+        return render(request, 'coordination/quests/coordination/nonlinear.html', context)
+
+
+def linear_coordination(request, quest):
+    player = request.user
+    current_mission = get_object_or_404(CurrentMission, mission__quest=quest, player=player)
+    mission = current_mission.mission
+    if request.method == 'POST':
+        if quest.started and not mission.is_finish:
+            form = KeyForm(request.POST, quest=quest)
+            if form.is_valid():
+                key = form.cleaned_data["key"]
+                next_missions = Mission.objects.filter(quest=quest, order_number=mission.order_number + 1)
+                if quest.linear:
+                    right_key = mission.key
+                    next_mission = next_missions.first()
+                    is_right = len(right_key) > 0 and right_key == key
+                else:
+                    next_mission = next_missions.filter(key=key).first()
+                    is_right = next_mission is not None
+                keylog = Keylog(key=key, fix_time=timezone.now(), player=player, mission=mission, is_right=is_right)
+                keylog.save()
+                if is_right:
+                    current_mission.mission = next_mission
+                    current_mission.start_time = keylog.fix_time
+                    current_mission.save()
+        return redirect('coordination:quest_coordination', quest_id=quest.id)
+    else:
+        hints = current_mission.display_hints()
+        next_hint_time = current_mission.next_hint_time()
+        delay = get_timedelta(next_hint_time) if next_hint_time else None
+        completed_missions = Mission.completed_missions(quest, player)
+        form = None
+        wrong_keys_str = None
+        messages = quest.messages().filter(is_show=True)
+        if quest.started and not mission.is_finish:
+            form = KeyForm(quest=quest)
+            wrong_keys_str = Keylog.wrong_keylogs_format(player, mission)
+        context = {'quest': quest, 'mission': mission, 'hints': hints, 'form': form, 'messages': messages,
+                   'wrong_keys': wrong_keys_str, 'delay': delay, 'completed_missions': completed_missions}
+        return render(request, 'coordination/quests/coordination/general.html', context)
+
+
+def multilinear_coordination(request, quest):
+    player = request.user
+    if request.method == 'POST':
+        mission = get_object_or_404(Mission, pk=request.POST['mission_id'])
+        if quest.started and not quest.is_game_over and not mission.is_completed(player):
+            form = KeyForm(request.POST, quest=quest)
+            if form.is_valid():
+                key = form.cleaned_data["key"]
+                right_key = mission.key
+                is_right = len(right_key) > 0 and right_key == key
+                keylog = Keylog(key=key, fix_time=timezone.now(), player=player, mission=mission, is_right=is_right)
+                if is_right:
+                    keylog.points = mission.points
+                    line = mission.quest
+                    next_mission = Mission.objects.filter(quest=line, order_number=mission.order_number + 1).first()
+                    current_mission = get_object_or_404(CurrentMission, mission__quest=line, player=player)
+                    current_mission.mission = next_mission
+                    current_mission.start_time = keylog.fix_time
+                    current_mission.save()
+                keylog.save()
+        url = '{0}#m{1}'.format(resolve_url('coordination:quest_coordination', quest_id=quest.id), mission.id)
+        return redirect(url)
+    else:
+        rest_quest = None
+        lines = None
+        mission_start = None
+        mission_finish = None
+        form = None
+        if quest.not_started:
+            mission_start = quest.start_mission()
+        else:
+            if quest.started and not quest.is_game_over:
+                rest_quest = get_timedelta(quest.game_over)
+            form = KeyForm(quest=quest)
+            lines = quest.lines()
+            for line in lines:
+                current_mission = get_object_or_404(CurrentMission, mission__quest=line, player=player)
+                line.mission = current_mission.mission
+            if quest.is_game_over or quest.ended:
+                mission_finish = quest.finish_mission()
+        points = Keylog.total_points(quest, player)
+        messages = quest.messages().filter(is_show=True)
+        context = {'quest': quest, 'messages': messages, 'lines': lines, 'mission_finish': mission_finish,
+                   'mission_start': mission_start, 'rest_quest': rest_quest, 'points': points, 'form': form}
+        return render(request, 'coordination/quests/coordination/multilinear.html', context)
 
 
 @login_required
 def coordination_quest_ajax(request, quest_id):
     if request.is_ajax():
-        quest = get_object_or_404(Quest, pk=quest_id)
+        quest = get_object_or_404(Quest, pk=quest_id, parent__isnull=True)
         request = is_quest_player(request, quest)
         player = request.user
         messages = quest.messages().filter(is_show=True)
@@ -440,7 +519,8 @@ def coordination_quest_ajax(request, quest_id):
                                                        {'completed_missions': completed_missions})
             hide_form = not quest.started or mission.is_finish
             data.update({'mission': json_mission, 'hints': html_hints, 'delay': delay, 'wrong_keys': html_wrong_keys,
-                         'completed_missions': html_completed_missions, 'hide_form': hide_form, 'picture': html_picture})
+                         'completed_missions': html_completed_missions, 'hide_form': hide_form,
+                         'picture': html_picture})
         return JsonResponse(data)
     else:
         raise Http404
@@ -449,7 +529,7 @@ def coordination_quest_ajax(request, quest_id):
 @login_required
 @minified_response
 def keylog_quest(request, quest_id):
-    quest = get_object_or_404(Quest, pk=quest_id)
+    quest = get_object_or_404(Quest, pk=quest_id, parent__isnull=True)
     request = is_quest_organizer(request, quest)
     mission = request.GET.get('mission', None)
     player = request.GET.get('player', None)
@@ -474,7 +554,7 @@ def keylog_quest(request, quest_id):
 
 @login_required
 def delete_keylog(request, quest_id, keylog_id):
-    quest = get_object_or_404(Quest, pk=quest_id)
+    quest = get_object_or_404(Quest, pk=quest_id, parent__isnull=True)
     is_quest_organizer(request, quest)
     keylog = get_object_or_404(Keylog, pk=keylog_id, mission__quest=quest)
     keylog.delete()
@@ -483,7 +563,7 @@ def delete_keylog(request, quest_id, keylog_id):
 
 @login_required
 def delete_keylogs(request, quest_id):
-    quest = get_object_or_404(Quest, pk=quest_id)
+    quest = get_object_or_404(Quest, pk=quest_id, parent__isnull=True)
     is_quest_organizer(request, quest)
     keylog_ids = request.POST.getlist('delete_ids[]')
     Keylog.objects.filter(mission__quest=quest, id__in=keylog_ids).delete()
@@ -492,7 +572,7 @@ def delete_keylogs(request, quest_id):
 
 @login_required
 def messages_quest(request, quest_id):
-    quest = get_object_or_404(Quest, pk=quest_id)
+    quest = get_object_or_404(Quest, pk=quest_id, parent__isnull=True)
     request = is_quest_organizer(request, quest)
     messages = quest.messages()
     if request.method == 'POST':
@@ -510,7 +590,7 @@ def messages_quest(request, quest_id):
 
 @login_required
 def show_message(request, quest_id, message_id):
-    quest = get_object_or_404(Quest, pk=quest_id)
+    quest = get_object_or_404(Quest, pk=quest_id, parent__isnull=True)
     is_quest_organizer(request, quest)
     message = get_object_or_404(Message, pk=message_id, quest=quest)
     message.show()
@@ -519,7 +599,7 @@ def show_message(request, quest_id, message_id):
 
 @login_required()
 def edit_message(request, quest_id, message_id):
-    quest = get_object_or_404(Quest, pk=quest_id)
+    quest = get_object_or_404(Quest, pk=quest_id, parent__isnull=True)
     request = is_quest_organizer(request, quest)
     message = get_object_or_404(Message, pk=message_id)
     if request.method == "POST":
@@ -534,7 +614,7 @@ def edit_message(request, quest_id, message_id):
 
 
 @login_required
-def delete_message(request, quest_id, message_id):
+def delete_message(request, quest_id, message_id, parent__isnull=True):
     quest = get_object_or_404(Quest, pk=quest_id)
     is_quest_organizer(request, quest)
     message = get_object_or_404(Message, pk=message_id, quest=quest)
@@ -543,10 +623,52 @@ def delete_message(request, quest_id, message_id):
 
 
 # Missions
-def quest_missions(request, quest_id):
-    quest = get_object_or_404(Quest, pk=quest_id)
-    if not quest.is_published:
+@login_required()
+def create_line(request, quest_id, type=Quest.LINEAR):
+    quest = get_object_or_404(Quest, pk=quest_id, type=Quest.MULTILINEAR)
+    request = is_quest_organizer(request, quest)
+    if request.method == 'POST':
+        form = QuestForm(request.POST)
+        if form.is_valid():
+            line = form.save(commit=False)
+            line.creator = quest.creator
+            line.type = type
+            line.parent = quest
+            line.save()
+            return redirect('coordination:line_detail', quest_id=quest.id, line_id=line.pk)
+    else:
+        form = QuestForm(type=type, parent=quest)
+    context = {'form': form}
+    return render(request, 'coordination/quests/form.html', context)
+
+
+def detail_line(request, quest_id, line_id):
+    quest = get_object_or_404(Quest, pk=quest_id, type=Quest.MULTILINEAR)
+    if not quest.published:
+        request = is_quest_organizer(request, quest)
+    line = get_object_or_404(Quest, pk=line_id, parent=quest)
+    missions = line.missions()
+    context = {'quest': quest, 'line': line, 'missions': missions}
+    return render(request, 'coordination/missions/line_detail.html', context)
+
+
+def quest_lines(request, quest_id):
+    quest = get_object_or_404(Quest, pk=quest_id, type=Quest.MULTILINEAR)
+    if not quest.published:
         request = is_quest_organizer_or_agent(request, quest)
+    mission_start = quest.start_mission()
+    mission_finish = quest.finish_mission()
+    lines = quest.lines()
+    context = {'quest': quest, 'mission_start': mission_start, 'mission_finish': mission_finish, 'lines': lines}
+    return render(request, 'coordination/missions/lines.html', context)
+
+
+def quest_missions(request, quest_id):
+    quest = get_object_or_404(Quest, pk=quest_id, parent__isnull=True)
+    if not quest.published:
+        request = is_quest_organizer_or_agent(request, quest)
+    if quest.multilinear:
+        return redirect('coordination:quest_lines', quest_id=quest.id)
     missions = quest.missions()
     context = {'quest': quest, 'missions': missions}
     return render(request, 'coordination/missions/all.html', context)
@@ -555,7 +677,7 @@ def quest_missions(request, quest_id):
 def detail_mission(request, mission_id):
     mission = get_object_or_404(Mission, pk=mission_id)
     quest = mission.quest
-    can_user_view = quest.is_published and \
+    can_user_view = quest.published and \
                     (quest.ended or (request.user.is_authenticated() and mission.is_completed(request.user)))
     if not can_user_view:
         request = is_quest_organizer_or_agent(request, quest)
@@ -592,12 +714,15 @@ def create_mission(request, quest_id):
             form = MissionForm(quest=quest)
         context = {'quest': quest, 'form': form}
         return render(request, 'coordination/missions/form.html', context)
-    return redirect('coordination:quest_missions', quest_id=quest.pk)
+    if quest.parent:
+        return redirect('coordination:quest_lines', quest_id=quest.pk)
+    else:
+        return redirect('coordination:quest_missions', quest_id=quest.pk)
 
 
 @login_required()
 def create_finish_mission(request, quest_id):
-    quest = get_object_or_404(Quest, pk=quest_id)
+    quest = get_object_or_404(Quest, pk=quest_id, type=Quest.LINE_NONLINEAR)
     if quest.not_started:
         is_quest_organizer(request, quest)
         finish = Mission.objects.create(quest=quest, name_in_table='Финиш', order_number=1, is_finish=True)
@@ -643,7 +768,7 @@ def picture_mission(request, mission_id):
     if mission.picture:
         quest = mission.quest
         player = request.user
-        can_user_view = quest.is_published and \
+        can_user_view = quest.published and \
                         (quest.ended or (player.is_authenticated() and mission.is_completed(player))
                          or (player.is_authenticated() and mission.is_current(player)))
         if not can_user_view:

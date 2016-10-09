@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load staticfiles %}
+
+{% block title %}{{ quest.title }} - Координация{% endblock %}
+
+{% block content %}
+    <div class="page-header">
+        <h1>{{ quest.title }}</h1>
+    </div>
+
+    {% include 'coordination/quests/_nav.html' %}
+
+    <div class="row row-margin">
+        <div class="text-base col-xs-12 col-sm-4 col-md-3" id="countup"></div>
+        <div class="text-base col-sm-8 col-md-9" id="countdown"></div>
+    </div>
+
+    <div id="mission_finish">
+        {% include 'coordination/quests/coordination/_mission_finish.html' %}
+    </div>
+
+    <div>
+        <p class="lead text-center">Всего набрано <span class="badge text-medium"><span class="glyphicon glyphicon-piggy-bank"></span> {{ points }}</span></p>
+    </div>
+
+    <div id="messages">
+        {% include 'coordination/messages/_list.html' %}
+    </div>
+
+    {% for line in lines %}
+        <h2>{{ line.title }}</h2>
+        <h3 id="m{{ line.mission.id }}">{{ line.mission.short_name }}</h3>
+
+        {% if line.mission.is_finish %}
+            <div class="alert alert-success">{{ line.mission.text|safe }}</div>
+        {% else %}
+            <div class="text-base">{{ line.mission.text|safe }}</div>
+
+            <div>{% include 'coordination/quests/coordination/_picture.html' with mission=line.mission %}</div>
+
+            <div class="text-base" id="hint_countdown{{ line.mission.id }}"></div>
+
+            <div class="row">
+                {% include 'coordination/hints/_list.html' %}
+            </div>
+
+            <form action="" method="post">
+                {% crispy form %}
+                <input type="hidden" name="mission_id" value="{{ line.mission.id }}" />
+            </form>
+            <div>{% include 'coordination/quests/coordination/_wrong_keys.html' %}</div>
+        {% endif %}
+
+        <div id="completed_missions" class="row-margin">
+            {% include 'coordination/quests/coordination/_completed_missions.html' %}
+        </div>
+    {% empty %}
+        {% if quest.started %}
+            <p class="lead">В игре нет заданий!</p>
+        {% endif %}
+        {% if quest.not_started and mission_start %}
+            <div class="text-base">{{ mission_start.text|safe }}</div>
+            <div>{% include 'coordination/quests/coordination/_picture.html' with mission=mission_start %}</div>
+        {% endif %}
+    {% endfor %}
+{% endblock content %}
+
+{% block scripts %}
+    {{ block.super }}
+    <script type="text/javascript" src="{% static "assets/js/jquery.plugin.min.js" %}"></script>
+    <script type="text/javascript" src="{% static "assets/js/jquery.countdown.min.js" %}"></script>
+    <script type="text/javascript">
+        var url = "{% url 'coordination:quest_coordination_ajax' quest.id %}";
+        $(function () {
+            {% if rest_quest %}
+                start_game_over_countdown({{ rest_quest }});
+            {% endif %}
+
+            {% now "U" as t %}
+            var time = new Date({{ t }});
+            start_countup(time)
+        });
+
+        setInterval(function () {
+            update_coordination_nl()
+        }, 420000);
+    </script>
+    <script type="text/javascript" src="{% static "assets/js/coordination.js" %}"></script>
+{% endblock scripts %}

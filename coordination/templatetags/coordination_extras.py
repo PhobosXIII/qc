@@ -9,6 +9,8 @@ register = template.Library()
 def is_organizer(user, quest):
     user_is_organizer = False
     if user.is_authenticated():
+        if quest.parent:
+            quest = quest.parent
         member = Membership.organizers.filter(quest=quest, user=user).first()
         if member:
             user_is_organizer = True
@@ -19,6 +21,8 @@ def is_organizer(user, quest):
 def is_player(user, quest):
     user_is_player = False
     if user.is_authenticated():
+        if quest.parent:
+            quest = quest.parent
         member = Membership.players.filter(quest=quest, user=user).first()
         if member:
             user_is_player = True
@@ -29,6 +33,8 @@ def is_player(user, quest):
 def is_agent(user, quest):
     user_is_agent = False
     if user.is_authenticated():
+        if quest.parent:
+            quest = quest.parent
         member = Membership.agents.filter(quest=quest, user=user).first()
         if member:
             user_is_agent = True

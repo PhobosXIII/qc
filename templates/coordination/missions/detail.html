@@ -2,13 +2,13 @@
 {% load coordination_extras %}
 {% load crispy_forms_tags %}
 
-{% block title %}{{ quest.title }}. {{ mission.short_name }}{% endblock %}
+{% block title %}{% if quest.parent %}{{ quest.parent.title }}.{% endif %} {{ quest.title }}. {{ mission.short_name }}{% endblock %}
 
 {% block content %}
     {% include 'coordination/_confirm_dialog.html' %}
 
     <div class="page-header">
-        <h1>{{ quest.title }}.
+        <h1>{% if quest.parent %}{{ quest.parent.title }}.{% endif %} {{ quest.title }}.
             {% if user|is_organizer:quest or user.is_superuser or user|is_agent:quest %}
                 {{ mission }}
             {% else %}
@@ -17,8 +17,15 @@
         </h1>
     </div>
 
-    {% include 'coordination/quests/_nav.html' %}
-    <br>
+    {% if not quest.parent %}
+        {% include 'coordination/quests/_nav.html' %}
+        <br>
+    {% else %}
+        <p class="text-center">
+            <a href="{% url 'coordination:line_detail' quest.parent_id quest.id %}" class="btn btn-default">
+                Вернуться к заданиям линии</a>
+        </p>
+    {% endif %}
 
     {% if user|is_organizer:quest or user.is_superuser %}
         <p class="text-right">
@@ -32,6 +39,7 @@
                     <span class="fa fa-trash fa-lg"></span> Удалить
                 </button>
             {% endif %}
+        </p>
     {% endif %}
 
     <div class="text-base">{{ mission.text|safe }}</div>
@@ -43,7 +51,7 @@
         <p class="label label-info text-medium"><span class="fa fa-key"></span> {{ mission.key|default:"Не указан" }}</p>
     {% endif %}
 
-    {% if quest.nonlinear and not mission.is_finish and not mission.is_start %}
+    {% if quest.nonlinear or quest.parent and not mission.is_finish and not mission.is_start %}
         <p class="label label-default text-medium"><span class="glyphicon glyphicon-piggy-bank"></span> {{ mission.points }}</p>
     {% endif %}
 
