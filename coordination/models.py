@@ -277,7 +277,7 @@ class Mission(models.Model):
     picture = models.ImageField('картинка', upload_to=mission_file_name, blank=True)
     key = models.CharField('ключ', max_length=30, blank=True)
     order_number = models.PositiveSmallIntegerField('номер задания',
-                                                    validators=[MinValueValidator(0), MaxValueValidator(99)])
+                                                    validators=[MinValueValidator(1), MaxValueValidator(99)])
     is_finish = models.BooleanField(u'финиш', default=False)
     points = models.PositiveSmallIntegerField('баллы', default=0)
 
