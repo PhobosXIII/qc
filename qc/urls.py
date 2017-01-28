@@ -1,5 +1,4 @@
 from django.conf.urls import include, url
-from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
 from main import views as main_views
 from main.forms import AuthForm
@@ -30,6 +29,3 @@ urlpatterns = [
     ])),
     url(r'^', include('coordination.urls', namespace='coordination')),
 ]
-
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

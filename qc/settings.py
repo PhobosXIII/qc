@@ -34,6 +34,7 @@ INSTALLED_APPS = (
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
     'crispy_forms',
     'main',
@@ -41,18 +42,19 @@ INSTALLED_APPS = (
     'ckeditor',
 )
 
-BASE_MIDDLEWARE_CLASSES = (
-        'django.contrib.sessions.middleware.SessionMiddleware',
-        'django.middleware.common.CommonMiddleware',
-        'django.middleware.csrf.CsrfViewMiddleware',
-        'django.contrib.auth.middleware.AuthenticationMiddleware',
-        'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
-        'django.contrib.messages.middleware.MessageMiddleware',
-        'django.middleware.clickjacking.XFrameOptionsMiddleware',
-        'django.middleware.security.SecurityMiddleware',
-        'htmlmin.middleware.HtmlMinifyMiddleware',
-        'htmlmin.middleware.MarkRequestMiddleware',
-    )
+BASE_MIDDLEWARE = (
+    'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'htmlmin.middleware.HtmlMinifyMiddleware',
+    'htmlmin.middleware.MarkRequestMiddleware',
+)
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'mediafiles')
 MEDIA_URL = '/media/'
@@ -71,7 +73,7 @@ if ENV_ROLE == 'dev':
     if QC_UPLOAD:
         SENDFILE_BACKEND = 'sendfile.backends.development'
 
-    MIDDLEWARE_CLASSES = BASE_MIDDLEWARE_CLASSES
+    MIDDLEWARE = BASE_MIDDLEWARE
 
 if ENV_ROLE == 'prod' or ENV_ROLE == 'stage':
     DEBUG = False
@@ -86,11 +88,11 @@ if ENV_ROLE == 'prod' or ENV_ROLE == 'stage':
             'APP_ID': get_env_variable('OPBEAT_APP_ID'),
             'SECRET_TOKEN': get_env_variable('OPBEAT_SECRET'),
         }
-        MIDDLEWARE_CLASSES = (
-            'opbeat.contrib.django.middleware.OpbeatAPMMiddleware',
-        ) + BASE_MIDDLEWARE_CLASSES
+        MIDDLEWARE = (
+                         'opbeat.contrib.django.middleware.OpbeatAPMMiddleware',
+                     ) + BASE_MIDDLEWARE
     else:
-        MIDDLEWARE_CLASSES = BASE_MIDDLEWARE_CLASSES
+        MIDDLEWARE = BASE_MIDDLEWARE
 
     if QC_UPLOAD:
         SENDFILE_BACKEND = 'sendfile.backends.nginx'
@@ -146,7 +148,7 @@ TEMPLATES = [
 WSGI_APPLICATION = 'qc.wsgi.application'
 
 # Internationalization
-# https://docs.djangoproject.com/en/1.8/topics/i18n/
+# https://docs.djangoproject.com/en/1.10/topics/i18n/
 
 LANGUAGE_CODE = 'ru-RU'
 TIME_ZONE = 'Asia/Krasnoyarsk'
@@ -158,7 +160,7 @@ USE_TZ = True
 DATABASES = {'default': dj_database_url.config(conn_max_age=500)}
 
 # Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/1.8/howto/static-files/
+# https://docs.djangoproject.com/en/1.10/howto/static-files/
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATIC_URL = '/static/'
 
@@ -166,7 +168,7 @@ STATICFILES_DIRS = (
     ('assets', os.path.join(BASE_DIR, 'templates/assets')),
 )
 
-STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 LOGOUT_URL = reverse_lazy('auth_logout')
 LOGIN_URL = reverse_lazy('auth_login')
