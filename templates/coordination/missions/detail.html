@@ -51,8 +51,10 @@
         <p class="label label-info text-medium"><span class="fa fa-key"></span> {{ mission.key|default:"Не указан" }}</p>
     {% endif %}
 
-    {% if quest.nonlinear or quest.parent and not mission.is_finish and not mission.is_start %}
-        <p class="label label-default text-medium"><span class="glyphicon glyphicon-piggy-bank"></span> {{ mission.points }}</p>
+    {% if quest.nonlinear or quest.parent %}
+        {% if not mission.is_finish and not mission.is_start %}
+            <p class="label label-default text-medium"><span class="glyphicon glyphicon-piggy-bank"></span> {{ mission.points }}</p>
+        {% endif %}
     {% endif %}
 
     {% if user|is_organizer:quest or user.is_superuser%}

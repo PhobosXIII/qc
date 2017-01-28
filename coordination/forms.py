@@ -132,7 +132,7 @@ class MissionForm(ModelForm):
             if quest.nonlinear or quest.parent:
                 self.helper.layout = Layout(
                     Row(
-                        Div(Field('order_number', value=next_number),
+                        Div(Field('order_number', value=next_number, min=1),
                             css_class='col-xs-7 col-sm-3 col-md-4'),
                         Div('points', css_class='col-xs-5 col-sm-3 col-md-3'),
                         Div('key', css_class='col-xs-12 col-sm-6 col-md-5')
@@ -145,7 +145,7 @@ class MissionForm(ModelForm):
             else:
                 self.helper.layout = Layout(
                     Row(
-                        Div(Field('order_number', value=next_number),
+                        Div(Field('order_number', value=next_number, min=1),
                             css_class='col-xs-8 col-sm-3 col-md-4'),
                         Div('key', css_class='col-xs-12 col-sm-9 col-md-8')
                     ),
