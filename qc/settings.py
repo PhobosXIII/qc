@@ -28,7 +28,7 @@ PROJECT_NAME = 'QC'
 FULL_PROJECT_NAME = 'QuestCoordination'
 PROJECT_VERSION_BASE = 'v3.4'
 
-INSTALLED_APPS = (
+INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -39,9 +39,9 @@ INSTALLED_APPS = (
     'main',
     'coordination',
     'ckeditor',
-)
+]
 
-BASE_MIDDLEWARE = (
+BASE_MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -53,15 +53,13 @@ BASE_MIDDLEWARE = (
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'htmlmin.middleware.HtmlMinifyMiddleware',
     'htmlmin.middleware.MarkRequestMiddleware',
-)
+]
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'mediafiles')
 MEDIA_URL = '/media/'
 
 if QC_UPLOAD:
-    INSTALLED_APPS += (
-        'sendfile',
-    )
+    INSTALLED_APPS += ['sendfile', ]
     SENDFILE_ROOT = os.path.join(MEDIA_ROOT, 'mission_imgs')
     SENDFILE_URL = '/mission_imgs'
 
@@ -79,17 +77,13 @@ if ENV_ROLE == 'prod' or ENV_ROLE == 'stage':
 
     QC_OPBEAT = get_env_variable('QC_OPBEAT') == 'True'
     if QC_OPBEAT:
-        INSTALLED_APPS += (
-            'opbeat.contrib.django',
-        )
+        INSTALLED_APPS += ['opbeat.contrib.django', ]
         OPBEAT = {
             'ORGANIZATION_ID': get_env_variable('OPBEAT_ORG_ID'),
             'APP_ID': get_env_variable('OPBEAT_APP_ID'),
             'SECRET_TOKEN': get_env_variable('OPBEAT_SECRET'),
         }
-        MIDDLEWARE = (
-                         'opbeat.contrib.django.middleware.OpbeatAPMMiddleware',
-                     ) + BASE_MIDDLEWARE
+        MIDDLEWARE = ['opbeat.contrib.django.middleware.OpbeatAPMMiddleware', ] + BASE_MIDDLEWARE
     else:
         MIDDLEWARE = BASE_MIDDLEWARE
 
@@ -113,9 +107,9 @@ if ENV_ROLE == 'prod' or ENV_ROLE == 'stage':
 else:
     PROJECT_VERSION = PROJECT_VERSION_BASE + '-debug'
 
-ADMINS = (
+ADMINS = [
     ('Phobos', 'dev@quect.ru'),
-)
+]
 
 MANAGERS = ADMINS
 
