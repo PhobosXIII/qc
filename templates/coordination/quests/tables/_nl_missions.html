@@ -4,6 +4,7 @@
             <th>Задание</th>
             <th>Взято</th>
             <th class="hidden">Игроки</th>
+            <th class="hidden">Игроки</th>
         </tr>
     </thead>
     <tbody>
@@ -12,6 +13,7 @@
                 <td>{{ mission.table_name }}</td>
                 <td>{{ mission.num_players }}</td>
                 <td class="hidden">{{ mission.players }}</td>
+                <td class="hidden">{{ mission.other_players }}</td>
             </tr>
         {% endfor %}
     </tbody>

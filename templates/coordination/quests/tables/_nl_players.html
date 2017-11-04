@@ -7,6 +7,7 @@
             <th>Баллы</th>
             <th>Последний ключ</th>
             <th class="hidden">Задания</th>
+            <th class="hidden">Задания</th>
         </tr>
     </thead>
     <tbody>
@@ -24,6 +25,7 @@
                     {% endif %}
                 </td>
                 <td class="hidden">{{ player.missions }}</td>
+                <td class="hidden">{{ player.other_missions }}</td>
             </tr>
         {% endfor %}
     </tbody>

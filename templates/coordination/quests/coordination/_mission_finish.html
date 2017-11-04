@@ -1,4 +1,4 @@
-{% if mission_finish %}
+{% if mission_finish and mission_finish.text %}
     <div class="alert alert-success">
         {{ mission_finish.text|safe }}
     </div>

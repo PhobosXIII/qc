@@ -1,6 +1,5 @@
 from datetime import timedelta
 from itertools import groupby
-from operator import itemgetter
 
 from ckeditor.fields import RichTextField
 from django.conf import settings
@@ -147,9 +146,9 @@ class Quest(models.Model):
 
     def missions(self):
         if self.multilinear:
-            return Mission.objects.filter(quest__in=self.lines())
+            return Mission.objects.filter(quest__in=self.lines()).order_by('quest__id', 'order_number')
         else:
-            return Mission.objects.filter(quest=self)
+            return Mission.objects.filter(quest=self).order_by('order_number')
 
     def current_missions(self):
         return CurrentMission.objects.filter(mission__quest=self)
@@ -179,29 +178,31 @@ class Quest(models.Model):
         return self.members.filter(membership__role=Membership.AGENT)
 
     def players_ext(self):
+        all_missions = self.missions().filter(order_number__gt=0, is_finish=False)
         players = self.members.filter(membership__role=Membership.PLAYER)
         for player in players:
             player.last_time = Keylog.last_time(self, player)
             player.points = Keylog.total_points(self, player)
             missions = Mission.completed_missions(self, player)
+            other_missions = [i for i in all_missions if i not in missions]
             player.num_missions = len(missions)
             if self.multilinear:
-                iter = groupby(missions, key=lambda x: x.quest)
-                missions_str = ''
-                line_format = "{0}: {1}; "
-                for quest, missions in iter:
-                    line_str = ', '.join(str(i.table_name) for i in missions)
-                    missions_str += line_format.format(quest.title, line_str)
-                player.missions = missions_str
+                player.missions = self.multiline_missions_str(missions)
+                player.other_missions = self.multiline_missions_str(other_missions)
             else:
                 player.missions = ', '.join(str(i.table_name) for i in missions)
+                player.other_missions = ', '.join(str(i.table_name) for i in other_missions)
         return players
 
     def missions_ext(self):
+        all_players = self.members.filter(membership__role=Membership.PLAYER)
         missions = self.missions().filter(order_number__gt=0, is_finish=False)
         for mission in missions:
             keylogs = mission.right_keylogs()
-            mission.players = ', '.join(str(i.player) for i in keylogs)
+            players = [i.player for i in keylogs]
+            mission.players = ', '.join(str(i) for i in players)
+            other_players = [i for i in all_players if i not in players]
+            mission.other_players = ', '.join(str(i) for i in other_players)
             mission.num_players = len(keylogs)
         return missions
 
@@ -213,6 +214,17 @@ class Quest(models.Model):
     @staticmethod
     def my_quests(user):
         return Quest.objects.filter(membership__user=user, parent__isnull=True)
+
+    @staticmethod
+    def multiline_missions_str(missions):
+        line_format = "{0}: {1}; "
+        missions = sorted(missions, key=lambda x: x.quest.id)
+        iter = groupby(missions, key=lambda x: x.quest)
+        missions_str = ''
+        for quest, missions in iter:
+            line_str = ', '.join(str(i.table_name) for i in missions)
+            missions_str += line_format.format(quest.title, line_str)
+        return missions_str
 
 
 class OrganizerManager(models.Manager):
@@ -392,9 +404,8 @@ class Mission(models.Model):
     @staticmethod
     def completed_missions(quest, player):
         keylogs = Keylog.get_keylogs(quest, player, True)
-        keylogs = keylogs.order_by('mission__id').distinct('mission__id')
-        missions = keylogs.values('mission__id')
-        return Mission.objects.filter(pk__in=missions)
+        keylogs = keylogs.order_by('fix_time', 'mission__id').distinct('fix_time', 'mission__id')
+        return [i.mission for i in keylogs]
 
 
 class Hint(models.Model):

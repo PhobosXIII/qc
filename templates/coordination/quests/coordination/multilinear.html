@@ -33,7 +33,9 @@
         <h3 id="m{{ line.mission.id }}">{{ line.mission.short_name }}</h3>
 
         {% if line.mission.is_finish %}
-            <div class="alert alert-success">{{ line.mission.text|safe }}</div>
+            {% if line.mission.text %}
+                <div class="alert alert-success">{{ line.mission.text|safe }}</div>
+            {% endif %}
         {% else %}
             <div class="text-base">{{ line.mission.text|safe }}</div>
 

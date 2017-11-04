@@ -370,7 +370,7 @@ def nonlinear_coordination(request, quest):
             missions = quest.missions().filter(order_number__gt=0, is_finish=False)
             for mission in missions:
                 mission.wrong_keys = Keylog.wrong_keylogs_format(player, mission)
-                is_completed = mission.is_completed(request.user)
+                is_completed = mission.is_completed(player)
                 mission.is_completed = is_completed
                 if not is_completed:
                     count += 1
@@ -463,7 +463,15 @@ def multilinear_coordination(request, quest):
             for line in lines:
                 current_mission = get_object_or_404(CurrentMission, mission__quest=line, player=player)
                 line.mission = current_mission.mission
-            if quest.is_game_over or quest.ended:
+            count = 0
+            missions = quest.missions().filter(order_number__gt=0, is_finish=False)
+            for mission in missions:
+                mission.wrong_keys = Keylog.wrong_keylogs_format(player, mission)
+                is_completed = mission.is_completed(player)
+                mission.is_completed = is_completed
+                if not is_completed:
+                    count += 1
+            if missions and count == 0 or quest.is_game_over or quest.ended:
                 mission_finish = quest.finish_mission()
         points = Keylog.total_points(quest, player)
         messages = quest.messages().filter(is_show=True)
@@ -534,7 +542,7 @@ def keylog_quest(request, quest_id):
     mission = request.GET.get('mission', None)
     player = request.GET.get('player', None)
     missions = quest.missions().exclude(is_finish=True)
-    if quest.nonlinear:
+    if quest.nonlinear or quest.multilinear:
         missions = missions.exclude(order_number=0)
     if not mission and not player:
         url = reverse('coordination:quest_keylog', args=[quest.id])
