@@ -18,7 +18,8 @@ class MemberAdmin(admin.ModelAdmin):
 
 
 class QuestAdmin(admin.ModelAdmin):
-    fields = [('title', 'is_published', 'status'), 'type', 'creator', 'start', 'game_over', 'description']
+    fields = [('title', 'is_published', 'status'), 'order_number',
+              'type', 'creator', 'start', 'game_over', 'description']
     list_display = ('title', 'creator', 'start', 'type', 'parent')
     inlines = [MemberInline]
     list_filter = ('parent', 'type')

@@ -20,10 +20,12 @@
                 <span class="fa fa-edit fa-lg"></span> Редактировать
             </a>
 
-            <button data-href="{% url 'coordination:quest_delete' line.id %}" data-toggle="modal"
-                    data-target="#confirm" class="btn btn-danger">
-                <span class="fa fa-trash fa-lg"></span> Удалить
-            </button>
+            {% if not quest.started %}
+                <button data-href="{% url 'coordination:quest_delete' line.id %}" data-toggle="modal"
+                        data-target="#confirm" class="btn btn-danger">
+                    <span class="fa fa-trash fa-lg"></span> Удалить
+                </button>
+            {% endif %}
         </p>
     {% endif %}
 

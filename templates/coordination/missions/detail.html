@@ -33,11 +33,19 @@
                 <span class="fa fa-edit fa-lg"></span> Редактировать
             </a>
 
-            {% if not quest.started and quest.line_nonlinear and not mission.is_start or not quest.line_nonlinear and not mission.is_start and not mission.is_finish %}
-                <button data-href="{% url 'coordination:mission_delete' mission.id %}" data-toggle="modal"
-                        data-target="#confirm" class="btn btn-danger">
-                    <span class="fa fa-trash fa-lg"></span> Удалить
-                </button>
+            {% if not quest.started %}
+                {% if quest.line_nonlinear and not mission.is_start %}
+                    <button data-href="{% url 'coordination:mission_delete' mission.id %}" data-toggle="modal"
+                            data-target="#confirm" class="btn btn-danger">
+                        <span class="fa fa-trash fa-lg"></span> Удалить
+                    </button>
+                {% endif %}
+                {% if not quest.line_nonlinear and not mission.is_start and not mission.is_finish %}
+                    <button data-href="{% url 'coordination:mission_delete' mission.id %}" data-toggle="modal"
+                            data-target="#confirm" class="btn btn-danger">
+                        <span class="fa fa-trash fa-lg"></span> Удалить
+                    </button>
+                {% endif %}
             {% endif %}
         </p>
     {% endif %}

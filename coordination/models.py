@@ -50,6 +50,7 @@ class Quest(models.Model):
     game_over = models.DateTimeField('конец игры', null=True, blank=True)
     parent = models.ForeignKey('self', on_delete=models.CASCADE, editable=False, null=True, blank=True)
     order_number = models.PositiveSmallIntegerField('номер линии', default=1,
+                                                    help_text='Влияет на порядок отображения линий.',
                                                     validators=[MinValueValidator(1), MaxValueValidator(99)])
 
     class Meta:
@@ -166,9 +167,6 @@ class Quest(models.Model):
 
     def finish_mission(self):
         return Mission.objects.filter(quest=self, is_finish=True).first()
-
-    def next_line_number(self):
-        len(self.lines()) + 1
 
     def messages(self):
         return Message.objects.filter(quest=self)

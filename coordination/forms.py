@@ -39,11 +39,10 @@ class QuestForm(ModelForm):
             self.instance.parent = parent
         quest = self.instance
         if quest.parent:
-            next_number = quest.parent.next_line_number()
             self.Meta.fields = ['title', 'order_number']
             self.helper.layout = Layout(
                     Row(
-                        Div(Field('order_number', value=next_number, min=1), css_class='col-xs-7 col-sm-3 col-md-4'),
+                        Div(Field('order_number', min=1), css_class='col-xs-7 col-sm-3 col-md-4'),
                     ),
                     Field('title', autofocus=True),
                 )
