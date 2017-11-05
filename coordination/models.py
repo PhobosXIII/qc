@@ -49,6 +49,8 @@ class Quest(models.Model):
     members = models.ManyToManyField(settings.AUTH_USER_MODEL, through='Membership', related_name='members')
     game_over = models.DateTimeField('конец игры', null=True, blank=True)
     parent = models.ForeignKey('self', on_delete=models.CASCADE, editable=False, null=True, blank=True)
+    order_number = models.PositiveSmallIntegerField('номер линии', default=1,
+                                                    validators=[MinValueValidator(1), MaxValueValidator(99)])
 
     class Meta:
         verbose_name = 'квест'
@@ -142,11 +144,11 @@ class Quest(models.Model):
         self.save()
 
     def lines(self):
-        return Quest.objects.filter(parent=self).order_by('id')
+        return Quest.objects.filter(parent=self).order_by('order_number')
 
     def missions(self):
         if self.multilinear:
-            return Mission.objects.filter(quest__in=self.lines()).order_by('quest__id', 'order_number')
+            return Mission.objects.filter(quest__in=self.lines()).order_by('quest__order_number', 'order_number')
         else:
             return Mission.objects.filter(quest=self).order_by('order_number')
 
@@ -164,6 +166,9 @@ class Quest(models.Model):
 
     def finish_mission(self):
         return Mission.objects.filter(quest=self, is_finish=True).first()
+
+    def next_line_number(self):
+        len(self.lines()) + 1
 
     def messages(self):
         return Message.objects.filter(quest=self)
@@ -217,13 +222,14 @@ class Quest(models.Model):
 
     @staticmethod
     def multiline_missions_str(missions):
-        line_format = "{0}: {1}; "
-        missions = sorted(missions, key=lambda x: x.quest.id)
+        line_format = "{0}: {1}"
+        missions = sorted(missions, key=lambda x: x.quest.order_number)
         iter = groupby(missions, key=lambda x: x.quest)
-        missions_str = ''
+        quest_missions = []
         for quest, missions in iter:
             line_str = ', '.join(str(i.table_name) for i in missions)
-            missions_str += line_format.format(quest.title, line_str)
+            quest_missions.append(line_format.format(quest.title, line_str))
+        missions_str = ' ___ '.join(i for i in quest_missions)
         return missions_str
 
 

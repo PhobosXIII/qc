@@ -24,7 +24,7 @@ class CustomClearableFileInput(ClearableFileInput):
 class QuestForm(ModelForm):
     class Meta:
         model = Quest
-        fields = ['title', 'start', 'description', 'game_over']
+        fields = ['title', 'start', 'description', 'game_over', 'order_number']
 
     def __init__(self, *args, **kwargs):
         type = kwargs.pop('type', None)
@@ -39,8 +39,12 @@ class QuestForm(ModelForm):
             self.instance.parent = parent
         quest = self.instance
         if quest.parent:
-            self.Meta.fields = ['title', ]
+            next_number = quest.parent.next_line_number()
+            self.Meta.fields = ['title', 'order_number']
             self.helper.layout = Layout(
+                    Row(
+                        Div(Field('order_number', value=next_number, min=1), css_class='col-xs-7 col-sm-3 col-md-4'),
+                    ),
                     Field('title', autofocus=True),
                 )
         else:
@@ -49,14 +53,16 @@ class QuestForm(ModelForm):
                     Field('title', autofocus=True),
                     'start',
                     'game_over',
-                    'description'
+                    'description',
+                    Field('order_number', type="hidden"),
                 )
             else:
-                self.Meta.fields = ['title', 'start', 'description']
+                self.Meta.fields = ['title', 'start', 'description', 'order_number']
                 self.helper.layout = Layout(
                     Field('title', autofocus=True),
                     'start',
-                    'description'
+                    'description',
+                    Field('order_number', type="hidden"),
                 )
 
 

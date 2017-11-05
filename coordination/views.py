@@ -185,7 +185,9 @@ def begin_quest(request, quest_id):
         for line in lines:
             first_mission = line.missions().first()
             for player in players:
-                CurrentMission.objects.create(player=player, mission=first_mission)
+                current_mission = CurrentMission.objects.filter(player=player, mission__quest=line).first()
+                if not current_mission:
+                    CurrentMission.objects.create(player=player, mission=first_mission)
     return redirect('coordination:quest_control', quest_id=quest_id)
 
 

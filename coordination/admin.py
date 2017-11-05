@@ -21,8 +21,8 @@ class QuestAdmin(admin.ModelAdmin):
     fields = [('title', 'is_published', 'status'), 'type', 'creator', 'start', 'game_over', 'description']
     list_display = ('title', 'creator', 'start', 'type', 'parent')
     inlines = [MemberInline]
-    list_filter = ('parent', )
-    ordering = ['-start']
+    list_filter = ('parent', 'type')
+    ordering = ['-start', 'parent', 'order_number']
 
 
 class HintInline(admin.TabularInline):
@@ -36,15 +36,15 @@ class MissionAdmin(admin.ModelAdmin):
     if settings.QC_UPLOAD:
         fields += ('picture',)
     inlines = [HintInline]
-    list_display = ('__str__', 'quest', 'points', )
-    list_filter = ('quest', )
+    list_display = ('__str__', 'quest', 'points',)
+    list_filter = ('quest',)
     ordering = ('quest', 'order_number')
 
 
 class CurrentMissionAdmin(admin.ModelAdmin):
     list_display = ('player', 'get_quest', 'mission', 'start_time')
     ordering = ['-mission', 'start_time']
-    list_filter = ('mission__quest', )
+    list_filter = ('mission__quest',)
 
 
 class KeylogAdmin(admin.ModelAdmin):
@@ -55,15 +55,16 @@ class KeylogAdmin(admin.ModelAdmin):
 
 class MessageAdmin(admin.ModelAdmin):
     list_display = ('strip_text', 'is_show')
-    list_filter = ('quest', )
+    list_filter = ('quest',)
 
 
 def get_quest(self, obj):
     return obj.mission.quest
+
+
 get_quest.short_description = 'квест'
 CurrentMissionAdmin.get_quest = get_quest
 KeylogAdmin.get_quest = get_quest
-
 
 admin_site.register(Quest, QuestAdmin)
 admin_site.register(Membership, MemberAdmin)
