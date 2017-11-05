@@ -51,7 +51,7 @@
                 {% crispy form %}
                 <input type="hidden" name="mission_id" value="{{ line.mission.id }}" />
             </form>
-            <div>{% include 'coordination/quests/coordination/_wrong_keys.html' %}</div>
+            <div>{% include 'coordination/quests/coordination/_wrong_keys.html' with wrong_keys=line.wrong_keys %}</div>
         {% endif %}
 
         <div id="completed_missions" class="row-margin">

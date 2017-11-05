@@ -156,6 +156,9 @@ class Quest(models.Model):
     def current_missions(self):
         return CurrentMission.objects.filter(mission__quest=self)
 
+    def current_missions_multilinear(self, player):
+        return CurrentMission.objects.filter(mission__quest__in=self.lines(), player=player)
+
     def next_mission_number(self):
         if self.parent:
             return len(self.missions())

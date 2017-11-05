@@ -417,13 +417,13 @@ def linear_coordination(request, quest):
         delay = get_timedelta(next_hint_time) if next_hint_time else None
         completed_missions = Mission.completed_missions(quest, player)
         form = None
-        wrong_keys_str = None
+        wrong_keys = None
         messages = quest.messages().filter(is_show=True)
         if quest.started and not mission.is_finish:
             form = KeyForm(quest=quest)
-            wrong_keys_str = Keylog.wrong_keylogs_format(player, mission)
+            wrong_keys = Keylog.wrong_keylogs_format(player, mission)
         context = {'quest': quest, 'mission': mission, 'hints': hints, 'form': form, 'messages': messages,
-                   'wrong_keys': wrong_keys_str, 'delay': delay, 'completed_missions': completed_missions}
+                   'wrong_keys': wrong_keys, 'delay': delay, 'completed_missions': completed_missions}
         return render(request, 'coordination/quests/coordination/general.html', context)
 
 
@@ -465,15 +465,13 @@ def multilinear_coordination(request, quest):
             for line in lines:
                 current_mission = get_object_or_404(CurrentMission, mission__quest=line, player=player)
                 line.mission = current_mission.mission
+                line.wrong_keys = Keylog.wrong_keylogs_format(player, line.mission)
             count = 0
-            missions = quest.missions().filter(order_number__gt=0, is_finish=False)
-            for mission in missions:
-                mission.wrong_keys = Keylog.wrong_keylogs_format(player, mission)
-                is_completed = mission.is_completed(player)
-                mission.is_completed = is_completed
-                if not is_completed:
+            current_missions = quest.current_missions_multilinear(player)
+            for current_mission in current_missions:
+                if not current_mission.mission.is_finish:
                     count += 1
-            if missions and count == 0 or quest.is_game_over or quest.ended:
+            if current_missions and count == 0 or quest.is_game_over or quest.ended:
                 mission_finish = quest.finish_mission()
         points = Keylog.total_points(quest, player)
         messages = quest.messages().filter(is_show=True)
