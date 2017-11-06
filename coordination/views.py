@@ -465,6 +465,8 @@ def multilinear_coordination(request, quest):
             for line in lines:
                 current_mission = get_object_or_404(CurrentMission, mission__quest=line, player=player)
                 line.mission = current_mission.mission
+                line.hints = current_mission.display_hints()
+                line.next_hint_time = current_mission.next_hint_time()
                 line.wrong_keys = Keylog.wrong_keylogs_format(player, line.mission)
                 line.completed_missions = Mission.completed_missions(line, player)
             count = 0

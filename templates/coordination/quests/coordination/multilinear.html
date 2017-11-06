@@ -41,20 +41,25 @@
 
             <div>{% include 'coordination/quests/coordination/_picture.html' with mission=line.mission %}</div>
 
-            <div class="row">
-                {% include 'coordination/hints/_list.html' %}
-            </div>
+            {% if not line.mission.is_finish %}
+                {% for hint in line.hints %}
+                    <div class="well well-sm">{{ hint }}: {{ hint.text|safe }}</div>
+                {% endfor %}
+                {% if line.next_hint_time %}
+                    <p class="well well-sm">Следующая подсказка будет доступна в {{ line.next_hint_time|date:"H:i:s" }}</p>
+                {% endif %}
 
-            {% if form and not line.mission.is_finish %}
-                <div class="row-margin">
-                    <form action="" method="post" class="form-inline">
-                        {% crispy form %}
-                        <input type="hidden" name="mission_id" value="{{ line.mission.id }}" />
-                    </form>
-                </div>
-                <div>
-                    {% include 'coordination/quests/coordination/_wrong_keys.html' with wrong_keys=line.wrong_keys %}
-                </div>
+                {% if form %}
+                    <div class="row-margin">
+                        <form action="" method="post" class="form-inline">
+                            {% crispy form %}
+                            <input type="hidden" name="mission_id" value="{{ line.mission.id }}" />
+                        </form>
+                    </div>
+                    <div>
+                        {% include 'coordination/quests/coordination/_wrong_keys.html' with wrong_keys=line.wrong_keys %}
+                    </div>
+                {% endif %}
             {% endif %}
 
             <div class="row-margin">

@@ -43,8 +43,7 @@
                 {% if not mission.is_completed %}
                     {% for hint in display_hints %}
                         {% if hint.mission == mission %}
-                            <div class="well well-sm">{{ hint }}:
-                            {{ hint.text|safe }}</div>
+                            <div class="well well-sm">{{ hint }}: {{ hint.text|safe }}</div>
                         {% endif %}
                     {% endfor %}
                     {% for hint in rest_hints %}
