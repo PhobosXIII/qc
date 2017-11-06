@@ -431,6 +431,7 @@ def multilinear_coordination(request, quest):
     player = request.user
     if request.method == 'POST':
         mission = get_object_or_404(Mission, pk=request.POST['mission_id'])
+        line = mission.quest
         if quest.started and not quest.is_game_over and not mission.is_completed(player):
             form = KeyForm(request.POST, quest=quest)
             if form.is_valid():
@@ -440,14 +441,13 @@ def multilinear_coordination(request, quest):
                 keylog = Keylog(key=key, fix_time=timezone.now(), player=player, mission=mission, is_right=is_right)
                 if is_right:
                     keylog.points = mission.points
-                    line = mission.quest
                     next_mission = Mission.objects.filter(quest=line, order_number=mission.order_number + 1).first()
                     current_mission = get_object_or_404(CurrentMission, mission__quest=line, player=player)
                     current_mission.mission = next_mission
                     current_mission.start_time = keylog.fix_time
                     current_mission.save()
                 keylog.save()
-        url = '{0}#m{1}'.format(resolve_url('coordination:quest_coordination', quest_id=quest.id), mission.id)
+        url = '{0}#l{1}'.format(resolve_url('coordination:quest_coordination', quest_id=quest.id), line.id)
         return redirect(url)
     else:
         rest_quest = None
@@ -460,12 +460,13 @@ def multilinear_coordination(request, quest):
         else:
             if quest.started and not quest.is_game_over:
                 rest_quest = get_timedelta(quest.game_over)
-            form = KeyForm(quest=quest)
+                form = KeyForm(quest=quest)
             lines = quest.lines()
             for line in lines:
                 current_mission = get_object_or_404(CurrentMission, mission__quest=line, player=player)
                 line.mission = current_mission.mission
                 line.wrong_keys = Keylog.wrong_keylogs_format(player, line.mission)
+                line.completed_missions = Mission.completed_missions(line, player)
             count = 0
             current_missions = quest.current_missions_multilinear(player)
             for current_mission in current_missions:
@@ -489,7 +490,7 @@ def coordination_quest_ajax(request, quest_id):
         messages = quest.messages().filter(is_show=True)
         html_messages = render_to_string('coordination/messages/_list.html', {'messages': messages})
         data = {'messages': html_messages, }
-        if quest.nonlinear:
+        if quest.nonlinear or quest.multilinear:
             rest_quest = None
             if quest.started and not quest.is_game_over:
                 rest_quest = get_timedelta(quest.game_over)
