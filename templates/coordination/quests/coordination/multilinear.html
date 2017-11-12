@@ -35,36 +35,49 @@
             {% endif %}
 
             <h2 id="l{{ line.id }}">{{ line.title }}</h2>
-            <h3>{{ line.mission.short_name }}</h3>
 
-            <div class="text-base">{{ line.mission.text|safe }}</div>
+            {% if line.mission %}
+                <h3>{{ line.mission.short_name }}</h3>
 
-            <div>{% include 'coordination/quests/coordination/_picture.html' with mission=line.mission %}</div>
+                <div class="text-base">{{ line.mission.text|safe }}</div>
 
-            {% if not line.mission.is_finish %}
-                {% for hint in line.hints %}
-                    <div class="well well-sm">{{ hint }}: {{ hint.text|safe }}</div>
-                {% endfor %}
-                {% if line.next_hint_time %}
-                    <p class="well well-sm">Следующая подсказка будет доступна в {{ line.next_hint_time|date:"H:i:s" }}</p>
-                {% endif %}
+                <div>{% include 'coordination/quests/coordination/_picture.html' with mission=line.mission %}</div>
 
-                {% if form %}
-                    <div class="row-margin">
-                        <form action="" method="post" class="form-inline">
-                            {% crispy form %}
-                            <input type="hidden" name="mission_id" value="{{ line.mission.id }}" />
-                        </form>
-                    </div>
-                    <div>
-                        {% include 'coordination/quests/coordination/_wrong_keys.html' with wrong_keys=line.wrong_keys %}
-                    </div>
+                {% if not line.mission.is_finish %}
+                    {% if line.hints %}
+                        {% for hint in line.hints %}
+                            <div class="well well-sm">{{ hint }}: {{ hint.text|safe }}</div>
+                        {% endfor %}
+                    {% endif %}
+                    {% if line.next_hint_time %}
+                        <p class="well well-sm">Следующая подсказка будет доступна в {{ line.next_hint_time|date:"H:i:s" }}</p>
+                    {% endif %}
+
+                    {% if form %}
+                        <div class="row-margin">
+                            <form action="" method="post" class="form-inline">
+                                {% crispy form %}
+                                <input type="hidden" name="mission_id" value="{{ line.mission.id }}" />
+                            </form>
+                        </div>
+                        <div>
+                            {% include 'coordination/quests/coordination/_wrong_keys.html' with wrong_keys=line.wrong_keys %}
+                        </div>
+                    {% endif %}
                 {% endif %}
             {% endif %}
 
-            <div class="row-margin">
-                {% include 'coordination/quests/coordination/_completed_missions.html' with completed_missions=line.completed_missions %}
-            </div>
+            {% if line.completed_missions %}
+                <div class="row-margin">
+                    {% include 'coordination/quests/coordination/_ml_completed_missions.html' %}
+                </div>
+            {% endif %}
+
+            {% if line.uncompleted_missions %}
+                <div class="row-margin">
+                    {% include 'coordination/quests/coordination/_ml_uncompleted_missions.html' %}
+                </div>
+            {% endif %}
         </div>
     {% empty %}
         {% if quest.started %}

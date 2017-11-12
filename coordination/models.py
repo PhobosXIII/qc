@@ -104,8 +104,11 @@ class Quest(models.Model):
 
     @property
     def is_game_over(self):
-        if self.game_over:
-            return timezone.now() >= self.game_over
+        quest = self
+        if self.parent:
+            quest = self.parent
+        if quest.game_over:
+            return timezone.now() >= quest.game_over
         else:
             return False
 

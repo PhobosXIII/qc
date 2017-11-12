@@ -44,3 +44,24 @@ def time_in_minutes(time):
     if not time:
         return 0
     return time // 60
+
+
+def is_game_over(count, missions, quest):
+    """
+
+    :param count: count of player's uncompleted missions
+    :param missions: all missions or current missions of quest
+    :param quest: parent quest
+    :return: true if game for player is over, false otherwise
+    """
+    return missions and count == 0 or quest.is_game_over or quest.ended
+
+
+def is_ml_game_over(player, quest):
+    count = 0
+    current_missions = quest.current_missions_multilinear(player)
+    for current_mission in current_missions:
+        if not current_mission.mission.is_finish:
+            count += 1
+    game_over = is_game_over(count, current_missions, quest)
+    return game_over

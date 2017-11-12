@@ -13,7 +13,8 @@ from coordination.forms import QuestForm, MissionForm, HintForm, PlayerForm, Key
 from coordination.models import Quest, Mission, Hint, CurrentMission, Keylog, Message, Membership
 from coordination.permission_utils import is_quest_organizer, is_quest_player, is_organizer, is_organizer_features, \
     is_quest_organizer_or_agent
-from coordination.utils import generate_random_username, generate_random_password, get_timedelta
+from coordination.utils import generate_random_username, generate_random_password, get_timedelta, is_game_over, \
+    is_ml_game_over
 
 
 # Quests
@@ -376,7 +377,7 @@ def nonlinear_coordination(request, quest):
                 mission.is_completed = is_completed
                 if not is_completed:
                     count += 1
-            if missions and count == 0 or quest.is_game_over or quest.ended:
+            if is_game_over(count, missions, quest):
                 mission_finish = quest.finish_mission()
             display_hints, rest_hints = Mission.hints_in_nl(quest, missions)
         points = Keylog.total_points(quest, player)
@@ -458,24 +459,26 @@ def multilinear_coordination(request, quest):
         if quest.not_started:
             mission_start = quest.start_mission()
         else:
+            game_over = is_ml_game_over(player, quest)
+            if game_over:
+                mission_finish = quest.finish_mission()
+
             if quest.started and not quest.is_game_over:
                 rest_quest = get_timedelta(quest.game_over)
                 form = KeyForm(quest=quest)
             lines = quest.lines()
             for line in lines:
-                current_mission = get_object_or_404(CurrentMission, mission__quest=line, player=player)
-                line.mission = current_mission.mission
-                line.hints = current_mission.display_hints()
-                line.next_hint_time = current_mission.next_hint_time()
-                line.wrong_keys = Keylog.wrong_keylogs_format(player, line.mission)
                 line.completed_missions = Mission.completed_missions(line, player)
-            count = 0
-            current_missions = quest.current_missions_multilinear(player)
-            for current_mission in current_missions:
-                if not current_mission.mission.is_finish:
-                    count += 1
-            if current_missions and count == 0 or quest.is_game_over or quest.ended:
-                mission_finish = quest.finish_mission()
+                if game_over:
+                    all_missions = line.missions().filter(order_number__gt=0, is_finish=False)
+                    line.uncompleted_missions = [i for i in all_missions if i not in line.completed_missions]
+                else:
+                    current_mission = get_object_or_404(CurrentMission, mission__quest=line, player=player)
+                    line.mission = current_mission.mission
+                    line.hints = current_mission.display_hints()
+                    line.next_hint_time = current_mission.next_hint_time()
+                    line.wrong_keys = Keylog.wrong_keylogs_format(player, line.mission)
+
         points = Keylog.total_points(quest, player)
         messages = quest.messages().filter(is_show=True)
         context = {'quest': quest, 'messages': messages, 'lines': lines, 'mission_finish': mission_finish,
@@ -688,8 +691,9 @@ def quest_missions(request, quest_id):
 def detail_mission(request, mission_id):
     mission = get_object_or_404(Mission, pk=mission_id)
     quest = mission.quest
+    user = request.user
     can_user_view = quest.published and \
-                    (quest.ended or (request.user.is_authenticated() and mission.is_completed(request.user)))
+                    (quest.ended or quest.is_game_over or (user.is_authenticated() and mission.is_completed(user)))
     if not can_user_view:
         request = is_quest_organizer_or_agent(request, quest)
     hints = None
