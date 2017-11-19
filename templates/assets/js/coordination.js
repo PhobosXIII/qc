@@ -39,6 +39,31 @@ function update_coordination_nl() {
     });
 }
 
+function update_coordination_ml() {
+    $.ajax({
+        type: "GET",
+        url: url,
+        success: function(data) {
+            var messages = data["messages"];
+            $("#messages").html(messages);
+            var mission_finish = data["mission_finish"];
+            $("#mission_finish").html(mission_finish);
+            start_game_over_countdown(data["rest_quest"]);
+            var lines = data["lines"];
+            for( var i=0; i <lines.length; i++) {
+                var line_id = lines[i]["line_id"];
+                var line_mission = lines[i]["line_mission"];
+                $("#mission_name" + line_id).text(line_mission["name"]);
+                $("#text" + line_id).html(line_mission["text"]);
+                var line_picture = lines[i]["line_picture"];
+                $("#picture" + line_id).html(line_picture);
+                $("#hints" + line_id).html(lines[i]["line_hints"]);
+                $("#wrong_keys" + line_id).html(lines[i]["line_wrong_keys"]);
+            }
+        }
+    });
+}
+
 function start_countdown(time) {
     var countdown = $('#countdown');
     countdown.countdown('destroy');

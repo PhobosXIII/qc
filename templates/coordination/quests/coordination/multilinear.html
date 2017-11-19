@@ -37,47 +37,48 @@
             <h2 id="l{{ line.id }}">{{ line.title }}</h2>
 
             {% if line.mission %}
-                <h3>{{ line.mission.short_name }}</h3>
+                <h3 id="mission_name{{ line.id }}">{{ line.mission.short_name }}</h3>
 
-                <div class="text-base">{{ line.mission.text|safe }}</div>
+                <div id="text{{ line.id }}" class="text-base">{{ line.mission.text|safe }}</div>
 
-                <div>{% include 'coordination/quests/coordination/_picture.html' with mission=line.mission %}</div>
+                <div id="picture{{ line.id }}">{% include 'coordination/quests/coordination/_picture.html' with mission=line.mission %}</div>
 
                 {% if not line.mission.is_finish %}
-                    {% if line.hints %}
-                        {% for hint in line.hints %}
-                            <div class="well well-sm">{{ hint }}: {{ hint.text|safe }}</div>
-                        {% endfor %}
-                    {% endif %}
-                    {% if line.next_hint_time %}
-                        <p class="well well-sm">Следующая подсказка будет доступна в {{ line.next_hint_time|date:"H:i:s" }}</p>
-                    {% endif %}
+                    <div id="hints{{ line.id }}">
+                        {% include 'coordination/hints/_ml_list.html' %}
+                    </div>
 
-                    {% if form %}
-                        <div class="row-margin">
-                            <form action="" method="post" class="form-inline">
-                                {% crispy form %}
-                                <input type="hidden" name="mission_id" value="{{ line.mission.id }}" />
-                            </form>
-                        </div>
-                        <div>
-                            {% include 'coordination/quests/coordination/_wrong_keys.html' with wrong_keys=line.wrong_keys %}
-                        </div>
-                    {% endif %}
+                    <div id="form{{ line.id }}">
+                        {% if form %}
+                            <div class="row-margin">
+                                <form action="" method="post" class="form-inline">
+                                    {% crispy form %}
+                                    <input type="hidden" name="mission_id" value="{{ line.mission.id }}" />
+                                </form>
+                            </div>
+                            <div id="wrong_keys{{ line.id }}">
+                                {% include 'coordination/quests/coordination/_wrong_keys.html' with wrong_keys=line.wrong_keys %}
+                            </div>
+                        {% endif %}
+                    </div>
                 {% endif %}
             {% endif %}
 
-            {% if line.completed_missions %}
-                <div class="row-margin">
-                    {% include 'coordination/quests/coordination/_ml_completed_missions.html' %}
-                </div>
-            {% endif %}
+            <div id="completed_missions{{ line.id }}">
+                {% if line.completed_missions %}
+                    <div class="row-margin">
+                        {% include 'coordination/quests/coordination/_ml_completed_missions.html' %}
+                    </div>
+                {% endif %}
+            </div>
 
-            {% if line.uncompleted_missions %}
-                <div class="row-margin">
-                    {% include 'coordination/quests/coordination/_ml_uncompleted_missions.html' %}
-                </div>
-            {% endif %}
+            <div id="uncompleted_missions{{ line.id }}">
+                {% if line.uncompleted_missions %}
+                    <div class="row-margin">
+                        {% include 'coordination/quests/coordination/_ml_uncompleted_missions.html' %}
+                    </div>
+                {% endif %}
+            </div>
         </div>
     {% empty %}
         {% if quest.started %}
@@ -107,7 +108,7 @@
         });
 
         setInterval(function () {
-            update_coordination_nl()
+            update_coordination_ml()
         }, 420000);
     </script>
     <script type="text/javascript" src="{% static "assets/js/coordination.js" %}"></script>

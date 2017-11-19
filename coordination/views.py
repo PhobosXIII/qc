@@ -511,6 +511,25 @@ def coordination_quest_ajax(request, quest_id):
             html_mission_finish = render_to_string('coordination/quests/coordination/_mission_finish.html',
                                                    {'mission_finish': mission_finish})
             data.update({'rest_quest': rest_quest, 'mission_finish': html_mission_finish})
+            if quest.multilinear:
+                json_lines = []
+                lines = quest.lines()
+                for line in lines:
+                    current_mission = get_object_or_404(CurrentMission, mission__quest=line, player=player)
+                    mission = current_mission.mission
+                    json_mission = mission.as_json()
+                    html_picture = render_to_string('coordination/quests/coordination/_picture.html',
+                                                    {'mission': mission})
+                    line.hints = current_mission.display_hints()
+                    line.next_hint_time = current_mission.next_hint_time()
+                    html_line_hints = render_to_string('coordination/hints/_ml_list.html', {'line': line})
+
+                    wrong_keys = Keylog.wrong_keylogs_format(player, mission)
+                    html_line_wrong_keys = render_to_string('coordination/quests/coordination/_wrong_keys.html',
+                                                       {'wrong_keys': wrong_keys})
+                    json_lines.append({'line_id': line.id, 'line_mission': json_mission, 'line_hints': html_line_hints,
+                                       'line_picture': html_picture, 'line_wrong_keys': html_line_wrong_keys})
+                data.update({'lines': json_lines, })
         else:
             current_mission = get_object_or_404(CurrentMission, mission__quest=quest, player=player)
             mission = current_mission.mission

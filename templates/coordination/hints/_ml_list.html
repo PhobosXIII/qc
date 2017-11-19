@@ -1,0 +1,8 @@
+{% if line.hints %}
+    {% for hint in line.hints %}
+        <div class="well well-sm">{{ hint }}: {{ hint.text|safe }}</div>
+    {% endfor %}
+{% endif %}
+{% if line.next_hint_time %}
+    <p class="well well-sm">Следующая подсказка будет доступна в {{ line.next_hint_time|date:"H:i:s" }}</p>
+{% endif %}
