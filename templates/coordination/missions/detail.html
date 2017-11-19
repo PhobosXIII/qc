@@ -79,8 +79,9 @@
         {% endif %}
     {% elif hints %}
         <h3>Подсказки</h3>
+        <p class="text-center">Нажмите на заголовок подсказки, чтобы отобразить ее.</p>
         <div id="hints" class="row">
-            {% include 'coordination/hints/_list.html' %}
+            {% include 'coordination/hints/_collapsing_list.html' %}
         </div>
     {% endif %}
 {% endblock content %}

@@ -1,0 +1,17 @@
+{% load coordination_extras %}
+
+{% for hint in hints %}
+    <div class="col-md-4">
+        <div class="panel panel-primary">
+            <div class="panel-heading" role="button" data-toggle="collapse" data-target="#collapseHint{{ hint.id }}">
+                <h4 class="panel-title">
+                    {{ hint }}
+                    <span class="pull-right"><span class="fa fa-clock-o fa-lg"></span> {{ hint.delay }}</span>
+                </h4>
+            </div>
+            <div class="panel-body collapse" id="collapseHint{{ hint.id }}">
+                <div class="text-base">{{ hint.text|safe }}</div>
+            </div>
+        </div>
+    </div>
+{% endfor %}
