@@ -40,6 +40,15 @@ def get_timedelta_with_now(time):
     return timedelta.seconds
 
 
+def get_interval(start, end):
+    if not start or not end:
+        return None
+    if end < start:
+        return 0
+    timedelta = end - start
+    return timedelta.seconds
+
+
 def time_in_minutes(time):
     if not time:
         return 0

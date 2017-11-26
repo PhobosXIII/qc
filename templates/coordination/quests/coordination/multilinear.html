@@ -36,32 +36,30 @@
 
             <h2 id="l{{ line.id }}">{{ line.title }}</h2>
 
-            {% if line.mission %}
-                <h3 id="mission_name{{ line.id }}">{{ line.mission.short_name }}</h3>
+            <h3 id="mission_name{{ line.id }}">{{ line.mission.short_name }}</h3>
 
-                <div id="text{{ line.id }}" class="text-base">{{ line.mission.text|safe }}</div>
+            <div id="text{{ line.id }}" class="text-base">{{ line.mission.text|safe }}</div>
 
-                <div id="picture{{ line.id }}">{% include 'coordination/quests/coordination/_picture.html' with mission=line.mission %}</div>
+            <div id="picture{{ line.id }}">{% include 'coordination/quests/coordination/_picture.html' with mission=line.mission %}</div>
 
-                {% if not line.mission.is_finish %}
-                    <div id="hints{{ line.id }}">
-                        {% include 'coordination/hints/_ml_list.html' %}
-                    </div>
+            {% if not line.mission.is_finish %}
+                <div id="hints{{ line.id }}">
+                    {% include 'coordination/hints/_ml_list.html' %}
+                </div>
 
-                    <div id="form{{ line.id }}">
-                        {% if form %}
-                            <div class="row-margin">
-                                <form action="" method="post" class="form-inline">
-                                    {% crispy form %}
-                                    <input type="hidden" name="mission_id" value="{{ line.mission.id }}" />
-                                </form>
-                            </div>
-                            <div id="wrong_keys{{ line.id }}">
-                                {% include 'coordination/quests/coordination/_wrong_keys.html' with wrong_keys=line.wrong_keys %}
-                            </div>
-                        {% endif %}
-                    </div>
-                {% endif %}
+                <div id="form{{ line.id }}">
+                    {% if form %}
+                        <div class="row-margin">
+                            <form action="" method="post" class="form-inline">
+                                {% crispy form %}
+                                <input type="hidden" name="mission_id" value="{{ line.mission.id }}" />
+                            </form>
+                        </div>
+                        <div id="wrong_keys{{ line.id }}">
+                            {% include 'coordination/quests/coordination/_wrong_keys.html' with wrong_keys=line.wrong_keys %}
+                        </div>
+                    {% endif %}
+                </div>
             {% endif %}
 
             <div id="completed_missions{{ line.id }}">

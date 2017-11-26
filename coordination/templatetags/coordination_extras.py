@@ -1,3 +1,4 @@
+import math
 from django import template
 
 from coordination.models import Membership
@@ -39,3 +40,13 @@ def is_agent(user, quest):
         if member:
             user_is_agent = True
     return user_is_agent
+
+
+@register.filter()
+def formatInterval(seconds):
+    hours = math.floor(seconds / 3600)
+    mins = math.floor((seconds - (hours * 3600)) / 60)
+    if mins == 0:
+        return "%dч" % hours
+    else:
+        return "%dч %02dм" % (hours, mins)

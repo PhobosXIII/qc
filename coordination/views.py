@@ -13,7 +13,7 @@ from coordination.forms import QuestForm, MissionForm, HintForm, PlayerForm, Key
 from coordination.models import Quest, Mission, Hint, CurrentMission, Keylog, Message, Membership
 from coordination.permission_utils import is_quest_organizer, is_quest_player, is_organizer, is_quest_organizer_or_agent
 from coordination.utils import generate_random_username, generate_random_password, get_timedelta, is_game_over, \
-    is_ml_game_over
+    is_ml_game_over, get_interval
 
 
 # Quests
@@ -36,7 +36,10 @@ def detail_quest(request, quest_id):
     if not quest.published:
         request = is_quest_organizer(request, quest)
     organizers = quest.organizers()
-    context = {'quest': quest, 'organizers': organizers}
+    interval = None
+    if quest.nonlinear or quest.multilinear:
+        interval = get_interval(quest.start, quest.game_over)
+    context = {'quest': quest, 'organizers': organizers, 'interval': interval}
     return render(request, 'coordination/quests/detail.html', context)
 
 
@@ -461,19 +464,18 @@ def multilinear_coordination(request, quest):
             game_over = is_ml_game_over(player, quest)
             if game_over:
                 mission_finish = quest.finish_mission()
-
-            if quest.started and not quest.is_game_over:
+            else:
                 rest_quest = get_timedelta(quest.game_over)
                 form = KeyForm(quest=quest)
             lines = quest.lines()
             for line in lines:
+                current_mission = get_object_or_404(CurrentMission, mission__quest=line, player=player)
+                line.mission = current_mission.mission
                 line.completed_missions = Mission.completed_missions(line, player)
                 if game_over:
                     all_missions = line.missions().filter(order_number__gt=0, is_finish=False)
                     line.uncompleted_missions = [i for i in all_missions if i not in line.completed_missions]
                 else:
-                    current_mission = get_object_or_404(CurrentMission, mission__quest=line, player=player)
-                    line.mission = current_mission.mission
                     line.hints = current_mission.display_hints()
                     line.next_hint_time = current_mission.next_hint_time()
                     line.wrong_keys = Keylog.wrong_keylogs_format(player, line.mission)
