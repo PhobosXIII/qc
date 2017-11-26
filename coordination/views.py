@@ -11,8 +11,7 @@ from sendfile import sendfile
 
 from coordination.forms import QuestForm, MissionForm, HintForm, PlayerForm, KeyForm, MessageForm, OrganizerForm
 from coordination.models import Quest, Mission, Hint, CurrentMission, Keylog, Message, Membership
-from coordination.permission_utils import is_quest_organizer, is_quest_player, is_organizer, is_organizer_features, \
-    is_quest_organizer_or_agent
+from coordination.permission_utils import is_quest_organizer, is_quest_player, is_organizer, is_quest_organizer_or_agent
 from coordination.utils import generate_random_username, generate_random_password, get_timedelta, is_game_over, \
     is_ml_game_over
 
