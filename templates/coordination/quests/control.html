@@ -12,13 +12,6 @@
 
     {% include 'coordination/quests/_nav.html' %}
 
-    <div class="row row-margin">
-        <div class="text-base col-xs-12 col-sm-4 col-md-3" id="countup"></div>
-        {% if quest.nonlinear and quest.started and not quest.is_game_over %}
-            <div class="text-base col-sm-8 col-md-9" id="countdown"></div>
-        {% endif %}
-    </div>
-
     {% if quest.not_started %}
         <p class="row-margin text-center">
             <button data-href="{% url 'coordination:clear_quest' quest.id %}" data-toggle="modal"
@@ -95,21 +88,3 @@
         {% endif %}
     {% endif %}
 {% endblock content %}
-
-{% block scripts %}
-    {{ block.super }}
-    <script type="text/javascript" src="{% static "assets/js/jquery.plugin.min.js" %}"></script>
-    <script type="text/javascript" src="{% static "assets/js/jquery.countdown.min.js" %}"></script>
-    <script type="text/javascript">
-        $(function () {
-            {% if quest.nonlinear %}
-                start_game_over_countdown({{ rest_quest }});
-            {% endif %}
-
-            {% now "U" as t %}
-            var time = new Date({{ t }});
-            start_countup(time)
-        });
-    </script>
-    <script type="text/javascript" src="{% static "assets/js/coordination.js" %}"></script>
-{% endblock scripts %}

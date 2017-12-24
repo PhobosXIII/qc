@@ -17,8 +17,6 @@
     <br>
     {% include 'coordination/quests/tables/_nav.html' %}
 
-    <div class="row-margin text-base" id="countup"></div>
-
     <table data-toggle="table" data-fixed-columns="true" data-fixed-number="1" data-height="500"
             {% if quest.linear %} data-classes="table" data-striped="true" {% endif %}>
         <thead>
@@ -57,13 +55,4 @@
 {% block scripts %}
     {{ block.super }}
     <script type="text/javascript" src="{% static "assets/js/bootstrap-table-fixed-columns.js" %}"></script>
-    <script type="text/javascript" src="{% static "assets/js/jquery.plugin.min.js" %}"></script>
-    <script type="text/javascript" src="{% static "assets/js/jquery.countdown.min.js" %}"></script>
-    <script type="text/javascript">
-        $(function () {
-            {% now "U" as t %}
-            var time = new Date({{ t }});
-            start_countup(time)
-        });
-    </script>
 {% endblock scripts %}

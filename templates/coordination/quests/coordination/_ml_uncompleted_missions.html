@@ -1,9 +1,11 @@
 {% if line.uncompleted_missions %}
-    <p>
-        Непройденные задания:
-        {% for mission in line.uncompleted_missions %}
-            <a href="{% url 'coordination:mission_detail' mission.id %}"
-               class="text-normal label label-danger">{{ mission.short_name }}</a>
-        {% endfor %}
-    </p>
+    <div class="row-margin">
+        <p>
+            Непройденные задания:
+            {% for mission in line.uncompleted_missions %}
+                <a href="{% url 'coordination:mission_detail' mission.id %}"
+                   class="text-normal label label-danger">{{ mission.short_name }}</a>
+            {% endfor %}
+        </p>
+    </div>
 {% endif %}

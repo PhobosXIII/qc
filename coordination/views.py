@@ -125,12 +125,9 @@ def tables_quest(request, quest_id):
     quest = get_object_or_404(Quest, pk=quest_id, parent__isnull=True)
     if quest.nonlinear or quest.multilinear:
         request = is_quest_organizer_or_agent(request, quest)
-        rest_quest = 0
-        if quest.started:
-            rest_quest = get_timedelta(quest.game_over)
         players = quest.players_ext()
         missions = quest.missions_ext()
-        context = {'quest': quest, 'players': players, 'missions': missions, 'rest_quest': rest_quest}
+        context = {'quest': quest, 'players': players, 'missions': missions}
         if quest.nonlinear:
             return render(request, 'coordination/quests/tables/nonlinear.html', context)
         else:
@@ -166,12 +163,7 @@ def control_quest(request, quest_id):
     quest = get_object_or_404(Quest, pk=quest_id, parent__isnull=True)
     request = is_quest_organizer(request, quest)
     context = {'quest': quest, }
-    if quest.nonlinear:
-        rest_quest = 0
-        if quest.started:
-            rest_quest = get_timedelta(quest.game_over)
-        context.update({'rest_quest': rest_quest})
-    elif quest.linear:
+    if quest.linear:
         current_missions = quest.current_missions()
         context.update({'current_missions': current_missions})
     return render(request, 'coordination/quests/control.html', context)
@@ -358,7 +350,6 @@ def nonlinear_coordination(request, quest):
             url = resolve_url('coordination:quest_coordination', quest_id=quest.id)
         return redirect(url)
     else:
-        rest_quest = None
         missions = None
         mission_start = None
         mission_finish = None
@@ -368,8 +359,6 @@ def nonlinear_coordination(request, quest):
         if quest.not_started:
             mission_start = quest.start_mission()
         else:
-            if quest.started and not quest.is_game_over:
-                rest_quest = get_timedelta(quest.game_over)
             form = KeyForm(quest=quest)
             count = 0
             missions = quest.missions().filter(order_number__gt=0, is_finish=False)
@@ -385,7 +374,7 @@ def nonlinear_coordination(request, quest):
         points = Keylog.total_points(quest, player)
         messages = quest.messages().filter(is_show=True)
         context = {'quest': quest, 'messages': messages, 'missions': missions, 'mission_finish': mission_finish,
-                   'mission_start': mission_start, 'rest_quest': rest_quest, 'points': points, 'form': form,
+                   'mission_start': mission_start, 'points': points, 'form': form,
                    'display_hints': display_hints, 'rest_hints': rest_hints}
         return render(request, 'coordination/quests/coordination/nonlinear.html', context)
 
@@ -453,7 +442,6 @@ def multilinear_coordination(request, quest):
         url = '{0}#l{1}'.format(resolve_url('coordination:quest_coordination', quest_id=quest.id), line.id)
         return redirect(url)
     else:
-        rest_quest = None
         lines = None
         mission_start = None
         mission_finish = None
@@ -465,7 +453,6 @@ def multilinear_coordination(request, quest):
             if game_over:
                 mission_finish = quest.finish_mission()
             else:
-                rest_quest = get_timedelta(quest.game_over)
                 form = KeyForm(quest=quest)
             lines = quest.lines()
             for line in lines:
@@ -483,7 +470,7 @@ def multilinear_coordination(request, quest):
         points = Keylog.total_points(quest, player)
         messages = quest.messages().filter(is_show=True)
         context = {'quest': quest, 'messages': messages, 'lines': lines, 'mission_finish': mission_finish,
-                   'mission_start': mission_start, 'rest_quest': rest_quest, 'points': points, 'form': form}
+                   'mission_start': mission_start, 'points': points, 'form': form}
         return render(request, 'coordination/quests/coordination/multilinear.html', context)
 
 
@@ -497,9 +484,6 @@ def coordination_quest_ajax(request, quest_id):
         html_messages = render_to_string('coordination/messages/_list.html', {'messages': messages})
         data = {'messages': html_messages, }
         if quest.nonlinear or quest.multilinear:
-            rest_quest = None
-            if quest.started and not quest.is_game_over:
-                rest_quest = get_timedelta(quest.game_over)
             count = 0
             missions = quest.missions().filter(order_number__gt=0, is_finish=False)
             for mission in missions:
@@ -507,11 +491,13 @@ def coordination_quest_ajax(request, quest_id):
                 if not is_completed:
                     count += 1
             mission_finish = None
-            if missions and count == 0 or quest.is_game_over or quest.ended:
+            if (quest.nonlinear and is_game_over(count, missions, quest)) \
+                    or (quest.multilinear and is_ml_game_over(player, quest)):
                 mission_finish = quest.finish_mission()
+
             html_mission_finish = render_to_string('coordination/quests/coordination/_mission_finish.html',
                                                    {'mission_finish': mission_finish})
-            data.update({'rest_quest': rest_quest, 'mission_finish': html_mission_finish})
+            data.update({'rest_quest': quest.rest_quest, 'mission_finish': html_mission_finish})
             if quest.multilinear:
                 json_lines = []
                 lines = quest.lines()
@@ -528,8 +514,21 @@ def coordination_quest_ajax(request, quest_id):
                     wrong_keys = Keylog.wrong_keylogs_format(player, mission)
                     html_line_wrong_keys = render_to_string('coordination/quests/coordination/_wrong_keys.html',
                                                        {'wrong_keys': wrong_keys})
+                    line.completed_missions = Mission.completed_missions(line, player)
+                    html_line_completed_missions = \
+                        render_to_string('coordination/quests/coordination/_ml_completed_missions.html', {'line': line})
+                    if is_ml_game_over(player, quest):
+                        all_missions = line.missions().filter(order_number__gt=0, is_finish=False)
+                        line.uncompleted_missions = [i for i in all_missions if i not in line.completed_missions]
+                    else:
+                        line.uncompleted_missions = []
+                    html_line_uncompleted_missions = \
+                        render_to_string('coordination/quests/coordination/_ml_uncompleted_missions.html', {'line': line})
+
                     json_lines.append({'line_id': line.id, 'line_mission': json_mission, 'line_hints': html_line_hints,
-                                       'line_picture': html_picture, 'line_wrong_keys': html_line_wrong_keys})
+                                       'line_picture': html_picture, 'line_wrong_keys': html_line_wrong_keys,
+                                       'line_completed_missions': html_line_completed_missions,
+                                       'line_uncompleted_missions': html_line_uncompleted_missions})
                 data.update({'lines': json_lines, })
         else:
             current_mission = get_object_or_404(CurrentMission, mission__quest=quest, player=player)
@@ -570,7 +569,7 @@ def keylog_quest(request, quest_id):
     missions = quest.missions().exclude(is_finish=True)
     if quest.nonlinear or quest.multilinear:
         missions = missions.exclude(order_number=0)
-    if not mission and not player:
+    if missions and not mission and not player:
         url = reverse('coordination:quest_keylog', args=[quest.id])
         return redirect('{0}?mission={1}'.format(url, missions.first().id))
     keylogs = None

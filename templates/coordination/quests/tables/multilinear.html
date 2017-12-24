@@ -15,13 +15,6 @@
 
     {% include 'coordination/quests/_nav.html' %}
 
-    <div class="row row-margin">
-        <div class="text-base col-xs-12 col-sm-4 col-md-3" id="countup"></div>
-        {% if quest.started and not quest.is_game_over %}
-            <div class="text-base col-sm-8 col-md-9" id="countdown"></div>
-        {% endif %}
-    </div>
-
     {% include 'coordination/quests/tables/_ml_players.html' %}
     <br>
     {% include 'coordination/quests/tables/_ml_missions.html' %}
@@ -29,17 +22,5 @@
 
 {% block scripts %}
     {{ block.super }}
-    <script type="text/javascript" src="{% static "assets/js/jquery.plugin.min.js" %}"></script>
-    <script type="text/javascript" src="{% static "assets/js/jquery.countdown.min.js" %}"></script>
-    <script type="text/javascript">
-        $(function () {
-            start_game_over_countdown({{ rest_quest }});
-
-            {% now "U" as t %}
-            var time = new Date({{ t }});
-            start_countup(time)
-        });
-    </script>
-    <script type="text/javascript" src="{% static "assets/js/coordination.js" %}"></script>
     <script type="text/javascript" src="{% static "assets/js/tables.js" %}"></script>
 {% endblock scripts %}

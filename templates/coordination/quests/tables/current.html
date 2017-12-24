@@ -13,8 +13,6 @@
     <br>
     {% include 'coordination/quests/tables/_nav.html' %}
 
-    <div class="row-margin text-base" id="countup"></div>
-
     {% if current_missions %}
         <div class="table-responsive">
             <table class="table table-bordered text-center">
@@ -46,16 +44,3 @@
         </p>
     {% endif %}
 {% endblock content %}
-
-{% block scripts %}
-    {{ block.super }}
-    <script type="text/javascript" src="{% static "assets/js/jquery.plugin.min.js" %}"></script>
-    <script type="text/javascript" src="{% static "assets/js/jquery.countdown.min.js" %}"></script>
-    <script type="text/javascript">
-        $(function () {
-            {% now "U" as t %}
-            var time = new Date({{ t }});
-            start_countup(time)
-        });
-    </script>
-{% endblock scripts %}

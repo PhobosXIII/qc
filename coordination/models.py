@@ -10,7 +10,7 @@ from django.utils import timezone
 from django.utils.html import strip_tags
 
 from coordination.utils import get_timedelta_with_now, time_in_minutes, generate_random_username, \
-    generate_random_password
+    generate_random_password, get_timedelta
 
 
 def mission_file_name(instance, filename):
@@ -111,6 +111,16 @@ class Quest(models.Model):
             return timezone.now() >= quest.game_over
         else:
             return False
+
+    @property
+    def rest_quest(self):
+        quest = self
+        if self.parent:
+            quest = self.parent
+        if quest.started and not quest.is_game_over:
+            return get_timedelta(quest.game_over)
+        else:
+            return None
 
     def __str__(self):
         return self.title

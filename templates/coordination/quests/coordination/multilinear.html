@@ -11,11 +11,6 @@
 
     {% include 'coordination/quests/_nav.html' %}
 
-    <div class="row row-margin">
-        <div class="text-base col-xs-12 col-sm-4 col-md-3" id="countup"></div>
-        <div class="text-base col-sm-8 col-md-9" id="countdown"></div>
-    </div>
-
     <div id="mission_finish">
         {% include 'coordination/quests/coordination/_mission_finish.html' %}
     </div>
@@ -63,19 +58,11 @@
             {% endif %}
 
             <div id="completed_missions{{ line.id }}">
-                {% if line.completed_missions %}
-                    <div class="row-margin">
-                        {% include 'coordination/quests/coordination/_ml_completed_missions.html' %}
-                    </div>
-                {% endif %}
+                {% include 'coordination/quests/coordination/_ml_completed_missions.html' %}
             </div>
 
             <div id="uncompleted_missions{{ line.id }}">
-                {% if line.uncompleted_missions %}
-                    <div class="row-margin">
-                        {% include 'coordination/quests/coordination/_ml_uncompleted_missions.html' %}
-                    </div>
-                {% endif %}
+                {% include 'coordination/quests/coordination/_ml_uncompleted_missions.html' %}
             </div>
         </div>
     {% empty %}
@@ -91,23 +78,10 @@
 
 {% block scripts %}
     {{ block.super }}
-    <script type="text/javascript" src="{% static "assets/js/jquery.plugin.min.js" %}"></script>
-    <script type="text/javascript" src="{% static "assets/js/jquery.countdown.min.js" %}"></script>
     <script type="text/javascript">
         var url = "{% url 'coordination:quest_coordination_ajax' quest.id %}";
-        $(function () {
-            {% if rest_quest %}
-                start_game_over_countdown({{ rest_quest }});
-            {% endif %}
-
-            {% now "U" as t %}
-            var time = new Date({{ t }});
-            start_countup(time)
-        });
-
         setInterval(function () {
             update_coordination_ml()
-        }, 420000);
+        }, 103000);
     </script>
-    <script type="text/javascript" src="{% static "assets/js/coordination.js" %}"></script>
 {% endblock scripts %}

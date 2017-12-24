@@ -40,7 +40,7 @@ body {
     margin-top: 10px;
 }
 
-body > .container {
+body > .container, .jumbotron > .container {
     padding: 60px 15px 0;
 }
 

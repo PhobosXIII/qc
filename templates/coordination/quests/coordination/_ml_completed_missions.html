@@ -1,9 +1,11 @@
 {% if line.completed_missions %}
-    <p>
-        Пройденные задания:
-        {% for mission in line.completed_missions %}
-            <a href="{% url 'coordination:mission_detail' mission.id %}"
-               class="text-normal label label-success">{{ mission }}</a>
-        {% endfor %}
-    </p>
+    <div class="row-margin">
+        <p>
+            Пройденные задания:
+            {% for mission in line.completed_missions %}
+                <a href="{% url 'coordination:mission_detail' mission.id %}"
+                   class="text-normal label label-success">{{ mission }}</a>
+            {% endfor %}
+        </p>
+    </div>
 {% endif %}

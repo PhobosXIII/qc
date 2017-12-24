@@ -76,6 +76,20 @@
     {% block scripts %}
         <script type="text/javascript" src="{% static "assets/js/bootstrap.min.js" %}"></script>
         <script type="text/javascript" src="{% static "assets/js/main.js" %}"></script>
+        <script type="text/javascript" src="{% static "assets/js/jquery.plugin.min.js" %}"></script>
+        <script type="text/javascript" src="{% static "assets/js/jquery.countdown.min.js" %}"></script>
+        <script type="text/javascript" src="{% static "assets/js/coordination.js" %}"></script>
+        <script type="text/javascript">
+        $(function () {
+            {% now "U" as t %}
+            var time = new Date({{ t }});
+            start_countup(time);
+
+            {% if quest and quest.nonlinear or quest.multilinear %}
+                start_game_over_countdown({{ quest.rest_quest }});
+            {% endif %}
+        });
+    </script>
     {% endblock scripts%}
 </body>
 

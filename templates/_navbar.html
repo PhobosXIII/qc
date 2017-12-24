@@ -46,5 +46,9 @@
                 {% endif %}
             </ul>
         </div>
+        <div class="text-base col-xs-12 col-sm-4 col-md-3" id="countup"></div>
+        {% if quest and quest.nonlinear or quest.multilinear and quest.started and not quest.is_game_over %}
+            <div class="text-base col-xs-12 col-sm-8 col-md-9" id="game_over_countdown"></div>
+        {% endif %}
     </div>
 </div>

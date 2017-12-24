@@ -59,6 +59,8 @@ function update_coordination_ml() {
                 $("#picture" + line_id).html(line_picture);
                 $("#hints" + line_id).html(lines[i]["line_hints"]);
                 $("#wrong_keys" + line_id).html(lines[i]["line_wrong_keys"]);
+                $("#completed_missions" + line_id).html(lines[i]["line_completed_missions"]);
+                $("#uncompleted_missions" + line_id).html(lines[i]["line_uncompleted_missions"]);
             }
         }
     });
@@ -79,7 +81,7 @@ function start_countdown(time) {
 }
 
 function start_game_over_countdown(time) {
-    var countdown = $('#countdown');
+    var countdown = $('#game_over_countdown');
     countdown.countdown('destroy');
     if (time != null) {
         countdown.countdown({
