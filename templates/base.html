@@ -79,7 +79,9 @@
         <script type="text/javascript" src="{% static "assets/js/jquery.plugin.min.js" %}"></script>
         <script type="text/javascript" src="{% static "assets/js/jquery.countdown.min.js" %}"></script>
         <script type="text/javascript" src="{% static "assets/js/coordination.js" %}"></script>
-        <script type="text/javascript">
+    {% endblock scripts%}
+
+    <script type="text/javascript">
         $(function () {
             {% now "U" as t %}
             var time = new Date({{ t }});
@@ -90,7 +92,5 @@
             {% endif %}
         });
     </script>
-    {% endblock scripts%}
 </body>
-
 </html>

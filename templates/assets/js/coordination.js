@@ -50,7 +50,7 @@ function update_coordination_ml() {
             $("#mission_finish").html(mission_finish);
             start_game_over_countdown(data["rest_quest"]);
             var lines = data["lines"];
-            for( var i=0; i <lines.length; i++) {
+            for( var i = 0; i < lines.length; i++) {
                 var line_id = lines[i]["line_id"];
                 var line_mission = lines[i]["line_mission"];
                 $("#mission_name" + line_id).text(line_mission["name"]);
