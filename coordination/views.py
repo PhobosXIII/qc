@@ -111,7 +111,8 @@ def results_quest(request, quest_id):
     context = {'quest': quest, }
     if quest.nonlinear or quest.multilinear:
         players = quest.players_ext()
-        context.update({'players': players})
+        missions = quest.missions_ext()
+        context.update({'players': players, 'missions': missions})
     else:
         missions = quest.missions().exclude(is_finish=True)
         keylogs = Keylog.right_keylogs(missions)

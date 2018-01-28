@@ -20,8 +20,12 @@
     {% if quest.ended or user|is_organizer:quest or user.is_superuser %}
         {% if quest.nonlinear %}
             {% include 'coordination/quests/tables/_nl_players.html' %}
+            <br>
+            {% include 'coordination/quests/tables/_nl_missions.html' %}
         {% elif quest.multilinear %}
             {% include 'coordination/quests/tables/_ml_players.html' %}
+            <br>
+            {% include 'coordination/quests/tables/_ml_missions.html' %}
         {% else %}
             <table data-toggle="table" data-fixed-columns="true" data-fixed-number="2"
                        data-show-export="true" data-export-types="['excel']"
