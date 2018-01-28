@@ -17,19 +17,20 @@
     <br>
     {% include 'coordination/quests/tables/_nav.html' %}
 
-    <table data-toggle="table" data-fixed-columns="true" data-fixed-number="1" data-height="500"
-            {% if quest.linear %} data-classes="table" data-striped="true" {% endif %}>
+    <br>
+    <table data-toggle="table" data-fixed-columns="true" data-fixed-number="1">
         <thead>
             <tr>
                 <th>Игрок</th>
                 {% for mission in missions %}
-                        {% if quest.line_nonlinear %}
+
                             <th class="{% ifchanged mission.order_number %}{% cycle 'bg-success' 'bg-warning' as color%}{% else %}{{ color }}{% endifchanged %}">
-                                {{ mission.medium_name }}
+                                {% if quest.line_nonlinear %}
+                                    {{ mission.medium_name }}
+                                {% else %}
+                                    {{ mission.table_name }}
+                                {% endif %}
                             </th>
-                        {% else %}
-                            <th>{{ mission.table_name }}</th>
-                        {% endif %}
                     {% endfor %}
             </tr>
         </thead>

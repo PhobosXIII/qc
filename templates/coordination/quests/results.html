@@ -23,8 +23,7 @@
         {% elif quest.multilinear %}
             {% include 'coordination/quests/tables/_ml_players.html' %}
         {% else %}
-            <table data-toggle="table" data-fixed-columns="true" data-fixed-number="2" data-height="500"
-                    {% if quest.linear %} data-classes="table" data-striped="true" {% endif %}
+            <table data-toggle="table" data-fixed-columns="true" data-fixed-number="2"
                        data-show-export="true" data-export-types="['excel']"
                        data-export-options='{
                             "fileName": "{{ quest.title }} - Итоги",
@@ -36,13 +35,9 @@
                         <th>Игрок</th>
                         {% for mission in missions %}
                             {% url 'coordination:mission_detail' mission.id as mission_url%}
-                            {% if quest.line_nonlinear %}
-                                <th class="{% ifchanged mission.order_number %}{% cycle 'bg-success' 'bg-warning' as color%}{% else %}{{ color }}{% endifchanged %}">
-                                    <a href="{{ mission_url }}">{{ mission.medium_name }}</a>
-                                </th>
-                            {% else %}
-                                <th><a href="{{ mission_url }}">{{ mission.table_name }}</a></th>
-                            {% endif %}
+                            <th class="{% ifchanged mission.order_number %}{% cycle 'bg-success' 'bg-warning' as color%}{% else %}{{ color }}{% endifchanged %}">
+                                <a href="{{ mission_url }}">{% if quest.line_nonlinear %}{{ mission.medium_name }}{% else %}{{ mission.table_name }}{% endif %}</a>
+                            </th>
                         {% endfor %}
                     </tr>
                 </thead>
