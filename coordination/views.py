@@ -139,7 +139,7 @@ def tables_quest(request, quest_id):
 @login_required
 @minified_response
 def tables_quest_all(request, quest_id):
-    quest = get_object_or_404(Quest, pk=quest_id, type=Quest.LINEAR, parent__isnull=True)
+    quest = get_object_or_404(Quest, pk=quest_id, type__in=(Quest.LINEAR, Quest.LINE_NONLINEAR), parent__isnull=True)
     request = is_quest_organizer_or_agent(request, quest)
     players = quest.players()
     missions = quest.missions().exclude(is_finish=True)
@@ -151,7 +151,7 @@ def tables_quest_all(request, quest_id):
 @login_required
 @minified_response
 def tables_quest_current(request, quest_id):
-    quest = get_object_or_404(Quest, pk=quest_id, type=Quest.LINEAR, parent__isnull=True)
+    quest = get_object_or_404(Quest, pk=quest_id, type__in=(Quest.LINEAR, Quest.LINE_NONLINEAR), parent__isnull=True)
     request = is_quest_organizer_or_agent(request, quest)
     current_missions = quest.current_missions()
     context = {'quest': quest, 'current_missions': current_missions}
