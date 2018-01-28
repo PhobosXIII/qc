@@ -10,6 +10,7 @@
     </div>
 
     {% include 'coordination/quests/_nav.html' %}
+    <br>
 
     <div id="mission_finish">
         {% include 'coordination/quests/coordination/_mission_finish.html' %}
@@ -26,7 +27,7 @@
     {% for line in lines %}
         <div class="row" style="margin-right:0;margin-left:0">
             {% if not forloop.first %}
-                <hr/>
+                <hr class="split"/>
             {% endif %}
 
             <h2 id="l{{ line.id }}">{{ line.title }}</h2>

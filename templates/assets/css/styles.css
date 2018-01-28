@@ -139,3 +139,7 @@ ul.navbar-right {
   padding-top: 10px;
   margin-bottom: 20px;
 }
+
+hr.split{
+    border-color: #000;
+}
