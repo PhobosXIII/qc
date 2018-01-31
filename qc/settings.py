@@ -26,7 +26,7 @@ SECRET_KEY = get_env_variable('QC_SECRET_KEY')
 
 PROJECT_NAME = 'QC'
 FULL_PROJECT_NAME = 'QuestCoordination'
-PROJECT_VERSION_BASE = 'v3.4'
+PROJECT_VERSION_BASE = 'v3.4.1'
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -74,18 +74,14 @@ if ENV_ROLE == 'dev':
 
 if ENV_ROLE == 'prod' or ENV_ROLE == 'stage':
     DEBUG = False
+    MIDDLEWARE = BASE_MIDDLEWARE
 
-    QC_OPBEAT = get_env_variable('QC_OPBEAT') == 'True'
-    if QC_OPBEAT:
-        INSTALLED_APPS += ['opbeat.contrib.django', ]
-        OPBEAT = {
-            'ORGANIZATION_ID': get_env_variable('OPBEAT_ORG_ID'),
-            'APP_ID': get_env_variable('OPBEAT_APP_ID'),
-            'SECRET_TOKEN': get_env_variable('OPBEAT_SECRET'),
+    QC_SENTRY = get_env_variable('QC_SENTRY') == 'True'
+    if QC_SENTRY:
+        INSTALLED_APPS += ['raven.contrib.django.raven_compat', ]
+        RAVEN_CONFIG = {
+            'dsn': get_env_variable('SENTRY_DSN'),
         }
-        MIDDLEWARE = ['opbeat.contrib.django.middleware.OpbeatAPMMiddleware', ] + BASE_MIDDLEWARE
-    else:
-        MIDDLEWARE = BASE_MIDDLEWARE
 
     if QC_UPLOAD:
         SENDFILE_BACKEND = 'sendfile.backends.nginx'

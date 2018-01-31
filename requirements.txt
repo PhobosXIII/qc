@@ -7,6 +7,6 @@ Pillow==5.0.0
 awesome-slugify==1.6.5
 gunicorn==19.7.1
 django-ckeditor==5.3.1
-opbeat==3.5.3
+raven==6.5.0
 django-sendfile==0.3.11
 django-htmlmin==0.10.0
