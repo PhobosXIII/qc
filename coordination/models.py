@@ -134,7 +134,8 @@ class Quest(models.Model):
                 name = 'agent{0}'.format(self.pk)
                 username = generate_random_username(name)
                 password = generate_random_password()
-                agent = User.objects.create_user(username=username, password=password, first_name=name, last_name=password)
+                agent = User.objects.create_user(username=username, password=password, first_name=name,
+                                                 last_name=password)
                 Membership.objects.create(quest=self, user=agent, role=Membership.AGENT)
                 Mission.objects.create(quest=self, name_in_table='Старт', order_number=0)
             Mission.objects.create(quest=self, name_in_table='Финиш', order_number=1, is_finish=True)
@@ -567,6 +568,7 @@ class Keylog(models.Model):
         else:
             keylogs = Keylog.objects.filter(mission__quest=quest, player=player, is_right=is_right)
         return keylogs
+
 
 class Message(models.Model):
     quest = models.ForeignKey(Quest, verbose_name='квест')

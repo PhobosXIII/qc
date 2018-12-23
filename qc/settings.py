@@ -3,7 +3,7 @@
 import os
 import dj_database_url
 from django.core.exceptions import ImproperlyConfigured
-from django.core.urlresolvers import reverse_lazy
+from django.urls import reverse_lazy
 
 
 def get_env_variable(var_name):
@@ -26,7 +26,7 @@ SECRET_KEY = get_env_variable('QC_SECRET_KEY')
 
 PROJECT_NAME = 'QC'
 FULL_PROJECT_NAME = 'QuestCoordination'
-PROJECT_VERSION_BASE = 'v3.4.1'
+PROJECT_VERSION_BASE = 'v4.0'
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -65,43 +65,30 @@ if QC_UPLOAD:
 
 if ENV_ROLE == 'dev':
     DEBUG = True
+    PROJECT_VERSION = PROJECT_VERSION_BASE + '-debug'
     ALLOWED_HOSTS = []
+    MIDDLEWARE = BASE_MIDDLEWARE
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
     if QC_UPLOAD:
         SENDFILE_BACKEND = 'sendfile.backends.development'
 
-    MIDDLEWARE = BASE_MIDDLEWARE
 
-if ENV_ROLE == 'prod' or ENV_ROLE == 'stage':
+if ENV_ROLE == 'prod':
     DEBUG = False
+    PROJECT_VERSION = PROJECT_VERSION_BASE
+    ALLOWED_HOSTS = [
+        '.quect.ru',
+    ]
     MIDDLEWARE = BASE_MIDDLEWARE
-
     QC_SENTRY = get_env_variable('QC_SENTRY') == 'True'
     if QC_SENTRY:
         INSTALLED_APPS += ['raven.contrib.django.raven_compat', ]
         RAVEN_CONFIG = {
             'dsn': get_env_variable('SENTRY_DSN'),
         }
-
     if QC_UPLOAD:
         SENDFILE_BACKEND = 'sendfile.backends.nginx'
 
-    if ENV_ROLE == 'stage':
-        PROJECT_VERSION = PROJECT_VERSION_BASE + '-beta'
-        ALLOWED_HOSTS = [
-            '127.0.0.1',
-            'localhost',
-            '.quect.ru',
-            '.quect.herokuapp.com',
-        ]
-
-    if ENV_ROLE == 'prod':
-        PROJECT_VERSION = PROJECT_VERSION_BASE
-        ALLOWED_HOSTS = [
-            '.quect.ru',
-        ]
-else:
-    PROJECT_VERSION = PROJECT_VERSION_BASE + '-debug'
 
 ADMINS = [
     ('Phobos', 'dev@quect.ru'),
@@ -137,7 +124,7 @@ TEMPLATES = [
 WSGI_APPLICATION = 'qc.wsgi.application'
 
 # Internationalization
-# https://docs.djangoproject.com/en/1.10/topics/i18n/
+# https://docs.djangoproject.com/en/2.1/topics/i18n/
 
 LANGUAGE_CODE = 'ru-RU'
 TIME_ZONE = 'Asia/Krasnoyarsk'
@@ -149,7 +136,7 @@ USE_TZ = True
 DATABASES = {'default': dj_database_url.config(conn_max_age=500)}
 
 # Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/1.10/howto/static-files/
+# https://docs.djangoproject.com/en/2.1/howto/static-files/
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATIC_URL = '/static/'
 

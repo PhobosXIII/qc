@@ -43,10 +43,10 @@ def is_agent(user, quest):
 
 
 @register.filter()
-def formatInterval(seconds):
+def format_interval(seconds):
     hours = math.floor(seconds / 3600)
-    mins = math.floor((seconds - (hours * 3600)) / 60)
-    if mins == 0:
+    minutes = math.floor((seconds - (hours * 3600)) / 60)
+    if minutes == 0:
         return "%dч" % hours
     else:
-        return "%dч %02dм" % (hours, mins)
+        return "%dч %02dм" % (hours, minutes)

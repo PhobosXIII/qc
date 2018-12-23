@@ -2,7 +2,6 @@ from crispy_forms.bootstrap import StrictButton, PrependedText, FieldWithButtons
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Field, HTML, Div, Row
 from django.core.exceptions import ObjectDoesNotExist
-from django.core.mail.backends import console
 from django.forms import ModelForm, Form, ValidationError, ClearableFileInput, ModelChoiceField
 from django.forms.fields import CharField
 

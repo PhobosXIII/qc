@@ -61,6 +61,6 @@
         {% if quest.multilinear %}<span class="fa fa-tasks"></span> Многолинейный квест{% endif %}
     </h3>
 
-    {% if interval %}<p><b>Продолжительность: {{ interval|formatInterval}}</b></p>{% endif %}
+    {% if interval %}<p><b>Продолжительность: {{ interval|format_interval }}</b></p>{% endif %}
     <div class="text-base">{{ quest.description|default:"Подробности позже."|safe }}</div>
 {% endblock content %}

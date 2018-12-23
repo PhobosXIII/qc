@@ -13,8 +13,9 @@ class HelpCategoryAdmin(admin.ModelAdmin):
 
 
 class FaqAdmin(admin.ModelAdmin):
-    list_display = ('question', 'category')
-    list_filter = ('category', )
+    list_display = ('order_number', 'question', 'category')
+    list_filter = ('category',)
+
 
 admin_site.register(News, NewsAdmin)
 admin_site.register(HelpCategory, HelpCategoryAdmin)

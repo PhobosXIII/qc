@@ -36,11 +36,13 @@ class Faq(models.Model):
     category = models.ForeignKey(HelpCategory, verbose_name='категория')
     question = models.CharField('вопрос', max_length=255)
     answer = RichTextField('ответ')
+    order_number = models.PositiveSmallIntegerField('номер',
+                                                    validators=[MinValueValidator(1), MaxValueValidator(99)])
 
     class Meta:
         verbose_name = 'вопрос-ответ'
         verbose_name_plural = 'вопросы-ответы'
-        ordering = ['question']
+        ordering = ['order_number']
 
     def __str__(self):
         return self.question

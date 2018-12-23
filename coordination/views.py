@@ -1,10 +1,10 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.core.urlresolvers import reverse
 from django.http.response import JsonResponse, Http404
 from django.shortcuts import render, get_object_or_404, redirect, resolve_url
 from django.template.loader import render_to_string
+from django.urls import reverse
 from django.utils import timezone
 from htmlmin.decorators import minified_response
 from sendfile import sendfile
@@ -514,7 +514,7 @@ def coordination_quest_ajax(request, quest_id):
 
                     wrong_keys = Keylog.wrong_keylogs_format(player, mission)
                     html_line_wrong_keys = render_to_string('coordination/quests/coordination/_wrong_keys.html',
-                                                       {'wrong_keys': wrong_keys})
+                                                            {'wrong_keys': wrong_keys})
                     line.completed_missions = Mission.completed_missions(line, player)
                     html_line_completed_missions = \
                         render_to_string('coordination/quests/coordination/_ml_completed_missions.html', {'line': line})
@@ -524,7 +524,8 @@ def coordination_quest_ajax(request, quest_id):
                     else:
                         line.uncompleted_missions = []
                     html_line_uncompleted_missions = \
-                        render_to_string('coordination/quests/coordination/_ml_uncompleted_missions.html', {'line': line})
+                        render_to_string('coordination/quests/coordination/_ml_uncompleted_missions.html',
+                                         {'line': line})
 
                     json_lines.append({'line_id': line.id, 'line_mission': json_mission, 'line_hints': html_line_hints,
                                        'line_picture': html_picture, 'line_wrong_keys': html_line_wrong_keys,

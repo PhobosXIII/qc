@@ -23,6 +23,7 @@ User.__str__ = user_str
 class MyUserAdmin(UserAdmin):
     list_display = ('username', 'first_name')
 
+
 admin_site = MyAdminSite(name=settings.ADMIN_URL_PATH)
 admin_site.register(User, MyUserAdmin)
 admin_site.register(Group)
