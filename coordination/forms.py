@@ -6,8 +6,6 @@ from django.forms import ModelForm, Form, ValidationError, ClearableFileInput, M
 from django.forms.fields import CharField
 
 from coordination.models import Quest, Mission, Hint, Message
-from qc import settings
-
 
 def clean_key(key):
     return key.replace(" ", "").lower()
@@ -67,12 +65,10 @@ class QuestForm(ModelForm):
 class MissionForm(ModelForm):
     class Meta:
         model = Mission
-        fields = ['name', 'name_in_table', 'text', 'key', 'order_number', 'points']
-        if settings.QC_UPLOAD:
-            fields.append('picture')
-            widgets = {
-                'picture': CustomClearableFileInput,
-            }
+        fields = ['name', 'name_in_table', 'text', 'key', 'order_number', 'points', 'picture']
+        widgets = {
+            'picture': CustomClearableFileInput,
+        }
 
     def __init__(self, *args, **kwargs):
         quest_arg = kwargs.pop('quest', None)

@@ -45,7 +45,8 @@ class Quest(models.Model):
     type = models.CharField('тип', max_length=3, choices=TYPES, default=LINEAR)
     status = models.CharField('статус', max_length=3, choices=STATUSES, default=NOT_STARTED)
     is_published = models.BooleanField('опубликован', default=False)
-    creator = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name='создатель', related_name='creator')
+    creator = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name='создатель', related_name='creator',
+                                on_delete=models.CASCADE)
     members = models.ManyToManyField(settings.AUTH_USER_MODEL, through='Membership', related_name='members')
     game_over = models.DateTimeField('конец игры', null=True, blank=True)
     parent = models.ForeignKey('self', on_delete=models.CASCADE, editable=False, null=True, blank=True)
@@ -300,7 +301,7 @@ class Membership(models.Model):
 
 
 class Mission(models.Model):
-    quest = models.ForeignKey(Quest, verbose_name='квест')
+    quest = models.ForeignKey(Quest, verbose_name='квест', on_delete=models.CASCADE)
     name = models.CharField('название', max_length=100, blank=True,
                             help_text='В основном для сюжетных игр, например, Панофобия, Колдунья и т.д. '
                                       'Отображается игрокам в координации.')
@@ -430,7 +431,7 @@ class Mission(models.Model):
 
 
 class Hint(models.Model):
-    mission = models.ForeignKey(Mission, verbose_name='задание')
+    mission = models.ForeignKey(Mission, verbose_name='задание', on_delete=models.CASCADE)
     text = RichTextField('текст подсказки')
     delay = models.PositiveSmallIntegerField('время отправления',
                                              validators=[MinValueValidator(1), MaxValueValidator(360)])
@@ -475,8 +476,8 @@ class Hint(models.Model):
 
 
 class CurrentMission(models.Model):
-    player = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name='игрок')
-    mission = models.ForeignKey(Mission, verbose_name='задание')
+    player = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name='игрок', on_delete=models.CASCADE)
+    mission = models.ForeignKey(Mission, verbose_name='задание', on_delete=models.CASCADE)
     start_time = models.DateTimeField('время начала задания', default=timezone.now)
 
     class Meta:
@@ -516,8 +517,8 @@ class CurrentMission(models.Model):
 
 
 class Keylog(models.Model):
-    player = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name='игрок')
-    mission = models.ForeignKey(Mission, verbose_name='задание')
+    player = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name='игрок', on_delete=models.CASCADE)
+    mission = models.ForeignKey(Mission, verbose_name='задание', on_delete=models.CASCADE)
     key = models.CharField('ключ', max_length=30)
     fix_time = models.DateTimeField('время ключа')
     is_right = models.BooleanField('правильный ключ', default=False)
@@ -571,7 +572,7 @@ class Keylog(models.Model):
 
 
 class Message(models.Model):
-    quest = models.ForeignKey(Quest, verbose_name='квест')
+    quest = models.ForeignKey(Quest, verbose_name='квест', on_delete=models.CASCADE)
     text = RichTextField('текст сообщения')
     is_show = models.BooleanField('отображать', default=True)
 

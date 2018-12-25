@@ -17,7 +17,6 @@ def get_env_variable(var_name):
 
 # Get ENV VARIABLES key
 ENV_ROLE = get_env_variable('ENV_ROLE')
-QC_UPLOAD = get_env_variable('QC_UPLOAD') == 'True'
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -39,6 +38,7 @@ INSTALLED_APPS = [
     'main',
     'coordination',
     'ckeditor',
+    'sendfile',
 ]
 
 BASE_MIDDLEWARE = [
@@ -58,10 +58,8 @@ BASE_MIDDLEWARE = [
 MEDIA_ROOT = os.path.join(BASE_DIR, 'mediafiles')
 MEDIA_URL = '/media/'
 
-if QC_UPLOAD:
-    INSTALLED_APPS += ['sendfile', ]
-    SENDFILE_ROOT = os.path.join(MEDIA_ROOT, 'mission_imgs')
-    SENDFILE_URL = '/mission_imgs'
+SENDFILE_ROOT = os.path.join(MEDIA_ROOT, 'mission_imgs')
+SENDFILE_URL = '/mission_imgs'
 
 if ENV_ROLE == 'dev':
     DEBUG = True
@@ -69,8 +67,7 @@ if ENV_ROLE == 'dev':
     ALLOWED_HOSTS = []
     MIDDLEWARE = BASE_MIDDLEWARE
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-    if QC_UPLOAD:
-        SENDFILE_BACKEND = 'sendfile.backends.development'
+    SENDFILE_BACKEND = 'sendfile.backends.development'
 
 
 if ENV_ROLE == 'prod':
@@ -80,14 +77,13 @@ if ENV_ROLE == 'prod':
         '.quect.ru',
     ]
     MIDDLEWARE = BASE_MIDDLEWARE
+    SENDFILE_BACKEND = 'sendfile.backends.nginx'
     QC_SENTRY = get_env_variable('QC_SENTRY') == 'True'
     if QC_SENTRY:
         INSTALLED_APPS += ['raven.contrib.django.raven_compat', ]
         RAVEN_CONFIG = {
             'dsn': get_env_variable('SENTRY_DSN'),
         }
-    if QC_UPLOAD:
-        SENDFILE_BACKEND = 'sendfile.backends.nginx'
 
 
 ADMINS = [

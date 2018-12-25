@@ -33,7 +33,7 @@ class HelpCategory(models.Model):
 
 
 class Faq(models.Model):
-    category = models.ForeignKey(HelpCategory, verbose_name='категория')
+    category = models.ForeignKey(HelpCategory, verbose_name='категория', on_delete=models.CASCADE)
     question = models.CharField('вопрос', max_length=255)
     answer = RichTextField('ответ')
     order_number = models.PositiveSmallIntegerField('номер',
