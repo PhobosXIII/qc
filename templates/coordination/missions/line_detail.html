@@ -35,11 +35,6 @@
                 <a href="{% url 'coordination:mission_new' line.id %}" class="btn btn-success">
                     <span class="fa fa-plus fa-lg"></span> Добавить задание
                 </a>
-                {% if quest.line_nonlinear %}
-                    <a href="{% url 'coordination:finish_new' line.id %}" class="btn btn-success">
-                        <span class="fa fa-plus fa-lg"></span> Добавить финиш
-                    </a>
-                {% endif %}
             </p>
         {% endif %}
     {% endif %}

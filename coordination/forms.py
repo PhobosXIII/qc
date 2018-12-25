@@ -112,17 +112,6 @@ class MissionForm(ModelForm):
             if quest.linear:
                 self.Meta.fields = simple_fields
                 self.helper.layout = simple_layout
-            elif quest.line_nonlinear:
-                self.Meta.fields = ['name', 'text', 'key', 'order_number']
-                self.helper.layout = Layout(
-                    HTML("<h2>{{ form.instance }}</h2>"),
-                    'name',
-                    'key',
-                    'text',
-                    'picture',
-                    Field('order_number', type="hidden"),
-                    Field('points', type="hidden"),
-                )
             elif quest.nonlinear or quest.multilinear:
                 self.Meta.fields = simple_fields
                 self.helper.layout = Layout(

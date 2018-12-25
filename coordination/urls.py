@@ -68,7 +68,6 @@ quest_patterns = [
 
 mission_patterns = [
     url(r'^missions/new/(?P<quest_id>[0-9]+)/$', views.create_mission, name='mission_new'),
-    url(r'^missions/new/(?P<quest_id>[0-9]+)/finish/$', views.create_finish_mission, name='finish_new'),
     url(r'^missions/(?P<mission_id>[0-9]+)/', include([
         url(r'^$', views.detail_mission, name='mission_detail'),
         url(r'^edit/$', views.edit_mission, name='mission_edit'),

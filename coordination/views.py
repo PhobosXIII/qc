@@ -390,13 +390,9 @@ def linear_coordination(request, quest):
             if form.is_valid():
                 key = form.cleaned_data["key"]
                 next_missions = Mission.objects.filter(quest=quest, order_number=mission.order_number + 1)
-                if quest.linear:
-                    right_key = mission.key
-                    next_mission = next_missions.first()
-                    is_right = len(right_key) > 0 and right_key == key
-                else:
-                    next_mission = next_missions.filter(key=key).first()
-                    is_right = next_mission is not None
+                right_key = mission.key
+                next_mission = next_missions.first()
+                is_right = len(right_key) > 0 and right_key == key
                 keylog = Keylog(key=key, fix_time=timezone.now(), player=player, mission=mission, is_right=is_right)
                 keylog.save()
                 if is_right:
@@ -757,17 +753,6 @@ def create_mission(request, quest_id):
 
 
 @login_required()
-def create_finish_mission(request, quest_id):
-    quest = get_object_or_404(Quest, pk=quest_id, type=Quest.LINE_NONLINEAR)
-    if quest.not_started:
-        is_quest_organizer(request, quest)
-        finish = Mission.objects.create(quest=quest, name_in_table='Финиш', order_number=1, is_finish=True)
-        Mission.update_finish_number(quest)
-        return redirect('coordination:mission_detail', mission_id=finish.id)
-    return redirect('coordination:quest_missions', quest_id=quest.pk)
-
-
-@login_required()
 def edit_mission(request, mission_id):
     mission = get_object_or_404(Mission, pk=mission_id)
     request = is_quest_organizer(request, mission.quest)
@@ -790,10 +775,6 @@ def delete_mission(request, mission_id):
         is_quest_organizer(request, quest)
         if quest.linear or quest.nonlinear:
             if not mission.is_start and not mission.is_finish:
-                mission.delete()
-                Mission.update_finish_number(quest)
-        else:
-            if not mission.is_start:
                 mission.delete()
                 Mission.update_finish_number(quest)
     return redirect('coordination:quest_missions', quest_id=quest.pk)
