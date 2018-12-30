@@ -9,8 +9,8 @@ from qc.admin import admin_site
 
 urlpatterns = [
     path('{}/'.format(settings.ADMIN_URL_PATH), admin_site.urls),
-    path('login/', auth_views.LoginView, {'authentication_form': AuthForm}, name='auth_login'),
-    path('logout/', auth_views.LogoutView, {'next_page': 'auth_login'}, name='auth_logout'),
+    path('login/', auth_views.LoginView.as_view(), {'authentication_form': AuthForm}, name='auth_login'),
+    path('logout/', auth_views.LogoutView.as_view(), {'next_page': 'auth_login'}, name='auth_logout'),
     re_path(r'^$', main_views.home, name='home'),
     path('contacts/', include([
         path('', main_views.contacts, name='contacts'),
@@ -18,8 +18,8 @@ urlpatterns = [
     ])),
     path('profile/', include([
         path('', main_views.my_profile, name='my_profile'),
-        path('password_change/', auth_views.PasswordChangeView, name='password_change'),
-        path('password_change/done/', auth_views.PasswordChangeDoneView, name='password_change_done'),
+        path('password_change/', auth_views.PasswordChangeView.as_view(), name='password_change'),
+        path('password_change/done/', auth_views.PasswordChangeDoneView.as_view(), name='password_change_done'),
     ])),
     path('news/', include([
         path('', main_views.all_news, name='news'),

@@ -710,7 +710,7 @@ def detail_mission(request, mission_id):
     quest = mission.quest
     user = request.user
     can_user_view = quest.published and \
-                    (quest.ended or quest.is_game_over or (user.is_authenticated() and mission.is_completed(user)))
+                    (quest.ended or quest.is_game_over or (user.is_authenticated and mission.is_completed(user)))
     if not can_user_view:
         request = is_quest_organizer_or_agent(request, quest)
     hints = None
@@ -786,8 +786,8 @@ def picture_mission(request, mission_id):
         quest = mission.quest
         player = request.user
         can_user_view = quest.published and \
-                        (quest.ended or (player.is_authenticated() and mission.is_completed(player))
-                         or (player.is_authenticated() and mission.is_current(player)))
+                        (quest.ended or (player.is_authenticated and mission.is_completed(player))
+                         or (player.is_authenticated and mission.is_current(player)))
         if not can_user_view:
             request = is_quest_organizer_or_agent(request, quest)
         return sendfile(request, mission.picture.path)
