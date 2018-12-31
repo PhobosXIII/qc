@@ -65,7 +65,6 @@ if ENV_ROLE == 'dev':
     PROJECT_VERSION = PROJECT_VERSION_BASE + '-debug'
     ALLOWED_HOSTS = []
     MIDDLEWARE = BASE_MIDDLEWARE
-    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
     SENDFILE_BACKEND = 'sendfile.backends.development'
 
 
@@ -84,18 +83,18 @@ if ENV_ROLE == 'prod':
             'dsn': get_env_variable('SENTRY_DSN'),
         }
 
+    EMAIL_HOST = 'smtp.yandex.ru'
+    EMAIL_HOST_USER = 'dev@quect.ru'
+    EMAIL_HOST_PASSWORD = get_env_variable('EMAIL_HOST_PASSWORD')
+    EMAIL_PORT = 587
+    EMAIL_USE_TLS = True
+
 
 ADMINS = [
     ('Phobos', 'dev@quect.ru'),
 ]
 
 MANAGERS = ADMINS
-
-EMAIL_HOST = 'smtp.yandex.ru'
-EMAIL_HOST_USER = 'dev@quect.ru'
-EMAIL_HOST_PASSWORD = get_env_variable('EMAIL_HOST_PASSWORD')
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
 
 ROOT_URLCONF = 'qc.urls'
 
@@ -142,6 +141,7 @@ STATICFILES_DIRS = (
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 LOGOUT_URL = reverse_lazy('auth_logout')
+LOGOUT_REDIRECT_URL = reverse_lazy('auth_login')
 LOGIN_URL = reverse_lazy('auth_login')
 LOGIN_REDIRECT_URL = reverse_lazy('home')
 

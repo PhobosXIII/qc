@@ -29,7 +29,7 @@
         <meta name="msapplication-TileImage" content="{% static "assets/images/mstile-144x144.png" %}">
         <meta name="msapplication-config" content="{% static "assets/images/browserconfig.xml" %}">
         <meta name="application-name" content="{{ PROJECT_NAME }}">
-    {% endblock metas%}
+    {% endblock metas %}
 
     <title>{% block title %}{% endblock %} | {{ PROJECT_NAME }}</title>
 
@@ -51,46 +51,48 @@
 </head>
 
 <body>
-    {% block nav %}{% include '_navbar.html' %}{% endblock %}
+{% block nav %}{% include '_navbar.html' %}{% endblock %}
 
-    {% block jumbotron %}{% endblock %}
+{% block jumbotron %}{% endblock %}
 
-    <div class="container">
-        {% block content %}{% endblock %}
-    </div>
+<div class="container">
+    {% block content %}{% endblock %}
+</div>
 
-    {% block footer %}
-        <div id="footer">
-            <div class="container">
-                <img class="logo" src="{% static "assets/images/favicon-96x96.png" %}">
-                <div class="footer-text">
-                    {% now "Y" as current_year %}
-                    {{ FULL_PROJECT_NAME }} {{ PROJECT_VERSION }} <span class="fa fa-copyright"></span> {{ current_year }}
-                </div>
-                <a class="label label-info link" href="{% url 'contacts' %}">
-                    <span class="fa fa-envelope"></span> Написать разработчику</a>
+{% block footer %}
+    <div id="footer">
+        <div class="container">
+            <img class="logo" src="{% static "assets/images/favicon-96x96.png" %}">
+            <div class="footer-text">
+                {% now "Y" as current_year %}
+                {{ FULL_PROJECT_NAME }} {{ PROJECT_VERSION }} <span class="fa fa-copyright"></span> {{ current_year }}
             </div>
+            <a class="label label-info link" href="mailto:dev@quect.ru">
+                <span class="fa fa-envelope"></span> dev@quect.ru</a>
+            <a href="https://vk.com/true24quest" class="label label-info link">
+                <span class="fa fa-vk fa-lg"></span> 24QUEST</a>
         </div>
-    {% endblock footer %}
+    </div>
+{% endblock footer %}
 
-    {% block scripts %}
-        <script type="text/javascript" src="{% static "assets/js/bootstrap.min.js" %}"></script>
-        <script type="text/javascript" src="{% static "assets/js/main.js" %}"></script>
-        <script type="text/javascript" src="{% static "assets/js/jquery.plugin.min.js" %}"></script>
-        <script type="text/javascript" src="{% static "assets/js/jquery.countdown.min.js" %}"></script>
-        <script type="text/javascript" src="{% static "assets/js/coordination.js" %}"></script>
-    {% endblock scripts%}
+{% block scripts %}
+    <script type="text/javascript" src="{% static "assets/js/bootstrap.min.js" %}"></script>
+    <script type="text/javascript" src="{% static "assets/js/main.js" %}"></script>
+    <script type="text/javascript" src="{% static "assets/js/jquery.plugin.min.js" %}"></script>
+    <script type="text/javascript" src="{% static "assets/js/jquery.countdown.min.js" %}"></script>
+    <script type="text/javascript" src="{% static "assets/js/coordination.js" %}"></script>
+{% endblock scripts %}
 
-    <script type="text/javascript">
-        $(function () {
-            {% now "U" as t %}
-            var time = new Date({{ t }});
-            start_countup(time);
+<script type="text/javascript">
+    $(function () {
+        {% now "U" as t %}
+        var time = new Date({{ t }});
+        start_countup(time);
 
-            {% if quest and quest.nonlinear or quest.multilinear %}
-                start_game_over_countdown({{ quest.rest_quest }});
-            {% endif %}
-        });
-    </script>
+        {% if quest and quest.nonlinear or quest.multilinear %}
+            start_game_over_countdown({{ quest.rest_quest }});
+        {% endif %}
+    });
+</script>
 </body>
 </html>

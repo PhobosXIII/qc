@@ -24,8 +24,8 @@
                 <p><a class="btn btn-success btn-lg" href="{% url 'admin:index' %}">
                     <span class="fa fa-hand-spock-o fa-lg"></span> Перейти в админку</a></p>
             {% else %}
-                <p><a class="btn btn-success btn-lg" href="{% url 'contacts_org' %}">
-                    <span class="fa fa-user-secret fa-lg"></span> Стать организатором</a></p>
+                <p><a class="btn btn-success btn-lg" href="{% url 'auth_login' %}">
+                        <span class="fa fa-sign-in fa-lg"></span> Вход</a></p>
             {% endif %}
             </div>
     </div>

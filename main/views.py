@@ -1,12 +1,9 @@
-from django.core.mail import send_mail, BadHeaderError
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
-from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
+
 from coordination.models import Quest, Membership
 from coordination.permission_utils import is_organizer
-from main.forms import ContactForm
 from main.models import News, HelpCategory, Faq
-from qc import settings
 
 
 def home(request):
@@ -33,28 +30,6 @@ def my_profile(request):
         my_quests = paginator.page(paginator.num_pages)
     context = {'my_quests': my_quests}
     return render(request, 'registration/my_profile.html', context)
-
-
-def contacts(request, subj_code=0):
-    if request.method == 'POST':
-        form = ContactForm(request.POST)
-        if form.is_valid():
-            subject = form.cleaned_data['subject']
-            sender = form.cleaned_data['sender']
-            message = form.cleaned_data['message']
-
-            result_message = "{0}\nОт: {1}\n{2}-версия".format(message, sender, settings.ENV_ROLE)
-            from_email = settings.EMAIL_HOST_USER
-            recipients = [from_email]
-            try:
-                send_mail(subject, result_message, from_email, recipients)
-            except BadHeaderError:
-                return HttpResponse('Invalid header found')
-            return render(request, 'contacts/thanks.html')
-    else:
-        form = ContactForm(subj_code=subj_code)
-    context = {'form': form}
-    return render(request, 'contacts/form.html', context)
 
 
 def all_news(request):
