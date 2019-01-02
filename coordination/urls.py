@@ -9,7 +9,8 @@ quest_patterns = [
     path('quests/new/', include([
         path('', views.create_quest, name='quest_new'),
         path('nl/', views.create_quest, {'type': Quest.NONLINEAR}, name='quest_new_nl'),
-        path('lnl/', views.create_quest, {'type': Quest.LINE_NONLINEAR}, name='quest_new_lnl'),
+        # TODO MC: 02.01.2019 uncomment when re-implement LNL quest
+        # path('lnl/', views.create_quest, {'type': Quest.LINE_NONLINEAR}, name='quest_new_lnl'),
         path('ml/', views.create_quest, {'type': Quest.MULTILINEAR}, name='quest_new_ml'),
         path('type/', views.type_quest, name='quest_new_type'),
     ])),
