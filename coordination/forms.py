@@ -2,10 +2,10 @@ from crispy_forms.bootstrap import StrictButton, PrependedText, FieldWithButtons
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Field, HTML, Div, Row
 from django.core.exceptions import ObjectDoesNotExist
-from django.forms import ModelForm, Form, ValidationError, ClearableFileInput, ModelChoiceField
-from django.forms.fields import CharField
+from django.forms import ModelForm, Form, ValidationError, ClearableFileInput, ModelChoiceField, CharField
 
 from coordination.models import Quest, Mission, Hint, Message
+
 
 def clean_key(key):
     return key.replace(" ", "").lower()
@@ -38,11 +38,11 @@ class QuestForm(ModelForm):
         if quest.parent:
             self.Meta.fields = ['title', 'order_number']
             self.helper.layout = Layout(
-                    Row(
-                        Div(Field('order_number', min=1), css_class='col-xs-7 col-sm-3 col-md-4'),
-                    ),
-                    Field('title', autofocus=True),
-                )
+                Row(
+                    Div(Field('order_number', min=1), css_class='col-xs-7 col-sm-3 col-md-4'),
+                ),
+                Field('title', autofocus=True),
+            )
         else:
             if quest.nonlinear or quest.multilinear:
                 self.helper.layout = Layout(

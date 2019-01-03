@@ -3,6 +3,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 
 from coordination.models import Quest, Membership
 from coordination.permission_utils import is_organizer
+from main.forms import NameChangeForm
 from main.models import News, HelpCategory, Faq
 
 
@@ -30,6 +31,21 @@ def my_profile(request):
         my_quests = paginator.page(paginator.num_pages)
     context = {'my_quests': my_quests}
     return render(request, 'registration/my_profile.html', context)
+
+
+def change_name(request):
+    """
+    View for changing the name of organizer on "My profile" page
+    """
+    request = is_organizer(request)
+    form = NameChangeForm(request.POST or None)
+    if form.is_valid():
+        name = form.cleaned_data["name"]
+        request.user.first_name = name
+        request.user.save()
+        return redirect('my_profile')
+    context = {'form': form}
+    return render(request, 'registration/name_change_form.html', context)
 
 
 def all_news(request):

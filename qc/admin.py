@@ -11,10 +11,7 @@ class MyAdminSite(AdminSite):
 
 
 def user_str(self):
-    if self.first_name:
-        return self.first_name
-    else:
-        return self.username
+    return self.first_name
 
 
 User.__str__ = user_str

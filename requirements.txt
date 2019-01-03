@@ -2,11 +2,11 @@ django==2.1.4
 psycopg2==2.7.6
 dj-database-url==0.5.0
 whitenoise==3.3.1
-django-crispy-forms==1.7.0
+django-crispy-forms==1.7.2
 Pillow==5.0.0
 awesome-slugify==1.6.5
 gunicorn==19.7.1
-django-ckeditor==5.3.1
+django-ckeditor==5.6.1
 raven==6.5.0
 django-sendfile==0.3.11
 django-htmlmin==0.10.0

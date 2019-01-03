@@ -14,6 +14,7 @@ urlpatterns = [
     re_path(r'^$', main_views.home, name='home'),
     path('profile/', include([
         path('', main_views.my_profile, name='my_profile'),
+        path('name_change/', main_views.change_name, name='name_change'),
         path('password_change/', auth_views.PasswordChangeView.as_view(), name='password_change'),
         path('password_change/done/', auth_views.PasswordChangeDoneView.as_view(), name='password_change_done'),
     ])),

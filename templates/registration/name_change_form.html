@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <div class="page-header">
+        <h1>{% block title %}Смена имени{% endblock %}</h1>
+    </div>
+
+    <p class="text-base text-center">Изменится только отображаемое имя организатора, логин останется прежним.</p>
+    <p class="text-base text-center">Также имя организатора можно изменить для конкретной игры.</p>
+
+    <form class="form-signin" action="" method="post">
+        {% crispy form %}
+        <button class="btn btn-lg btn-primary btn-block" type="submit">Изменить имя</button>
+        <a href="{% url 'my_profile' %}" class="btn btn-lg btn-default btn-block">Отмена</a>
+    </form>
+{% endblock content %}
