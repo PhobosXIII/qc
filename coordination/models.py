@@ -45,6 +45,9 @@ class Quest(models.Model):
     type = models.CharField('тип', max_length=3, choices=TYPES, default=LINEAR)
     status = models.CharField('статус', max_length=3, choices=STATUSES, default=NOT_STARTED)
     is_published = models.BooleanField('опубликован', default=False)
+    organizer_name = models.CharField('Имя организатора', max_length=30,
+                                      help_text='Имя организатора для данной игры. Полезно для творческого '
+                                                'объединения организаторов.')
     creator = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name='создатель', related_name='creator',
                                 on_delete=models.CASCADE)
     members = models.ManyToManyField(settings.AUTH_USER_MODEL, through='Membership', related_name='members')

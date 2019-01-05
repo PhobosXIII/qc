@@ -35,11 +35,10 @@ def detail_quest(request, quest_id):
     quest = get_object_or_404(Quest, pk=quest_id, parent__isnull=True)
     if not quest.published:
         request = is_quest_organizer(request, quest)
-    organizers = quest.organizers()
     interval = None
     if quest.nonlinear or quest.multilinear:
         interval = get_interval(quest.start, quest.game_over)
-    context = {'quest': quest, 'organizers': organizers, 'interval': interval}
+    context = {'quest': quest, 'interval': interval}
     return render(request, 'coordination/quests/detail.html', context)
 
 
@@ -50,7 +49,7 @@ def type_quest(request):
 
 
 @login_required()
-def create_quest(request, type=Quest.LINEAR):
+def create_quest(request, type):
     request = is_organizer(request)
     if request.method == 'POST':
         form = QuestForm(request.POST)
@@ -61,7 +60,7 @@ def create_quest(request, type=Quest.LINEAR):
             quest.save()
             return redirect('coordination:quest_detail', quest_id=quest.pk)
     else:
-        form = QuestForm(type=type)
+        form = QuestForm(type=type, org_name=request.user.first_name)
     context = {'form': form}
     return render(request, 'coordination/quests/form.html', context)
 
@@ -645,7 +644,7 @@ def edit_message(request, quest_id, message_id):
 
 
 @login_required
-def delete_message(request, quest_id, message_id, parent__isnull=True):
+def delete_message(request, quest_id, message_id):
     quest = get_object_or_404(Quest, pk=quest_id)
     is_quest_organizer(request, quest)
     message = get_object_or_404(Message, pk=message_id, quest=quest)
@@ -663,6 +662,7 @@ def create_line(request, quest_id, type=Quest.LINEAR):
         if form.is_valid():
             line = form.save(commit=False)
             line.creator = quest.creator
+            line.organizer_name = quest.organizer_name
             line.type = type
             line.parent = quest
             line.save()

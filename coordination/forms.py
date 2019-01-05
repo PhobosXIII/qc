@@ -21,11 +21,12 @@ class CustomClearableFileInput(ClearableFileInput):
 class QuestForm(ModelForm):
     class Meta:
         model = Quest
-        fields = ['title', 'start', 'description', 'game_over', 'order_number']
+        fields = ['title', 'organizer_name', 'start', 'description', 'game_over', 'order_number']
 
     def __init__(self, *args, **kwargs):
         type = kwargs.pop('type', None)
         parent = kwargs.pop('parent', None)
+        org_name = kwargs.pop('org_name', None)
         super(QuestForm, self).__init__(*args, **kwargs)
         self.helper = FormHelper()
         self.helper.form_tag = False
@@ -47,6 +48,7 @@ class QuestForm(ModelForm):
             if quest.nonlinear or quest.multilinear:
                 self.helper.layout = Layout(
                     Field('title', autofocus=True),
+                    Field('organizer_name', value=org_name),
                     'start',
                     'game_over',
                     'description',
@@ -56,6 +58,7 @@ class QuestForm(ModelForm):
                 self.Meta.fields = ['title', 'start', 'description', 'order_number']
                 self.helper.layout = Layout(
                     Field('title', autofocus=True),
+                    Field('organizer_name', value=org_name),
                     'start',
                     'description',
                     Field('order_number', type="hidden"),

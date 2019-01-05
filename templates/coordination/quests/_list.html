@@ -4,25 +4,18 @@
     {% for quest in quests %}
         {% if quest.is_published or user|is_organizer:quest or user.is_superuser %}
             <a href="{% url 'coordination:quest_detail' quest.id %}"
-               class="list-group-item {% if not quest.ended %}list-group-item-info{% endif %}">
+               class="list-group-item {% if not quest.is_published %}list-group-item-warning{% elif not quest.ended %}list-group-item-info{% endif %}">
                 <div class="row">
                     <div class="list-group-item-heading">
                         <div class="col-sm-3">
-                            {% if not quest.is_published %}
-                                <h4>
-                                    <span class="pull-left-sm label label-warning">Не опубликован</span>
-                                </h4>
-                            {% else  %}
-                                <h4 class="pull-left-sm orgs">
-                                    {% for org in quest.organizers %}
-                                        <span class="label label-primary">{{ org }}</span>
-                                    {% endfor %}
-                                </h4>
-                            {% endif %}
+                            <h4 class="pull-left-sm orgs">
+                                    <span class="label label-primary">{{ quest.organizer_name }}</span>
+                            </h4>
                         </div>
                         <div class="col-xs-12 col-sm-4">
                              <h4>
-                                 {% if quest.line_nonlinear %}<span class="fa fa-exchange"></span>{% endif %}
+                                 {% if quest.linear %}<span class="fa fa-long-arrow-right fa-lg"></span>{% endif %}
+                                 {% if quest.line_nonlinear %}<span class="fa fa-sitemap"></span>{% endif %}
                                  {% if quest.nonlinear %}<span class="fa fa-arrows"></span>{% endif %}
                                  {% if quest.multilinear %}<span class="fa fa-tasks"></span>{% endif %}
                                  {{ quest.title }}

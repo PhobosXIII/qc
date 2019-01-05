@@ -20,7 +20,12 @@
         {% if form.instance.parent and form.instance.parent.multilinear %}
             <h1>{{ form.instance.parent.title }}. {{ form.instance.pk|yesno:'Редактирование линии, Новая линия' }}</h1>
         {% else %}
-            <h1>{{ form.instance.pk|yesno:'Редактирование квеста, Новый квест' }}</h1>
+            <h1>{{ form.instance.pk|yesno:'Редактирование квеста, Новый квест' }}
+                {% if form.instance.linear %}<span class="fa fa-long-arrow-right"></span>{% endif %}
+                {% if form.instance.line_nonlinear %}<span class="fa fa-sitemap"></span>{% endif %}
+                {% if form.instance.nonlinear %}<span class="fa fa-arrows"></span>{% endif %}
+                {% if form.instance.multilinear %}<span class="fa fa-tasks"></span>{% endif %}
+            </h1>
         {% endif %}
     </div>
 

@@ -40,7 +40,7 @@
     {% else %}
         <p class="lead text-center">Ни один игрок еще не добавлен к квесту.
             {% if user|is_organizer:quest or user.is_superuser %}
-                Перейдите во вкладку Участники -> Игроки.
+                <a href="{% url 'coordination:quest_players' quest.id %}">Добавить игроков</a>
             {% endif %}
         </p>
     {% endif %}
