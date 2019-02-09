@@ -40,9 +40,9 @@
                 <td>{{ player.first_name }}</td>
                 {% for mission in missions %}
                     <td>
-                        {% for keylog in keylogs %}
-                            {% if keylog.player == player and keylog.mission == mission %}
-                                {{ keylog.fix_time|date:"H:i:s" }}
+                        {% for key_log in key_logs %}
+                            {% if key_log.player == player and key_log.mission == mission %}
+                                {{ key_log.fix_time|date:"H:i:s" }}
                             {% endif %}
                         {% endfor %}
                     </td>

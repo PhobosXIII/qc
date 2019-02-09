@@ -15,7 +15,7 @@
 
     <div class="row">
         <div class="col-sm-4 col-md-3">
-        {% url 'coordination:quest_keylog' quest.id as keylog_url %}
+        {% url 'coordination:quest_key_log' quest.id as key_log_url %}
             <h3>Задания</h3>
             <div class="list-group">
             {% if quest.multilinear %}
@@ -23,7 +23,7 @@
                 {% for quest in mission_list %}
                     <p class="list-group-item list-group-item-info">{{ quest.grouper }}</p>
                     {% for mission in quest.list %}
-                        <a href="{{ keylog_url }}?mission={{ mission.id }}"
+                        <a href="{{ key_log_url }}?mission={{ mission.id }}"
                            class="list-group-item{% if mission.id == cur_mission %} active{% endif %}">
                             {{ mission.medium_name }}
                         </a>
@@ -31,7 +31,7 @@
                 {% endfor %}
             {% else %}
                 {% for mission in missions %}
-                    <a href="{{ keylog_url }}?mission={{ mission.id }}"
+                    <a href="{{ key_log_url }}?mission={{ mission.id }}"
                        class="list-group-item{% if mission.id == cur_mission %} active{% endif %}">
                         {{ mission.medium_name }}
                     </a>
@@ -43,7 +43,7 @@
                 <h3>Игроки</h3>
                 <div class="list-group">
                     {% for player in players %}
-                        <a href="{{ keylog_url }}?player={{ player.id }}"
+                        <a href="{{ key_log_url }}?player={{ player.id }}"
                            class="list-group-item{% if player.id == cur_player %} active{% endif %}">
                             {{ player.first_name }}
                         </a>
@@ -72,16 +72,16 @@
                     </tr>
                 </thead>
                 <tbody>
-                {% for keylog in keylogs %}
+                {% for key_log in key_logs %}
                     <tr>
                         <td></td>
-                        <td class="hidden">{{ keylog.id }}</td>
-                        <td>{{ keylog.player.first_name }}</td>
-                        <td><span class="hidden">{{ keylog.mission.order_number }}</span> {{ keylog.mission.medium_name }}</td>
-                        <td>{{ keylog.fix_time|date:"d E Y H:i:s" }}</td>
+                        <td class="hidden">{{ key_log.id }}</td>
+                        <td>{{ key_log.player.first_name }}</td>
+                        <td><span class="hidden">{{ key_log.mission.order_number }}</span> {{ key_log.mission.medium_name }}</td>
+                        <td>{{ key_log.fix_time|date:"d E Y H:i:s" }}</td>
                         <td>
-                            <span class="fa {% if keylog.is_right %}fa-check-circle text-success{% else %}fa-minus-circle
-                            text-danger{% endif %}"></span> {{ keylog.key }}
+                            <span class="fa {% if key_log.is_right %}fa-check-circle text-success{% else %}fa-minus-circle
+                            text-danger{% endif %}"></span> {{ key_log.key }}
                         </td>
                     </tr>
                 {% endfor %}
@@ -116,7 +116,7 @@
 
                 $.ajax({
                     "type": "POST",
-                    "url": "{% url 'coordination:keylogs_delete' quest.id %}",
+                    "url": "{% url 'coordination:key_logs_delete' quest.id %}",
                     "data": {'delete_ids': ids},
                     "success": function() {
                         window.location.reload(true);

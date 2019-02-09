@@ -10,7 +10,7 @@ from htmlmin.decorators import minified_response
 from sendfile import sendfile
 
 from coordination.forms import QuestForm, MissionForm, HintForm, PlayerForm, KeyForm, MessageForm, OrganizerForm
-from coordination.models import Quest, Mission, Hint, CurrentMission, Keylog, Message, Membership
+from coordination.models import Quest, Mission, Hint, CurrentMission, KeyLog, Message, Membership
 from coordination.permission_utils import is_quest_organizer, is_quest_player, is_organizer, is_quest_organizer_or_agent
 from coordination.utils import generate_random_username, generate_random_password, get_timedelta, is_game_over, \
     is_ml_game_over, get_interval
@@ -114,9 +114,9 @@ def results_quest(request, quest_id):
         context.update({'players': players, 'missions': missions})
     else:
         missions = quest.missions().exclude(is_finish=True)
-        keylogs = Keylog.right_keylogs(missions)
+        key_logs = KeyLog.right_key_logs(missions)
         current_missions = quest.current_missions()
-        context.update({'missions': missions, 'keylogs': keylogs, 'current_missions': current_missions})
+        context.update({'missions': missions, 'key_logs': key_logs, 'current_missions': current_missions})
     return render(request, 'coordination/quests/results.html', context)
 
 
@@ -143,8 +143,8 @@ def tables_quest_all(request, quest_id):
     request = is_quest_organizer_or_agent(request, quest)
     players = quest.players()
     missions = quest.missions().exclude(is_finish=True)
-    keylogs = Keylog.right_keylogs(missions)
-    context = {'quest': quest, 'players': players, 'missions': missions, 'keylogs': keylogs}
+    key_logs = KeyLog.right_key_logs(missions)
+    context = {'quest': quest, 'players': players, 'missions': missions, 'key_logs': key_logs}
     return render(request, 'coordination/quests/tables/all.html', context)
 
 
@@ -202,11 +202,11 @@ def clear_quest(request, quest_id):
         if quest.multilinear:
             lines = quest.lines()
             CurrentMission.objects.filter(mission__quest__in=lines).delete()
-            Keylog.objects.filter(mission__quest__in=lines).delete()
+            KeyLog.objects.filter(mission__quest__in=lines).delete()
         else:
             start_mission = quest.start_mission()
             CurrentMission.objects.filter(mission__quest=quest).update(mission=start_mission)
-            Keylog.objects.filter(mission__quest=quest).delete()
+            KeyLog.objects.filter(mission__quest=quest).delete()
     return redirect('coordination:quest_control', quest_id=quest_id)
 
 
@@ -219,10 +219,10 @@ def next_mission(request, quest_id, user_id):
         cm = get_object_or_404(CurrentMission, mission__quest=quest, player=player)
         if not cm.mission.is_finish:
             right_key = cm.mission.key
-            keylog = Keylog(key=right_key, fix_time=timezone.now(), player=player, mission=cm.mission, is_right=True)
+            key_log = KeyLog(key=right_key, fix_time=timezone.now(), player=player, mission=cm.mission, is_right=True)
             cm.mission = Mission.objects.get(quest=quest, order_number=cm.mission.order_number + 1)
-            cm.start_time = keylog.fix_time
-            keylog.save()
+            cm.start_time = key_log.fix_time
+            key_log.save()
             cm.save()
     return redirect('coordination:quest_control', quest_id=quest_id)
 
@@ -338,11 +338,11 @@ def nonlinear_coordination(request, quest):
                 key = form.cleaned_data["key"]
                 right_key = mission.key
                 is_right = len(right_key) > 0 and right_key == key
-                keylog = Keylog(key=key, fix_time=timezone.now(), player=player,
+                key_log = KeyLog(key=key, fix_time=timezone.now(), player=player,
                                 mission=mission, is_right=is_right)
                 if is_right:
-                    keylog.points = mission.points
-                keylog.save()
+                    key_log.points = mission.points
+                key_log.save()
         if mission.order_number > 1:
             url = '{0}#m{1}'.format(resolve_url('coordination:quest_coordination', quest_id=quest.id),
                                     mission.order_number - 1)
@@ -363,7 +363,7 @@ def nonlinear_coordination(request, quest):
             count = 0
             missions = quest.missions().filter(order_number__gt=0, is_finish=False)
             for mission in missions:
-                mission.wrong_keys = Keylog.wrong_keylogs_format(player, mission)
+                mission.wrong_keys = KeyLog.wrong_keylogs_format(player, mission)
                 is_completed = mission.is_completed(player)
                 mission.is_completed = is_completed
                 if not is_completed:
@@ -371,7 +371,7 @@ def nonlinear_coordination(request, quest):
             if is_game_over(count, missions, quest):
                 mission_finish = quest.finish_mission()
             display_hints, rest_hints = Mission.hints_in_nl(quest, missions)
-        points = Keylog.total_points(quest, player)
+        points = KeyLog.total_points(quest, player)
         messages = quest.messages().filter(is_show=True)
         context = {'quest': quest, 'messages': messages, 'missions': missions, 'mission_finish': mission_finish,
                    'mission_start': mission_start, 'points': points, 'form': form,
@@ -392,11 +392,11 @@ def linear_coordination(request, quest):
                 right_key = mission.key
                 next_mission = next_missions.first()
                 is_right = len(right_key) > 0 and right_key == key
-                keylog = Keylog(key=key, fix_time=timezone.now(), player=player, mission=mission, is_right=is_right)
-                keylog.save()
+                key_log = KeyLog(key=key, fix_time=timezone.now(), player=player, mission=mission, is_right=is_right)
+                key_log.save()
                 if is_right:
                     current_mission.mission = next_mission
-                    current_mission.start_time = keylog.fix_time
+                    current_mission.start_time = key_log.fix_time
                     current_mission.save()
         return redirect('coordination:quest_coordination', quest_id=quest.id)
     else:
@@ -409,7 +409,7 @@ def linear_coordination(request, quest):
         messages = quest.messages().filter(is_show=True)
         if quest.started and not mission.is_finish:
             form = KeyForm(quest=quest)
-            wrong_keys = Keylog.wrong_keylogs_format(player, mission)
+            wrong_keys = KeyLog.wrong_keylogs_format(player, mission)
         context = {'quest': quest, 'mission': mission, 'hints': hints, 'form': form, 'messages': messages,
                    'wrong_keys': wrong_keys, 'delay': delay, 'completed_missions': completed_missions}
         return render(request, 'coordination/quests/coordination/general.html', context)
@@ -426,15 +426,15 @@ def multilinear_coordination(request, quest):
                 key = form.cleaned_data["key"]
                 right_key = mission.key
                 is_right = len(right_key) > 0 and right_key == key
-                keylog = Keylog(key=key, fix_time=timezone.now(), player=player, mission=mission, is_right=is_right)
+                key_log = KeyLog(key=key, fix_time=timezone.now(), player=player, mission=mission, is_right=is_right)
                 if is_right:
-                    keylog.points = mission.points
+                    key_log.points = mission.points
                     next_mission = Mission.objects.filter(quest=line, order_number=mission.order_number + 1).first()
                     current_mission = get_object_or_404(CurrentMission, mission__quest=line, player=player)
                     current_mission.mission = next_mission
-                    current_mission.start_time = keylog.fix_time
+                    current_mission.start_time = key_log.fix_time
                     current_mission.save()
-                keylog.save()
+                key_log.save()
         url = '{0}#l{1}'.format(resolve_url('coordination:quest_coordination', quest_id=quest.id), line.id)
         return redirect(url)
     else:
@@ -461,9 +461,9 @@ def multilinear_coordination(request, quest):
                 else:
                     line.hints = current_mission.display_hints()
                     line.next_hint_time = current_mission.next_hint_time()
-                    line.wrong_keys = Keylog.wrong_keylogs_format(player, line.mission)
+                    line.wrong_keys = KeyLog.wrong_keylogs_format(player, line.mission)
 
-        points = Keylog.total_points(quest, player)
+        points = KeyLog.total_points(quest, player)
         messages = quest.messages().filter(is_show=True)
         context = {'quest': quest, 'messages': messages, 'lines': lines, 'mission_finish': mission_finish,
                    'mission_start': mission_start, 'points': points, 'form': form}
@@ -507,7 +507,7 @@ def coordination_quest_ajax(request, quest_id):
                     line.next_hint_time = current_mission.next_hint_time()
                     html_line_hints = render_to_string('coordination/hints/_ml_list.html', {'line': line})
 
-                    wrong_keys = Keylog.wrong_keylogs_format(player, mission)
+                    wrong_keys = KeyLog.wrong_keylogs_format(player, mission)
                     html_line_wrong_keys = render_to_string('coordination/quests/coordination/_wrong_keys.html',
                                                             {'wrong_keys': wrong_keys})
                     line.completed_missions = Mission.completed_missions(line, player)
@@ -539,7 +539,7 @@ def coordination_quest_ajax(request, quest_id):
 
             wrong_keys_str = None
             if quest.started and not mission.is_finish:
-                wrong_keys_str = Keylog.wrong_keylogs_format(player, mission)
+                wrong_keys_str = KeyLog.wrong_keylogs_format(player, mission)
             json_mission = mission.as_json()
             html_picture = render_to_string('coordination/quests/coordination/_picture.html', {'mission': mission})
             html_hints = render_to_string('coordination/hints/_list.html', {'hints': hints})
@@ -558,7 +558,7 @@ def coordination_quest_ajax(request, quest_id):
 
 @login_required
 @minified_response
-def keylog_quest(request, quest_id):
+def key_log_quest(request, quest_id):
     quest = get_object_or_404(Quest, pk=quest_id, parent__isnull=True)
     request = is_quest_organizer(request, quest)
     mission = request.GET.get('mission', None)
@@ -567,37 +567,37 @@ def keylog_quest(request, quest_id):
     if quest.nonlinear or quest.multilinear:
         missions = missions.exclude(order_number=0)
     if missions and not mission and not player:
-        url = reverse('coordination:quest_keylog', args=[quest.id])
+        url = reverse('coordination:quest_key_log', args=[quest.id])
         return redirect('{0}?mission={1}'.format(url, missions.first().id))
-    keylogs = None
+    key_logs = None
     players = quest.players()
     if mission:
-        keylogs = Keylog.objects.filter(mission__id=mission)
+        key_logs = KeyLog.objects.filter(mission__id=mission)
         mission = int(mission)
     if player:
-        keylogs = Keylog.objects.filter(player__id=player)
+        key_logs = KeyLog.objects.filter(player__id=player)
         player = int(player)
-    context = {'quest': quest, 'keylogs': keylogs, 'players': players, 'missions': missions,
+    context = {'quest': quest, 'key_logs': key_logs, 'players': players, 'missions': missions,
                'cur_mission': mission, 'cur_player': player}
-    return render(request, 'coordination/quests/keylog.html', context)
+    return render(request, 'coordination/quests/key_log.html', context)
 
 
 @login_required
-def delete_keylog(request, quest_id, keylog_id):
+def delete_key_log(request, quest_id, keylog_id):
     quest = get_object_or_404(Quest, pk=quest_id, parent__isnull=True)
     is_quest_organizer(request, quest)
-    keylog = get_object_or_404(Keylog, pk=keylog_id, mission__quest=quest)
-    keylog.delete()
-    return redirect('coordination:quest_keylog', quest_id=quest_id)
+    key_log = get_object_or_404(KeyLog, pk=keylog_id, mission__quest=quest)
+    key_log.delete()
+    return redirect('coordination:quest_key_log', quest_id=quest_id)
 
 
 @login_required
-def delete_keylogs(request, quest_id):
+def delete_key_logs(request, quest_id):
     quest = get_object_or_404(Quest, pk=quest_id, parent__isnull=True)
     is_quest_organizer(request, quest)
-    keylog_ids = request.POST.getlist('delete_ids[]')
-    Keylog.objects.filter(mission__quest=quest, id__in=keylog_ids).delete()
-    return redirect('coordination:quest_keylog', quest_id=quest_id)
+    key_log_ids = request.POST.getlist('delete_ids[]')
+    KeyLog.objects.filter(mission__quest=quest, id__in=key_log_ids).delete()
+    return redirect('coordination:quest_key_log', quest_id=quest_id)
 
 
 @login_required

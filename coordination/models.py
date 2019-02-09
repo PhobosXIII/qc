@@ -205,8 +205,8 @@ class Quest(models.Model):
         all_missions = self.missions().filter(order_number__gt=0, is_finish=False)
         players = self.members.filter(membership__role=Membership.PLAYER)
         for player in players:
-            player.last_time = Keylog.last_time(self, player)
-            player.points = Keylog.total_points(self, player)
+            player.last_time = KeyLog.last_time(self, player)
+            player.points = KeyLog.total_points(self, player)
             missions = Mission.completed_missions(self, player)
             other_missions = [i for i in all_missions if i not in missions]
             player.num_missions = len(missions)
@@ -222,12 +222,12 @@ class Quest(models.Model):
         all_players = self.members.filter(membership__role=Membership.PLAYER)
         missions = self.missions().filter(order_number__gt=0, is_finish=False)
         for mission in missions:
-            keylogs = mission.right_keylogs()
-            players = [i.player for i in keylogs]
+            key_logs = mission.right_key_logs()
+            players = [i.player for i in key_logs]
             mission.players = ', '.join(str(i) for i in players)
             other_players = [i for i in all_players if i not in players]
             mission.other_players = ', '.join(str(i) for i in other_players)
-            mission.num_players = len(keylogs)
+            mission.num_players = len(key_logs)
         return missions
 
     @staticmethod
@@ -312,7 +312,6 @@ class Mission(models.Model):
                                      help_text='Как правило ответ на задание. Отображается в итоговой табличке.')
     text = RichTextField('текст задания', blank=True)
     picture = models.ImageField('картинка', upload_to=mission_file_name, blank=True)
-    key = models.CharField('ключ', max_length=30, blank=True)
     order_number = models.PositiveSmallIntegerField('номер задания',
                                                     validators=[MinValueValidator(0), MaxValueValidator(99)])
     is_finish = models.BooleanField(u'финиш', default=False)
@@ -397,8 +396,8 @@ class Mission(models.Model):
         return len(self.hints()) + 1
 
     def is_completed(self, player):
-        keylog = Keylog.objects.filter(mission=self, player=player, is_right=True).first()
-        return keylog is not None
+        key_log = KeyLog.objects.filter(mission=self, player=player, is_right=True).first()
+        return key_log is not None
 
     def is_current(self, player):
         quest = self.quest
@@ -410,9 +409,12 @@ class Mission(models.Model):
             result = current_mission is not None
         return result
 
-    def right_keylogs(self):
-        keylogs = Keylog.objects.filter(mission=self, is_right=True)
-        return keylogs.order_by('player', 'mission__order_number').distinct('player', 'mission__order_number')
+    def right_key_logs(self):
+        key_logs = KeyLog.objects.filter(mission=self, is_right=True)
+        return key_logs.order_by('player', 'mission__order_number').distinct('player', 'mission__order_number')
+
+    def transits(self):
+        return Transit.objects.filter(mission=self)
 
     def as_json(self):
         return {
@@ -428,16 +430,45 @@ class Mission(models.Model):
 
     @staticmethod
     def completed_missions(quest, player):
-        keylogs = Keylog.get_keylogs(quest, player, True)
-        keylogs = keylogs.order_by('fix_time', 'mission__id').distinct('fix_time', 'mission__id')
-        return [i.mission for i in keylogs]
+        key_logs = KeyLog.get_key_logs(quest, player, True)
+        key_logs = key_logs.order_by('fix_time', 'mission__id').distinct('fix_time', 'mission__id')
+        return [i.mission for i in key_logs]
+
+
+class Transit(models.Model):
+    mission = models.ForeignKey(Mission, verbose_name="задание", on_delete=models.CASCADE)
+    next_mission = models.ForeignKey(Mission, verbose_name="задание", on_delete=models.CASCADE, null=True, blank=True)
+    count_keys = models.PositiveSmallIntegerField('количество ключей', default=1,
+                                                  help_text="количество ключей для ввода игроком, чтобы закрыть задание",
+                                                  validators=[MinValueValidator(1), MaxValueValidator(99)])
+
+    class Meta:
+        verbose_name = 'переход'
+        verbose_name_plural = 'переходы'
+        ordering = ['mission__quest__title', 'mission__order_number']
+
+
+class Key(models.Model):
+    value = models.CharField('значение ключа', max_length=30)
+    transit = models.ForeignKey(Transit, verbose_name="переход", on_delete=models.CASCADE)
+    bonus = models.PositiveSmallIntegerField('бонус', default=0,
+                                             help_text="минуты или баллы, которые вычитаются или прибавляются игроку "
+                                                       "при вводе этого ключа",
+                                             validators=[MinValueValidator(0), MaxValueValidator(960)])
+    # for fast search the key for mission
+    mission = models.ForeignKey(Mission, verbose_name="задание", on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name = 'ключ'
+        verbose_name_plural = 'ключи'
+        ordering = ['mission__quest__title', 'mission__order_number', 'value']
 
 
 class Hint(models.Model):
     mission = models.ForeignKey(Mission, verbose_name='задание', on_delete=models.CASCADE)
     text = RichTextField('текст подсказки')
     delay = models.PositiveSmallIntegerField('время отправления',
-                                             validators=[MinValueValidator(1), MaxValueValidator(360)])
+                                             validators=[MinValueValidator(1), MaxValueValidator(960)])
     order_number = models.PositiveSmallIntegerField('номер подсказки',
                                                     validators=[MinValueValidator(1), MaxValueValidator(99)])
 
@@ -476,6 +507,17 @@ class Hint(models.Model):
         for hint in hints:
             array.append(hint.as_json())
         return array
+
+
+class HintLog(models.Model):
+    player = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name='игрок', on_delete=models.CASCADE)
+    hint = models.ForeignKey(Hint, verbose_name='подсказка', on_delete=models.CASCADE)
+    sent_time = models.DateTimeField('время отправки', help_text="когда была отпралена подсказка игроку",
+                                     default=timezone.now)
+    fine = models.PositiveSmallIntegerField('штраф', default=0,
+                                            help_text="минуты или баллы, которые прибавляются или вычитаются "
+                                                      "при требовании подсказки игроком",
+                                            validators=[MinValueValidator(0), MaxValueValidator(960)])
 
 
 class CurrentMission(models.Model):
@@ -519,9 +561,10 @@ class CurrentMission(models.Model):
         return next_hint_time
 
 
-class Keylog(models.Model):
+class KeyLog(models.Model):
     player = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name='игрок', on_delete=models.CASCADE)
     mission = models.ForeignKey(Mission, verbose_name='задание', on_delete=models.CASCADE)
+    transit = models.ForeignKey(Transit, verbose_name='переход', on_delete=models.CASCADE, null=True, blank=True)
     key = models.CharField('ключ', max_length=30)
     fix_time = models.DateTimeField('время ключа')
     is_right = models.BooleanField('правильный ключ', default=False)
@@ -535,43 +578,43 @@ class Keylog(models.Model):
         return self.key
 
     @staticmethod
-    def right_keylogs(missions):
-        keylogs = Keylog.objects.filter(mission__in=missions, is_right=True)
-        return keylogs.order_by('player', 'mission__order_number').distinct('player', 'mission__order_number')
+    def right_key_logs(missions):
+        key_logs = KeyLog.objects.filter(mission__in=missions, is_right=True)
+        return key_logs.order_by('player', 'mission__order_number').distinct('player', 'mission__order_number')
 
     @staticmethod
     def wrong_keylogs(player, mission):
-        return Keylog.objects.filter(player=player, mission=mission, is_right=False)
+        return KeyLog.objects.filter(player=player, mission=mission, is_right=False)
 
     @staticmethod
     def wrong_keylogs_format(player, mission):
-        wrong_keys = Keylog.wrong_keylogs(player, mission)
+        wrong_keys = KeyLog.wrong_keylogs(player, mission)
         return ', '.join(str(i) for i in wrong_keys)
 
     @staticmethod
     def total_points(quest, player):
-        keylogs = Keylog.get_keylogs(quest, player, True)
-        keylogs = keylogs.order_by('mission__id').distinct('mission__id')
+        key_logs = KeyLog.get_key_logs(quest, player, True)
+        key_logs = key_logs.order_by('mission__id').distinct('mission__id')
         total_points = 0
-        for keylog in keylogs:
-            total_points += keylog.points
+        for key_log in key_logs:
+            total_points += key_log.points
         return total_points
 
     @staticmethod
     def last_time(quest, player):
-        keylog = None
-        keylogs = Keylog.get_keylogs(quest, player, True)
-        if keylogs:
-            keylog = keylogs.order_by('-fix_time').first()
-        return keylog.fix_time if keylog else timezone.now()
+        key_log = None
+        key_logs = KeyLog.get_key_logs(quest, player, True)
+        if key_logs:
+            key_log = key_logs.order_by('-fix_time').first()
+        return key_log.fix_time if key_log else timezone.now()
 
     @staticmethod
-    def get_keylogs(quest, player, is_right):
+    def get_key_logs(quest, player, is_right):
         if quest.multilinear:
-            keylogs = Keylog.objects.filter(mission__quest__in=quest.lines(), player=player, is_right=is_right)
+            key_logs = KeyLog.objects.filter(mission__quest__in=quest.lines(), player=player, is_right=is_right)
         else:
-            keylogs = Keylog.objects.filter(mission__quest=quest, player=player, is_right=is_right)
-        return keylogs
+            key_logs = KeyLog.objects.filter(mission__quest=quest, player=player, is_right=is_right)
+        return key_logs
 
 
 class Message(models.Model):

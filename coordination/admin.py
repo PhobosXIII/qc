@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from coordination.models import Quest, Mission, Hint, CurrentMission, Keylog, Message, Membership
+from coordination.models import Quest, Mission, Hint, CurrentMission, KeyLog, Message, Membership
 from qc.admin import admin_site
 
 
@@ -68,5 +68,5 @@ admin_site.register(Quest, QuestAdmin)
 admin_site.register(Membership, MemberAdmin)
 admin_site.register(Mission, MissionAdmin)
 admin_site.register(CurrentMission, CurrentMissionAdmin)
-admin_site.register(Keylog, KeylogAdmin)
+admin_site.register(KeyLog, KeylogAdmin)
 admin_site.register(Message, MessageAdmin)

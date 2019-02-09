@@ -53,10 +53,10 @@ quest_patterns = [
             path('all/', views.tables_quest_all, name='quest_tables_all'),
         ])),
         path('results/', views.results_quest, name='quest_results'),
-        path('keylog/', include([
-            path('', views.keylog_quest, name='quest_keylog'),
-            path('delete/', views.delete_keylogs, name='keylogs_delete'),
-            path('delete/<int:keylog_id>/', views.delete_keylog, name='keylog_delete'),
+        path('key_log/', include([
+            path('', views.key_log_quest, name='quest_key_log'),
+            path('delete/', views.delete_key_logs, name='key_logs_delete'),
+            path('delete/<int:key_log_id>/', views.delete_key_log, name='key_log_delete'),
         ])),
         path('messages/', views.messages_quest, name='quest_messages'),
         path('messages/<int:message_id>/', include([
