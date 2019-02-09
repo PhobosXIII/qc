@@ -43,10 +43,23 @@ def is_agent(user, quest):
 
 
 @register.filter()
-def format_interval(seconds):
+def format_interval(timedelta):
+    days = timedelta.days
+    seconds = timedelta.seconds
     hours = math.floor(seconds / 3600)
     minutes = math.floor((seconds - (hours * 3600)) / 60)
-    if minutes == 0:
-        return "%dч" % hours
-    else:
+
+    if days == 0:
+        if hours == 0:
+            return "%02dм" % minutes
+        if minutes == 0:
+            return "%dч" % hours
         return "%dч %02dм" % (hours, minutes)
+    else:
+        if hours == 0:
+            if minutes == 0:
+                return "%dдн" % days
+            return "%dдн %02dм" % (days, minutes)
+        if minutes == 0:
+            return "%dдн %dч" % (days, hours)
+        return "%dдн %dч %02dм" % (days, hours, minutes)

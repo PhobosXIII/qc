@@ -44,9 +44,9 @@ def get_interval(start, end):
     if not start or not end:
         return None
     if end < start:
-        return 0
+        return None
     timedelta = end - start
-    return timedelta.seconds
+    return timedelta
 
 
 def time_in_minutes(time):
