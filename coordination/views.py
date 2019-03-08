@@ -10,7 +10,7 @@ from htmlmin.decorators import minified_response
 from sendfile import sendfile
 
 from coordination.forms import QuestForm, MissionForm, HintForm, PlayerForm, KeyForm, MessageForm, OrganizerForm
-from coordination.models import Quest, Mission, Hint, CurrentMission, KeyLog, Message, Membership
+from coordination.models import Quest, Mission, Hint, KeyLog, Message, Membership, MissionLog
 from coordination.permission_utils import is_quest_organizer, is_quest_player, is_organizer, is_quest_organizer_or_agent
 from coordination.utils import generate_random_username, generate_random_password, get_timedelta, is_game_over, \
     is_ml_game_over, get_interval
@@ -163,9 +163,6 @@ def control_quest(request, quest_id):
     quest = get_object_or_404(Quest, pk=quest_id, parent__isnull=True)
     request = is_quest_organizer(request, quest)
     context = {'quest': quest, }
-    if quest.linear:
-        current_missions = quest.current_missions()
-        context.update({'current_missions': current_missions})
     return render(request, 'coordination/quests/control.html', context)
 
 
@@ -174,15 +171,6 @@ def begin_quest(request, quest_id):
     quest = get_object_or_404(Quest, pk=quest_id, parent__isnull=True)
     is_quest_organizer(request, quest)
     quest.begin()
-    if quest.multilinear:
-        players = quest.players()
-        lines = quest.lines()
-        for line in lines:
-            first_mission = line.missions().first()
-            for player in players:
-                current_mission = CurrentMission.objects.filter(player=player, mission__quest=line).first()
-                if not current_mission:
-                    CurrentMission.objects.create(player=player, mission=first_mission)
     return redirect('coordination:quest_control', quest_id=quest_id)
 
 
@@ -201,29 +189,13 @@ def clear_quest(request, quest_id):
     if quest.not_started:
         if quest.multilinear:
             lines = quest.lines()
-            CurrentMission.objects.filter(mission__quest__in=lines).delete()
+            # TODO: additionally handle multiline quest
+            MissionLog.objects.filter(mission__quest__in=lines).update(status=MissionLog.NOT_STARTED)
             KeyLog.objects.filter(mission__quest__in=lines).delete()
         else:
-            start_mission = quest.start_mission()
-            CurrentMission.objects.filter(mission__quest=quest).update(mission=start_mission)
+            MissionLog.objects.filter(mission__quest=quest).update(status=MissionLog.NOT_STARTED)
+            MissionLog.objects.filter(mission=quest.start_mission).update(status=MissionLog.CURRENT)
             KeyLog.objects.filter(mission__quest=quest).delete()
-    return redirect('coordination:quest_control', quest_id=quest_id)
-
-
-@login_required
-def next_mission(request, quest_id, user_id):
-    quest = get_object_or_404(Quest, pk=quest_id)
-    is_quest_organizer(request, quest)
-    if quest.linear and quest.started:
-        player = get_object_or_404(User, pk=user_id)
-        cm = get_object_or_404(CurrentMission, mission__quest=quest, player=player)
-        if not cm.mission.is_finish:
-            right_key = cm.mission.key
-            key_log = KeyLog(key=right_key, fix_time=timezone.now(), player=player, mission=cm.mission, is_right=True)
-            cm.mission = Mission.objects.get(quest=quest, order_number=cm.mission.order_number + 1)
-            cm.start_time = key_log.fix_time
-            key_log.save()
-            cm.save()
     return redirect('coordination:quest_control', quest_id=quest_id)
 
 
@@ -244,9 +216,11 @@ def players_quest(request, quest_id):
         password = generate_random_password()
         user = User.objects.create_user(username=username, password=password, first_name=name, last_name=password)
         Membership.objects.create(quest=quest, user=user, role=Membership.PLAYER)
+        # TODO: handle multiline quest
         if quest.linear or quest.line_nonlinear:
-            start_mission = quest.start_mission()
-            CurrentMission.objects.create(player=user, mission=start_mission)
+            for mission in quest.missions():
+                MissionLog.objects.create(player=user, mission=mission, status=MissionLog.NOT_STARTED)
+            MissionLog.objects.filter(player=user, mission=quest.start_mission).update(status=MissionLog.CURRENT)
         return redirect('coordination:quest_players', quest_id=quest_id)
     context = {'quest': quest, 'form': form, 'players': players}
     return render(request, 'coordination/quests/members/players.html', context)
@@ -339,7 +313,7 @@ def nonlinear_coordination(request, quest):
                 right_key = mission.key
                 is_right = len(right_key) > 0 and right_key == key
                 key_log = KeyLog(key=key, fix_time=timezone.now(), player=player,
-                                mission=mission, is_right=is_right)
+                                 mission=mission, is_right=is_right)
                 if is_right:
                     key_log.points = mission.points
                 key_log.save()
@@ -381,7 +355,7 @@ def nonlinear_coordination(request, quest):
 
 def linear_coordination(request, quest):
     player = request.user
-    current_mission = get_object_or_404(CurrentMission, mission__quest=quest, player=player)
+    current_mission = get_object_or_404(MissionLog, mission__quest=quest, player=player, status=MissionLog.CURRENT)
     mission = current_mission.mission
     if request.method == 'POST':
         if quest.started and not mission.is_finish:
@@ -430,7 +404,8 @@ def multilinear_coordination(request, quest):
                 if is_right:
                     key_log.points = mission.points
                     next_mission = Mission.objects.filter(quest=line, order_number=mission.order_number + 1).first()
-                    current_mission = get_object_or_404(CurrentMission, mission__quest=line, player=player)
+                    current_mission = get_object_or_404(MissionLog, mission__quest=line, player=player,
+                                                        status=MissionLog.CURRENT)
                     current_mission.mission = next_mission
                     current_mission.start_time = key_log.fix_time
                     current_mission.save()
@@ -452,7 +427,8 @@ def multilinear_coordination(request, quest):
                 form = KeyForm(quest=quest)
             lines = quest.lines()
             for line in lines:
-                current_mission = get_object_or_404(CurrentMission, mission__quest=line, player=player)
+                current_mission = get_object_or_404(MissionLog, mission__quest=line, player=player,
+                                                    status=MissionLog.CURRENT)
                 line.mission = current_mission.mission
                 line.completed_missions = Mission.completed_missions(line, player)
                 if game_over:
@@ -498,7 +474,8 @@ def coordination_quest_ajax(request, quest_id):
                 json_lines = []
                 lines = quest.lines()
                 for line in lines:
-                    current_mission = get_object_or_404(CurrentMission, mission__quest=line, player=player)
+                    current_mission = get_object_or_404(MissionLog, mission__quest=line, player=player,
+                                                        status=MissionLog.CURRENT)
                     mission = current_mission.mission
                     json_mission = mission.as_json()
                     html_picture = render_to_string('coordination/quests/coordination/_picture.html',
@@ -528,7 +505,8 @@ def coordination_quest_ajax(request, quest_id):
                                        'line_uncompleted_missions': html_line_uncompleted_missions})
                 data.update({'lines': json_lines, })
         else:
-            current_mission = get_object_or_404(CurrentMission, mission__quest=quest, player=player)
+            current_mission = get_object_or_404(MissionLog, mission__quest=quest, player=player,
+                                                status=MissionLog.CURRENT)
             mission = current_mission.mission
             hints = current_mission.display_hints()
             next_hint_time = current_mission.next_hint_time()

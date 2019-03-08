@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from coordination.models import Quest, Mission, Hint, CurrentMission, KeyLog, Message, Membership
+from coordination.models import Quest, Mission, Hint, KeyLog, Message, Membership, MissionLog
 from qc.admin import admin_site
 
 
@@ -39,13 +39,13 @@ class MissionAdmin(admin.ModelAdmin):
     ordering = ('quest', 'order_number')
 
 
-class CurrentMissionAdmin(admin.ModelAdmin):
-    list_display = ('player', 'get_quest', 'mission', 'start_time')
+class MissionLogAdmin(admin.ModelAdmin):
+    list_display = ('player', 'get_quest', 'mission', 'status', 'start_time')
     ordering = ['-mission', 'start_time']
     list_filter = ('mission__quest',)
 
 
-class KeylogAdmin(admin.ModelAdmin):
+class KeyLogAdmin(admin.ModelAdmin):
     list_display = ('player', 'get_quest', 'mission', 'key', 'fix_time', 'is_right', 'points')
     ordering = ['fix_time']
     list_filter = ('is_right', 'player', 'mission', 'mission__quest')
@@ -61,12 +61,12 @@ def get_quest(self, obj):
 
 
 get_quest.short_description = 'квест'
-CurrentMissionAdmin.get_quest = get_quest
-KeylogAdmin.get_quest = get_quest
+MissionLogAdmin.get_quest = get_quest
+KeyLogAdmin.get_quest = get_quest
 
 admin_site.register(Quest, QuestAdmin)
 admin_site.register(Membership, MemberAdmin)
 admin_site.register(Mission, MissionAdmin)
-admin_site.register(CurrentMission, CurrentMissionAdmin)
-admin_site.register(KeyLog, KeylogAdmin)
+admin_site.register(MissionLog, MissionLogAdmin)
+admin_site.register(KeyLog, KeyLogAdmin)
 admin_site.register(Message, MessageAdmin)

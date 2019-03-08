@@ -30,7 +30,6 @@ quest_patterns = [
             path('begin/', views.begin_quest, name='begin_quest'),
             path('end/', views.end_quest, name='end_quest'),
             path('clear/', views.clear_quest, name='clear_quest'),
-            path('next_mission/<int:user_id>/', views.next_mission, name='next_mission'),
         ])),
         path('members/', include([
             path('', views.members_quest, name='quest_members'),

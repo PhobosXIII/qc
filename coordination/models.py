@@ -172,10 +172,10 @@ class Quest(models.Model):
             return Mission.objects.filter(quest=self).order_by('order_number')
 
     def current_missions(self):
-        return CurrentMission.objects.filter(mission__quest=self)
+        return MissionLog.objects.filter(mission__quest=self, status=MissionLog.CURRENT)
 
     def current_missions_multilinear(self, player):
-        return CurrentMission.objects.filter(mission__quest__in=self.lines(), player=player)
+        return MissionLog.objects.filter(mission__quest__in=self.lines(), status=MissionLog.CURRENT, player=player)
 
     def next_mission_number(self):
         if self.parent:
@@ -243,9 +243,9 @@ class Quest(models.Model):
     def multiline_missions_str(missions):
         line_format = "{0}: {1}"
         missions = sorted(missions, key=lambda x: x.quest.order_number)
-        iter = groupby(missions, key=lambda x: x.quest)
+        iteration = groupby(missions, key=lambda x: x.quest)
         quest_missions = []
-        for quest, missions in iter:
+        for quest, missions in iteration:
             line_str = ', '.join(str(i.table_name) for i in missions)
             quest_missions.append(line_format.format(quest.title, line_str))
         missions_str = ' ___ '.join(i for i in quest_missions)
@@ -396,18 +396,12 @@ class Mission(models.Model):
         return len(self.hints()) + 1
 
     def is_completed(self, player):
-        key_log = KeyLog.objects.filter(mission=self, player=player, is_right=True).first()
-        return key_log is not None
+        completed_mission = MissionLog.objects.filter(mission=self, player=player, status=MissionLog.COMPLETED).first()
+        return completed_mission is not None
 
     def is_current(self, player):
-        quest = self.quest
-        if quest.nonlinear:
-            member = quest.membership_set.filter(user=player).first()
-            result = member and member.player
-        else:
-            current_mission = CurrentMission.objects.filter(mission=self, player=player).first()
-            result = current_mission is not None
-        return result
+        current_mission = MissionLog.objects.filter(mission=self, player=player, status=MissionLog.CURRENT).first()
+        return current_mission is not None
 
     def right_key_logs(self):
         key_logs = KeyLog.objects.filter(mission=self, is_right=True)
@@ -462,6 +456,9 @@ class Key(models.Model):
         verbose_name = 'ключ'
         verbose_name_plural = 'ключи'
         ordering = ['mission__quest__title', 'mission__order_number', 'value']
+
+    def __str__(self):
+        return self.value
 
 
 class Hint(models.Model):
@@ -519,46 +516,12 @@ class HintLog(models.Model):
                                                       "при требовании подсказки игроком",
                                             validators=[MinValueValidator(0), MaxValueValidator(960)])
 
-
-class CurrentMission(models.Model):
-    player = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name='игрок', on_delete=models.CASCADE)
-    mission = models.ForeignKey(Mission, verbose_name='задание', on_delete=models.CASCADE)
-    start_time = models.DateTimeField('время начала задания', default=timezone.now)
-
     class Meta:
-        verbose_name = 'текущее задание'
-        verbose_name_plural = 'текущие задания'
-        ordering = ['-mission__order_number', 'start_time']
+        verbose_name = 'история подсказок'
+        verbose_name_plural = 'история подсказок'
 
     def __str__(self):
-        return '{0} - {1}'.format(self.player, self.mission)
-
-    @property
-    def alarm(self):
-        if self.mission.is_start or self.mission.is_finish:
-            return False
-        minutes = time_in_minutes(get_timedelta_with_now(self.start_time))
-        threshold = self.mission.total_hints_time + 30
-        return minutes >= threshold
-
-    def display_hints(self):
-        display_hints = []
-        minutes = time_in_minutes(get_timedelta_with_now(self.start_time))
-        hints = self.mission.hints()
-        for hint in hints:
-            if hint.abs_delay <= minutes:
-                display_hints.append(hint)
-        return display_hints
-
-    def next_hint_time(self):
-        next_hint_time = None
-        minutes = time_in_minutes(get_timedelta_with_now(self.start_time))
-        hints = self.mission.hints()
-        for hint in hints:
-            if hint.abs_delay > minutes:
-                next_hint_time = self.start_time + timedelta(minutes=hint.abs_delay)
-                break
-        return next_hint_time
+        return '{0} - {1}'.format(self.player, self.hint)
 
 
 class KeyLog(models.Model):
@@ -644,3 +607,56 @@ class Message(models.Model):
         for message in messages:
             array.append(message.as_json())
         return array
+
+
+class MissionLog(models.Model):
+    NOT_STARTED = 'NTS'
+    CURRENT = 'CUR'
+    COMPLETED = 'CMP'
+
+    STATUSES = (
+        (NOT_STARTED, 'Не начато'),
+        (CURRENT, 'Текущее'),
+        (COMPLETED, 'Завершено'),
+    )
+
+    player = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name='игрок', on_delete=models.CASCADE)
+    mission = models.ForeignKey(Mission, verbose_name='задание', on_delete=models.CASCADE)
+    status = models.CharField('статус', max_length=3, choices=STATUSES, default=NOT_STARTED)
+    start_time = models.DateTimeField('время начала задания', null=True, blank=True)
+    finish_time = models.DateTimeField('время закрытия задания', null=True, blank=True)
+
+    class Meta:
+        verbose_name = 'история заданий'
+        verbose_name_plural = 'история заданий'
+        ordering = ['-mission__order_number', 'start_time']
+
+    def __str__(self):
+        return '{0} - {1}'.format(self.player, self.mission)
+
+    @property
+    def alarm(self):
+        if self.mission.is_start or self.mission.is_finish:
+            return False
+        minutes = time_in_minutes(get_timedelta_with_now(self.start_time))
+        threshold = self.mission.total_hints_time + 30
+        return minutes >= threshold
+
+    def display_hints(self):
+        display_hints = []
+        minutes = time_in_minutes(get_timedelta_with_now(self.start_time))
+        hints = self.mission.hints()
+        for hint in hints:
+            if hint.abs_delay <= minutes:
+                display_hints.append(hint)
+        return display_hints
+
+    def next_hint_time(self):
+        next_hint_time = None
+        minutes = time_in_minutes(get_timedelta_with_now(self.start_time))
+        hints = self.mission.hints()
+        for hint in hints:
+            if hint.abs_delay > minutes:
+                next_hint_time = self.start_time + timedelta(minutes=hint.abs_delay)
+                break
+        return next_hint_time

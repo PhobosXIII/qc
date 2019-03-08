@@ -54,37 +54,4 @@
     {% else %}
         <p class="lead text-center">Опубликуйте квест для управления его состоянием.</p>
     {% endif %}
-
-    {% if quest.linear %}
-        {% if current_missions %}
-            <div class="table-responsive">
-                <table class="table table-bordered text-center">
-                    <thead>
-                        <tr>
-                            <th>Игрок</th>
-                            <th>Задание</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    {% for cm in current_missions %}
-                        <tr {% if cm.mission.is_finish %}class="success"{% endif %}>
-                            <td>{{ cm.player.first_name }}
-                                {% if not cm.mission.is_finish and quest.is_published and quest.started %}
-                                    <br>
-                                    <button data-href="{% url 'coordination:next_mission' quest.id cm.player.id %}"
-                                            data-toggle="modal" data-target="#confirm" class="btn btn-sm btn-primary">
-                                        <span class="fa fa-step-forward"></span> Перевести на следующее задание
-                                    </button>
-                                {% endif %}
-                            </td>
-                            <td>{{ cm.mission }}</td>
-                        </tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        {% else %}
-            <p class="lead text-center">Ни один игрок еще не добавлен к квесту. Перейдите во вкладку Игроки.</p>
-        {% endif %}
-    {% endif %}
 {% endblock content %}
