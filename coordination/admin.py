@@ -32,7 +32,7 @@ class HintInline(admin.TabularInline):
 
 
 class MissionAdmin(admin.ModelAdmin):
-    fields = ['quest', ('name', 'order_number', 'is_finish'), 'name_in_table', 'text', ('key', 'points'), 'picture',]
+    fields = ['quest', ('name', 'order_number', 'is_finish'), 'name_in_table', 'text', ('key', 'points'), 'picture', ]
     inlines = [HintInline]
     list_display = ('__str__', 'quest', 'points',)
     list_filter = ('quest',)

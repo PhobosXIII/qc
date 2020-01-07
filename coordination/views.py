@@ -49,18 +49,18 @@ def type_quest(request):
 
 
 @login_required()
-def create_quest(request, type):
+def create_quest(request, quest_type):
     request = is_organizer(request)
     if request.method == 'POST':
         form = QuestForm(request.POST)
         if form.is_valid():
             quest = form.save(commit=False)
             quest.creator = request.user
-            quest.type = type
+            quest.type = quest_type
             quest.save()
             return redirect('coordination:quest_detail', quest_id=quest.pk)
     else:
-        form = QuestForm(type=type, org_name=request.user.first_name)
+        form = QuestForm(type=quest_type, org_name=request.user.first_name)
     context = {'form': form}
     return render(request, 'coordination/quests/form.html', context)
 
@@ -369,8 +369,10 @@ def linear_coordination(request, quest):
                 key_log = KeyLog(key=key, fix_time=timezone.now(), player=player, mission=mission, is_right=is_right)
                 key_log.save()
                 if is_right:
-                    current_mission.mission = next_mission
-                    current_mission.start_time = key_log.fix_time
+                    MissionLog.objects.get(player=player, mission=next_mission).update(start_time=key_log.fix_time,
+                                                                                       status=MissionLog.CURRENT)
+                    current_mission.status = MissionLog.COMPLETED
+                    current_mission.finish_time = key_log.fix_time
                     current_mission.save()
         return redirect('coordination:quest_coordination', quest_id=quest.id)
     else:
@@ -632,7 +634,7 @@ def delete_message(request, quest_id, message_id):
 
 # Missions
 @login_required()
-def create_line(request, quest_id, type=Quest.LINEAR):
+def create_line(request, quest_id, line_type=Quest.LINEAR):
     quest = get_object_or_404(Quest, pk=quest_id, type=Quest.MULTILINEAR)
     request = is_quest_organizer(request, quest)
     if request.method == 'POST':
@@ -641,12 +643,12 @@ def create_line(request, quest_id, type=Quest.LINEAR):
             line = form.save(commit=False)
             line.creator = quest.creator
             line.organizer_name = quest.organizer_name
-            line.type = type
+            line.type = line_type
             line.parent = quest
             line.save()
             return redirect('coordination:line_detail', quest_id=quest.id, line_id=line.pk)
     else:
-        form = QuestForm(type=type, parent=quest)
+        form = QuestForm(type=line_type, parent=quest)
     context = {'form': form}
     return render(request, 'coordination/quests/form.html', context)
 

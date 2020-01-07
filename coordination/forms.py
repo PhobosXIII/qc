@@ -24,15 +24,15 @@ class QuestForm(ModelForm):
         fields = ['title', 'organizer_name', 'start', 'description', 'game_over', 'order_number']
 
     def __init__(self, *args, **kwargs):
-        type = kwargs.pop('type', None)
+        quest_type = kwargs.pop('type', None)
         parent = kwargs.pop('parent', None)
         org_name = kwargs.pop('org_name', None)
         super(QuestForm, self).__init__(*args, **kwargs)
         self.helper = FormHelper()
         self.helper.form_tag = False
         self.helper.html5_required = True
-        if type:
-            self.instance.type = type
+        if quest_type:
+            self.instance.type = quest_type
         if parent:
             self.instance.parent = parent
         quest = self.instance
